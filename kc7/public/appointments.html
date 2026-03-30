@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <style>
+        .form-label { display:block; font-weight:600; margin-bottom:0.5rem; }
+        .form-input { width:100%; padding:0.8rem; border:2px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.95rem; box-sizing:border-box; }
+        .form-input:focus { outline:none; border-color:var(--primary); }
+        .form-group { margin-bottom:1.2rem; }
+        .appt-card { background:var(--bg-primary); border-radius:8px; padding:1.2rem; margin-bottom:1rem; }
+        .appt-card.approved { border-left:4px solid var(--primary); }
+        .appt-card.pending  { border-left:4px solid #f39c12; }
+        .appt-card.declined { border-left:4px solid #e74c3c; opacity:0.8; }
+        .appt-card.past     { border-left:4px solid var(--text-light); opacity:0.8; }
+        .badge { padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem; font-weight:600; color:white; }
+        .badge.approved { background:var(--primary); }
+        .badge.pending  { background:#f39c12; }
+        .badge.declined { background:#e74c3c; }
+        .success-msg { background:#d4edda; color:#155724; padding:0.8rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; display:none; }
+        .error-msg   { background:#fde8e8; color:#c0392b; padding:0.8rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; display:none; }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="results.html" class="nav-link">Results</a>
+                <a href="recommendations.html" class="nav-link">Recommendations</a>
+                <a href="appointments.html" class="nav-link active">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    <span class="notification-badge">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, User</p></div>
+                    <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom:0.5rem;">Manage Appointments</h1>
+            <p style="color:var(--text-light);">Book and manage your child's pediatric consultations</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+            <!-- Booking Form -->
+            <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <h2 style="color:var(--primary);margin-bottom:1.5rem;">Book New Appointment</h2>
+                <div id="bookSuccess" class="success-msg">✅ Appointment booked! The pediatrician will review your request.</div>
+                <div id="bookError"   class="error-msg"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Child</label>
+                    <select id="childSelect" class="form-input">
+                        <option value="">Loading your children…</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Pediatrician</label>
+                    <select id="pedSelect" class="form-input">
+                        <option value="">Loading pediatricians…</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Date</label>
+                    <input type="date" id="apptDate" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Time</label>
+                    <input type="time" id="apptTime" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Reason for Visit</label>
+                    <select id="apptReason" class="form-input">
+                        <option value="Follow-up Assessment">Follow-up Assessment</option>
+                        <option value="Motor Skills Evaluation">Motor Skills Evaluation</option>
+                        <option value="Development Check">Development Check</option>
+                        <option value="Concern Discussion">Concern Discussion</option>
+                        <option value="General Check-up">General Check-up</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea id="apptNotes" class="form-input" style="resize:vertical;min-height:100px;line-height:1.4;" placeholder="Any specific concerns or questions…"></textarea>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%;padding:0.9rem;" id="bookBtn" onclick="bookAppointment()">Book Appointment</button>
+            </div>
+
+            <!-- Appointment History -->
+            <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <h2 style="color:var(--primary);margin-bottom:1.5rem;">Your Appointments</h2>
+
+                <div id="upcomingSection" style="margin-bottom:2rem;">
+                    <h3 style="color:var(--text-dark);margin-bottom:1rem;font-size:1rem;">Upcoming & Pending</h3>
+                    <div id="upcomingList"><p style="color:var(--text-light);text-align:center;padding:1rem;">Loading…</p></div>
+                </div>
+
+                <div id="pastSection">
+                    <h3 style="color:var(--text-dark);margin-bottom:1rem;font-size:1rem;">Past Appointments</h3>
+                    <div id="pastList"><p style="color:var(--text-light);text-align:center;padding:1rem;">Loading…</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifModalList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+
+        function getToken() { return localStorage.getItem('kc_token'); }
+        function getUser()  { try { return JSON.parse(localStorage.getItem('kc_user')); } catch { return null; } }
+        function doLogout() {
+            ['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k => localStorage.removeItem(k));
+            window.location.href = 'login.html';
+        }
+
+        // Auth guard
+        const _user = getUser();
+        if (!getToken() || !_user) { window.location.href = 'login.html'; }
+        else if (_user.role === 'pediatrician') { window.location.href = 'pediatrician-dashboard.html'; }
+        else if (_user.role === 'admin') { window.location.href = 'admin-dashboard.html'; }
+
+        // Set nav immediately
+        if (_user) {
+            document.getElementById('navWelcome').textContent = `Welcome, ${_user.firstName}`;
+            if (_user.profileIcon && _user.profileIcon.startsWith('/uploads/'))
+                document.getElementById('navProfilePic').src = _user.profileIcon;
+        }
+
+        async function apiFetch(endpoint, options = {}) {
+            const res = await fetch(`${API}${endpoint}`, {
+                ...options,
+                headers: { 'Content-Type':'application/json', Authorization:`Bearer ${getToken()}`, ...options.headers }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+            return data;
+        }
+
+        async function loadFormData() {
+            // Load children into dropdown
+            try {
+                const data = await apiFetch('/children');
+                const sel = document.getElementById('childSelect');
+                const children = data.children || [];
+                if (children.length === 0) {
+                    sel.innerHTML = '<option value="">No children registered yet</option>';
+                } else {
+                    sel.innerHTML = children.map(c =>
+                        `<option value="${c.id}">${c.firstName} ${c.lastName}</option>`
+                    ).join('');
+                }
+            } catch {
+                document.getElementById('childSelect').innerHTML = '<option value="">Error loading children</option>';
+            }
+
+            // Load pediatricians into dropdown
+            try {
+                const data = await apiFetch('/appointments/pediatricians/list');
+                const sel = document.getElementById('pedSelect');
+                const peds = data.pediatricians || [];
+                if (peds.length === 0) {
+                    sel.innerHTML = '<option value="">No pediatricians available</option>';
+                } else {
+                    sel.innerHTML = peds.map(p =>
+                        `<option value="${p.id}">Dr. ${p.firstName} ${p.lastName}${p.specialization ? ' — ' + p.specialization : ''}</option>`
+                    ).join('');
+                }
+            } catch {
+                document.getElementById('pedSelect').innerHTML = '<option value="">Error loading pediatricians</option>';
+            }
+
+            // Set min date to today
+            document.getElementById('apptDate').min = new Date().toISOString().split('T')[0];
+        }
+
+        async function bookAppointment() {
+            const btn = document.getElementById('bookBtn');
+            const errEl = document.getElementById('bookError');
+            const sucEl = document.getElementById('bookSuccess');
+            errEl.style.display = 'none';
+            sucEl.style.display = 'none';
+
+            const childId       = document.getElementById('childSelect').value;
+            const pediatricianId = document.getElementById('pedSelect').value;
+            const appointmentDate = document.getElementById('apptDate').value;
+            const appointmentTime = document.getElementById('apptTime').value;
+            const reason        = document.getElementById('apptReason').value;
+            const notes         = document.getElementById('apptNotes').value.trim();
+
+            if (!childId)        { errEl.textContent = 'Please select a child.';            errEl.style.display='block'; return; }
+            if (!pediatricianId) { errEl.textContent = 'Please select a pediatrician.';     errEl.style.display='block'; return; }
+            if (!appointmentDate){ errEl.textContent = 'Please select a date.';             errEl.style.display='block'; return; }
+            if (!appointmentTime){ errEl.textContent = 'Please select a time.';             errEl.style.display='block'; return; }
+
+            btn.textContent = 'Booking…'; btn.disabled = true;
+            try {
+                await apiFetch('/appointments/create', {
+                    method: 'POST',
+                    body: JSON.stringify({ childId, pediatricianId, appointmentDate, appointmentTime, reason, notes })
+                });
+                sucEl.style.display = 'block';
+                // Reset form
+                document.getElementById('apptDate').value  = '';
+                document.getElementById('apptTime').value  = '';
+                document.getElementById('apptNotes').value = '';
+                // Refresh history
+                loadAppointments();
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.style.display = 'block';
+            } finally {
+                btn.textContent = 'Book Appointment'; btn.disabled = false;
+            }
+        }
+
+        async function loadAppointments() {
+            const user = getUser();
+            if (!user) return;
+            try {
+                const data = await apiFetch(`/appointments/${user.id}`);
+                const all  = data.appointments || [];
+                const now  = new Date();
+
+                const upcoming = all.filter(a => {
+                    const d = new Date(a.appointmentDate);
+                    return a.status !== 'declined' && d >= new Date(now.toDateString());
+                });
+                const past = all.filter(a => {
+                    const d = new Date(a.appointmentDate);
+                    return a.status === 'declined' || d < new Date(now.toDateString());
+                });
+
+                renderUpcoming(upcoming);
+                renderPast(past);
+            } catch (e) {
+                document.getElementById('upcomingList').innerHTML = '<p style="color:var(--text-light);text-align:center;">Could not load appointments.</p>';
+            }
+        }
+
+        function renderUpcoming(list) {
+            const el = document.getElementById('upcomingList');
+            if (list.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No upcoming appointments</p>';
+                return;
+            }
+            el.innerHTML = list.map(a => `
+                <div class="appt-card ${a.status}">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
+                        <div>
+                            <p style="font-weight:600;color:var(--text-dark);margin:0 0 0.2rem;">
+                                ${a.pediatricianName ? 'Dr. ' + a.pediatricianName : 'Pediatrician TBD'}
+                            </p>
+                            <p style="color:var(--text-light);font-size:0.9rem;margin:0;">📅 ${a.appointmentDate} at ${a.appointmentTime || '—'}</p>
+                            <p style="color:var(--text-light);font-size:0.9rem;margin:0.2rem 0 0;">📋 ${a.reason || 'General checkup'}</p>
+                        </div>
+                        <span class="badge ${a.status}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+                    </div>
+                    ${a.status === 'pending' ? '<p style="font-size:0.82rem;color:#f39c12;margin:0;">⏳ Waiting for pediatrician approval</p>' : ''}
+                    ${a.status === 'approved' ? '<p style="font-size:0.82rem;color:var(--primary);margin:0;">✅ Appointment confirmed</p>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderPast(list) {
+            const el = document.getElementById('pastList');
+            if (list.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No past appointments</p>';
+                return;
+            }
+            el.innerHTML = list.map(a => `
+                <div class="appt-card past">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>
+                            <p style="font-weight:600;color:var(--text-dark);margin:0 0 0.2rem;">
+                                ${a.pediatricianName ? 'Dr. ' + a.pediatricianName : 'Pediatrician'}
+                            </p>
+                            <p style="color:var(--text-light);font-size:0.9rem;margin:0;">📅 ${a.appointmentDate}</p>
+                        </div>
+                        <span class="badge" style="background:${a.status==='declined'?'#e74c3c':'#888'};">
+                            ${a.status === 'declined' ? 'Declined' : 'Completed'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openNotifications()  { document.getElementById('notificationsModal').style.display = 'flex'; }
+        function closeNotifications() { document.getElementById('notificationsModal').style.display = 'none'; }
+        function toggleProfileMenu() {
+            const m = document.getElementById('profileMenu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.profile-btn')) document.getElementById('profileMenu').style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormData();
+            loadAppointments();
+        });
+    </script>
+</body>
+</html>

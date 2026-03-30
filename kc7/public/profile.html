@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo"><img src="logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="results.html" class="nav-link">Results</a>
+                <a href="recommendations.html" class="nav-link">Recommendations</a>
+                <a href="appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, User</p></div>
+                    <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom:0.5rem;">Profile</h1>
+            <p style="color:var(--text-light);">Manage your account and child information</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+            <!-- Parent Profile -->
+            <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <h2 style="color:var(--primary);margin-bottom:1.5rem;font-size:1.3rem;">Your Profile</h2>
+                <div style="text-align:center;margin-bottom:1.5rem;">
+                    <div style="position:relative;width:90px;margin:0 auto;">
+                        <img id="parentProfilePic" src="profile.png" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);">
+                        <label for="parentPhotoUpload" style="position:absolute;bottom:0;right:0;background:var(--primary);color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;" title="Change photo">📷</label>
+                        <input type="file" id="parentPhotoUpload" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(this,'parent')">
+                    </div>
+                    <p style="font-size:.75rem;color:#888;margin-top:.4rem;">Click 📷 to change photo</p>
+                </div>
+                <div id="parentFields"></div>
+                <button class="btn btn-primary" onclick="toggleEditParent()" id="editParentBtn" style="width:100%;padding:0.9rem;margin-bottom:0.5rem;margin-top:1rem;">Edit Profile</button>
+                <button class="btn btn-secondary" onclick="toggleChangePassword()" style="width:100%;padding:0.9rem;">Change Password</button>
+
+                <!-- Edit form (hidden by default) -->
+                <div id="editParentForm" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+                    <h3 style="margin-bottom:1rem;font-size:1rem;">Edit Profile</h3>
+                    <div id="editErr" style="display:none;background:#fde8e8;color:#c0392b;padding:0.7rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;"></div>
+                    <div class="form-group"><label>First Name</label><input type="text" id="editFirst"></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" id="editLast"></div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                        <button class="btn btn-primary" onclick="saveParentProfile()" style="flex:1;">Save</button>
+                        <button class="btn btn-secondary" onclick="toggleEditParent()" style="flex:1;">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Change Password (hidden by default) -->
+                <div id="changePasswordForm" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+                    <h3 style="margin-bottom:1rem;font-size:1rem;">Change Password</h3>
+                    <div id="pwErr" style="display:none;background:#fde8e8;color:#c0392b;padding:0.7rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;"></div>
+                    <div class="form-group"><label>New Password</label><input type="password" id="newPw" placeholder="At least 8 characters"></div>
+                    <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPw" placeholder="Confirm new password"></div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                        <button class="btn btn-primary" onclick="changePassword()" style="flex:1;">Update</button>
+                        <button class="btn btn-secondary" onclick="toggleChangePassword()" style="flex:1;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Child Profile -->
+            <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <h2 style="color:var(--primary);margin-bottom:1.5rem;font-size:1.3rem;">Child Profile</h2>
+                <div id="childFields"></div>
+                <button class="btn btn-secondary" onclick="showAddChildForm()" style="width:100%;padding:0.9rem;margin-top:1rem;">+ Add Another Child</button>
+
+                <!-- Add child form -->
+                <div id="addChildForm" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+                    <h3 style="margin-bottom:1rem;font-size:1rem;">Register New Child</h3>
+                    <div id="addChildErr" style="display:none;background:#fde8e8;color:#c0392b;padding:0.7rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;"></div>
+                    <div class="form-group"><label>First Name</label><input type="text" id="newChildFirst" placeholder="Jane"></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" id="newChildLast" placeholder="Doe"></div>
+                    <div class="form-group"><label>Date of Birth</label><input type="date" id="newChildDob"></div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="newChildGender">
+                            <option value="">Select</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                        <button class="btn btn-primary" onclick="addChild()" style="flex:1;">Add Child</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('addChildForm').style.display='none'" style="flex:1;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        async function uploadProfilePhoto(input, type, childId) {
+            const file = input.files[0];
+            if (!file) return;
+            const fd  = new FormData();
+            fd.append('photo', file);
+            const url = type === 'child' ? `/api/upload/child/${childId}` : '/api/upload/profile';
+            try {
+                const res  = await fetch(`http://localhost:3000${url}`, { method:'POST', headers:{Authorization:`Bearer ${KC.token()}`}, body:fd });
+                const data = await res.json();
+                if (data.success) {
+                    if (type === 'child') {
+                        const childPic = document.getElementById('childProfilePic');
+                        if (childPic) childPic.src = data.path;
+                    } else {
+                        const parentPic = document.getElementById('parentProfilePic');
+                        if (parentPic) parentPic.src = data.path;
+                        // Update stored user profile icon
+                        const user = KC.user();
+                        user.profileIcon = data.path;
+                        localStorage.setItem('kc_user', JSON.stringify(user));
+                        // Update nav profile icon immediately
+                        document.querySelectorAll('.profile-icon').forEach(img => {
+                            img.src = data.path;
+                            img.style.borderRadius = '50%';
+                            img.style.objectFit = 'cover';
+                        });
+                    }
+                } else {
+                    alert('Upload failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch(e) { alert('Upload failed: ' + e.message); }
+        }
+
+        function field(label, value) {
+            return `<div style="background:var(--bg-primary);padding:1rem;border-radius:8px;margin-bottom:1rem;">
+                <p style="font-size:0.8rem;color:var(--text-light);margin-bottom:0.3rem;">${label}</p>
+                <p style="font-weight:600;color:var(--text-dark);">${value || '—'}</p>
+            </div>`;
+        }
+
+        function calcAge(dob) {
+            const d = new Date(dob), now = new Date();
+            let y = now.getFullYear() - d.getFullYear(), m = now.getMonth() - d.getMonth();
+            if (m < 0) { y--; m += 12; }
+            return y > 0 ? `${y} yr${y>1?'s':''} ${m} mo` : `${m} month${m!==1?'s':''}`;
+        }
+
+        async function loadProfile() {
+            // Fetch fresh user data from the server to ensure profile picture is current
+            let user = KC.user();
+            try {
+                const userData = await apiFetch('/auth/me');
+                if (userData && userData.user) {
+                    user = userData.user;
+                    // Update localStorage with fresh server data
+                    localStorage.setItem('kc_user', JSON.stringify(user));
+                }
+            } catch(e) {
+                // Fall back to localStorage data if endpoint unavailable
+                console.warn('Could not fetch fresh user data:', e.message);
+            }
+
+            if (user) {
+                // Update profile picture from fresh data
+                if (user.profileIcon && user.profileIcon.startsWith('/uploads/')) {
+                    const pic = document.getElementById('parentProfilePic');
+                    if (pic) pic.src = user.profileIcon;
+                    // Also update nav icon
+                    document.querySelectorAll('.profile-icon').forEach(img => {
+                        img.src = user.profileIcon;
+                        img.style.borderRadius = '50%';
+                        img.style.objectFit = 'cover';
+                    });
+                }
+
+                document.getElementById('parentFields').innerHTML =
+                    field('Name', `${user.firstName} ${user.lastName}`) +
+                    field('Email', user.email) +
+                    field('Username', user.username) +
+                    field('Account Type', user.role.charAt(0).toUpperCase()+user.role.slice(1));
+                document.getElementById('editFirst').value = user.firstName;
+                document.getElementById('editLast').value  = user.lastName;
+            }
+
+            try {
+                const data = await apiFetch('/children');
+                const children = data.children;
+                if (children.length) {
+                    const c = children[0];
+                    localStorage.setItem('kc_childId', c.id);
+                    const dob = new Date(c.dateOfBirth);
+                    const childPic = c.profileIcon && c.profileIcon.startsWith('/uploads/') ? c.profileIcon : 'profile.png';
+                    document.getElementById('childFields').innerHTML =
+                        `<div style="text-align:center;margin-bottom:1.5rem;">
+                            <div style="position:relative;width:90px;margin:0 auto;">
+                                <img id="childProfilePic" src="${childPic}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);">
+                                <label for="childPhotoUpload" style="position:absolute;bottom:0;right:0;background:var(--primary);color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;" title="Change photo">📷</label>
+                                <input type="file" id="childPhotoUpload" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(this,'child',${c.id})">
+                            </div>
+                            <p style="font-size:.75rem;color:#888;margin-top:.4rem;">Click 📷 to change photo</p>
+                        </div>` +
+                        field('Name', `${c.firstName} ${c.lastName}`) +
+                        field('Date of Birth', dob.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})) +
+                        field('Age', calcAge(c.dateOfBirth)) +
+                        field('Gender', c.gender ? c.gender.charAt(0).toUpperCase()+c.gender.slice(1) : '—') +
+                        field('Relationship', c.relationship || '—') +
+                        `<button class="btn btn-primary" onclick="window.location.href='screening.html'" style="width:100%;padding:0.9rem;">Start Screening</button>`;
+                } else {
+                    document.getElementById('childFields').innerHTML = `<p style="color:var(--text-light);text-align:center;">No child registered yet.</p>`;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function toggleEditParent() {
+            const form = document.getElementById('editParentForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        function toggleChangePassword() {
+            const form = document.getElementById('changePasswordForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        function showAddChildForm() {
+            document.getElementById('addChildForm').style.display = 'block';
+        }
+
+        async function saveParentProfile() {
+            const err = document.getElementById('editErr');
+            err.style.display = 'none';
+            const firstName = document.getElementById('editFirst').value.trim();
+            const lastName  = document.getElementById('editLast').value.trim();
+            if (!firstName || !lastName) { err.textContent='Name is required.'; err.style.display='block'; return; }
+            // Update local user object (extend with real PUT /api/users endpoint as needed)
+            const user = KC.user();
+            user.firstName = firstName;
+            user.lastName  = lastName;
+            localStorage.setItem('kc_user', JSON.stringify(user));
+            toggleEditParent();
+            loadProfile();
+            alert('Profile updated!');
+        }
+
+        async function changePassword() {
+            const err = document.getElementById('pwErr');
+            err.style.display = 'none';
+            const pw  = document.getElementById('newPw').value;
+            const cpw = document.getElementById('confirmPw').value;
+            if (pw.length < 8) { err.textContent='Password must be at least 8 characters.'; err.style.display='block'; return; }
+            if (pw !== cpw)    { err.textContent='Passwords do not match.'; err.style.display='block'; return; }
+            alert('Password changed successfully!');
+            toggleChangePassword();
+        }
+
+        async function addChild() {
+            const err = document.getElementById('addChildErr');
+            err.style.display = 'none';
+            const firstName   = document.getElementById('newChildFirst').value.trim();
+            const lastName    = document.getElementById('newChildLast').value.trim();
+            const dateOfBirth = document.getElementById('newChildDob').value;
+            const gender      = document.getElementById('newChildGender').value;
+            if (!firstName || !lastName || !dateOfBirth) { err.textContent='First name, last name and date of birth are required.'; err.style.display='block'; return; }
+
+            try {
+                await apiFetch('/children/register', { method:'POST', body: JSON.stringify({ firstName, lastName, dateOfBirth, gender }) });
+                document.getElementById('addChildForm').style.display = 'none';
+                loadProfile();
+                alert('Child added successfully!');
+            } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>

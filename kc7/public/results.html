@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <link rel="stylesheet" href="results-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo"><img src="logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="results.html" class="nav-link active">Results</a>
+                <a href="recommendations.html" class="nav-link">Recommendations</a>
+                <a href="appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, User</p></div>
+                    <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom:0.5rem;">Assessment Results & Analysis</h1>
+            <p style="color:var(--text-light);" id="resultsMeta">Loading…</p>
+        </div>
+
+        <div id="resultsContent">
+            <div style="text-align:center;padding:3rem;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <p style="color:var(--text-light);">Loading results…</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        function getStatusLabel(score) {
+            if (score >= 80) return { label:'Excellent', color:'var(--primary)' };
+            if (score >= 60) return { label:'Good',      color:'var(--primary)' };
+            if (score >= 40) return { label:'Fair',      color:'var(--accent-red)' };
+            return { label:'Needs Attention', color:'var(--accent-red)' };
+        }
+
+        function getOverallStatus(score) {
+            if (score >= 80) return 'On Track';
+            if (score >= 60) return 'Developing';
+            return 'Needs Support';
+        }
+
+        async function loadResults() {
+            const assessmentId = KC.assessmentId();
+            if (!assessmentId) {
+                document.getElementById('resultsContent').innerHTML = `
+                    <div style="text-align:center;padding:3rem;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                        <p style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">No assessment results yet</p>
+                        <p style="color:var(--text-light);margin-bottom:1.5rem;">Complete a screening to see your results here.</p>
+                        <button class="btn btn-primary" onclick="window.location.href='screening.html'">Start Screening</button>
+                    </div>`;
+                return;
+            }
+
+            try {
+                const data = await apiFetch(`/assessments/${assessmentId}/results`);
+                const s = data.skills;
+                const overall = Math.round(data.overallScore);
+
+                document.getElementById('resultsMeta').textContent =
+                    `Assessment Date: ${data.date || 'Recent'}`;
+
+                const domains = [
+                    { key:'communication', label:'Communication', icon:'🗣️', score: s.communication.score },
+                    { key:'social',        label:'Social Skills',  icon:'🤝', score: s.social.score },
+                    { key:'cognitive',     label:'Cognitive',      icon:'🧠', score: s.cognitive.score },
+                    { key:'motor',         label:'Motor Skills',   icon:'🤸', score: s.motor.score }
+                ];
+
+                document.getElementById('resultsContent').innerHTML = `
+                    <!-- Overall Summary -->
+                    <div style="background:white;border-radius:15px;padding:2rem;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);display:grid;grid-template-columns:200px 1fr;gap:3rem;align-items:center;">
+                        <div style="text-align:center;">
+                            <div style="width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;margin:0 auto;">
+                                <span style="font-size:2.5rem;font-weight:700;">${overall}</span>
+                                <span style="font-size:1rem;">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="color:var(--primary);margin-bottom:0.5rem;">${getOverallStatus(overall)}</h2>
+                            <p style="color:var(--text-light);line-height:1.6;margin-bottom:1.5rem;">
+                                ${overall >= 80 ? 'Your child is developing well overall and progressing as expected for their age.' :
+                                  overall >= 60 ? 'Your child is making good progress. Some areas may benefit from additional focus.' :
+                                  'Your child may benefit from additional support. Consider consulting a pediatrician.'}
+                                ${data.riskFlags && data.riskFlags.length ? ' Note: ' + data.riskFlags.join('; ') + '.' : ''}
+                            </p>
+                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+                                ${domains.map(d => `
+                                <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;text-align:center;">
+                                    <span style="display:block;font-size:1.2rem;margin-bottom:0.5rem;">${d.icon}</span>
+                                    <div style="font-weight:700;color:${getStatusLabel(d.score).color};margin-bottom:0.3rem;">${d.score}%</div>
+                                    <div style="font-size:0.8rem;color:var(--text-light);">${d.label}</div>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Domain Cards -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem;">
+                        ${domains.map(d => {
+                            const st = getStatusLabel(d.score);
+                            return `
+                            <div style="background:white;border-radius:15px;padding:1.5rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid ${st.color};">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                                    <h3>${d.icon} ${d.label}</h3>
+                                    <span style="background:${st.color};color:white;padding:0.4rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:600;">${st.label}</span>
+                                </div>
+                                <div style="height:8px;background:var(--border);border-radius:10px;margin-bottom:1rem;overflow:hidden;">
+                                    <div style="height:100%;width:${d.score}%;background:linear-gradient(90deg,${st.color},var(--primary-light));"></div>
+                                </div>
+                                <p style="color:var(--text-light);font-size:0.9rem;">Score: <strong>${d.score}%</strong> — ${st.label}</p>
+                            </div>`;
+                        }).join('')}
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                        <h3 style="margin-bottom:1.5rem;color:var(--primary);">Next Steps</h3>
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="window.location.href='recommendations.html'">View Recommendations</button>
+                            <button class="btn btn-secondary" onclick="window.location.href='appointments.html'">Book Appointment</button>
+                            <button class="btn btn-secondary" onclick="window.location.href='screening.html'">New Screening</button>
+                        </div>
+                    </div>`;
+            } catch (e) {
+                document.getElementById('resultsContent').innerHTML = `
+                    <div style="text-align:center;padding:2rem;background:white;border-radius:15px;">
+                        <p style="color:red;">Failed to load results: ${e.message}</p>
+                        <button class="btn btn-secondary" onclick="loadResults()" style="margin-top:1rem;">Retry</button>
+                    </div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadResults);
+    </script>
+</body>
+</html>

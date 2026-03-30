@@ -1,0 +1,50 @@
+============================================================
+  KinderCura — How to Run
+============================================================
+
+1. EDIT .env FILE (open it in Notepad):
+   - Set JWT_SECRET to any long random string
+   - Set EMAIL_USER and EMAIL_PASS (Gmail app password)
+   - DB connection is already set for your SQL Server
+
+2. INSTALL DEPENDENCIES (first time only):
+   Open a terminal in this folder and run:
+      npm install
+
+3. START THE SERVER:
+      node server.js
+   Or for auto-reload during development:
+      npm run dev
+
+4. OPEN IN BROWSER:
+      http://localhost:3000
+
+============================================================
+  Folder Structure (DO NOT REORGANIZE)
+============================================================
+
+KINDERCURA/
+├── server.js          ← Entry point
+├── db.js              ← Database connection
+├── .env               ← Your secrets (edit this!)
+├── package.json
+├── routes/            ← API route handlers
+│   ├── auth.js
+│   ├── children.js
+│   ├── upload.js
+│   ├── admin.js
+│   ├── assessments.js
+│   ├── recommendations.js
+│   └── appointments.js
+├── middleware/
+│   └── auth.js        ← JWT authentication
+├── database/
+│   └── schema.sql     ← Run this in SQL Server first
+└── public/            ← All HTML, CSS, images go HERE
+    ├── landing.html
+    ├── login.html
+    ├── signup.html
+    ├── dashboard.html
+    └── ...
+
+============================================================

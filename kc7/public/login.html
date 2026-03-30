@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - KinderCura</title>
+    <link rel="stylesheet" href="auth-new-styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-sidebar">
+            <div class="sidebar-logo">
+                <img src="logo.png" alt="KinderCura Logo" class="sidebar-logo-img">
+                <h1><span style="color:#E8A5A5;">Kinder</span><span style="color:#6B8E6F;">Cura</span></h1>
+            </div>
+            <p class="sidebar-tagline">Supporting Your Child's Development Journey</p>
+            <div class="sidebar-features">
+                <div class="feature"><span class="check-icon">✓</span><p>Comprehensive Screening</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Progress Tracking</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Expert Recommendations</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Appointment System</p></div>
+            </div>
+        </div>
+
+        <div class="auth-form-section">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to your account to continue</p>
+                </div>
+
+                <div id="errorMsg" style="display:none;background:#fde8e8;color:#c0392b;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem;"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Username or Email</label>
+                        <input type="text" id="identifier" placeholder="username or email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                            <input type="checkbox" id="rememberMe" style="width:18px;height:18px;">
+                            <span style="font-size:0.9rem;">Remember me</span>
+                        </label>
+                        <a href="#" style="font-size:0.9rem;color:var(--primary);text-decoration:none;">Forgot password?</a>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-full" style="padding:0.9rem;">Sign In</button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+
+        // If already logged in, redirect to correct dashboard
+        if (localStorage.getItem('kc_token')) {
+            const u = JSON.parse(localStorage.getItem('kc_user') || '{}');
+            if (u.role === 'admin') window.location.href = 'admin-dashboard.html';
+            else if (u.role === 'pediatrician') window.location.href = 'pedia-dashboard.html';
+            else window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const err = document.getElementById('errorMsg');
+            err.style.display = 'none';
+            btn.textContent = 'Signing in…';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('identifier').value.trim(),
+                        password: document.getElementById('password').value
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                localStorage.setItem('kc_token', data.token);
+                localStorage.setItem('kc_user', JSON.stringify(data.user));
+                if (data.childId) localStorage.setItem('kc_childId', data.childId);
+
+                if (data.role === 'admin') window.location.href = 'admin-dashboard.html';
+                else if (data.role === 'pediatrician') window.location.href = 'pedia-dashboard.html';
+                else window.location.href = 'dashboard.html';
+            } catch (error) {
+                err.textContent = error.message || 'Login failed. Please try again.';
+                err.style.display = 'block';
+                btn.textContent = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
