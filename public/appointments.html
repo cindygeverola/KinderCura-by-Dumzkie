@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <style>
+        .form-label{display:block;font-weight:600;margin-bottom:.5rem}
+        .form-input{width:100%;padding:.8rem;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:.95rem;box-sizing:border-box}
+        .form-input:focus{outline:none;border-color:var(--primary)}
+        .form-group{margin-bottom:1.2rem}
+        .appt-card{background:var(--bg-primary);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+        .appt-card.approved{border-left:4px solid var(--primary)}
+        .appt-card.pending{border-left:4px solid #f39c12}
+        .appt-card.declined,.appt-card.rejected{border-left:4px solid #e74c3c;opacity:.8}
+        .appt-card.past{border-left:4px solid var(--text-light);opacity:.8}
+        .badge{padding:.3rem .8rem;border-radius:20px;font-size:.75rem;font-weight:600;color:white}
+        .badge.approved{background:var(--primary)}
+        .badge.pending{background:#f39c12}
+        .badge.declined,.badge.rejected{background:#e74c3c}
+        .success-msg{background:#d4edda;color:#155724;padding:.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;display:none}
+        .error-msg{background:#fde8e8;color:#c0392b;padding:.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;display:none}
+        .video-drop-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:.2s;background:var(--bg-primary)}
+        .video-drop-zone:hover,.video-drop-zone.dragover{border-color:var(--primary);background:#f0f5f0}
+        .video-drop-zone input[type=file]{display:none}
+        .video-preview-wrap{margin-top:1rem;background:black;border-radius:8px;overflow:hidden;position:relative;display:none}
+        .video-preview-wrap video{width:100%;max-height:200px;display:block}
+        .video-remove-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:white;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px}
+        .video-info{font-size:.78rem;color:var(--text-light);margin-top:.4rem;text-align:center}
+        .upload-progress{height:6px;background:#e0e0e0;border-radius:4px;margin-top:.6rem;display:none}
+        .upload-progress-bar{height:100%;background:var(--primary);border-radius:4px;width:0%;transition:width .3s}
+        .questions-section{background:#f8fdf8;border:1px solid #c8e6c9;border-radius:10px;padding:1.2rem;margin-bottom:1.2rem;display:none}
+        .question-item{background:white;border-radius:8px;padding:.8rem 1rem;margin-bottom:.6rem;border:1px solid var(--border)}
+        .question-domain-badge{display:inline-block;font-size:.68rem;font-weight:600;padding:.2rem .5rem;border-radius:10px;margin-bottom:.4rem}
+        .domain-gross{background:#fff3cd;color:#856404}
+        .domain-fine{background:#d1ecf1;color:#0c5460}
+        .domain-lang{background:#d4edda;color:#155724}
+        .domain-social{background:#f8d7da;color:#721c24}
+        .q-radio-group{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+        .q-radio-label{flex:1;min-width:90px;display:flex;align-items:center;gap:.4rem;background:var(--bg-primary);border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;cursor:pointer;font-size:.8rem;transition:.15s}
+        .q-radio-label:hover{border-color:var(--primary)}
+        .age-group-header{font-size:.78rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 .5rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)}
+        .chat-btn{background:var(--primary);color:white;border:none;border-radius:6px;padding:.35rem .8rem;font-size:.78rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem}
+        .chat-btn:hover{background:var(--primary-dark)}
+        .video-badge{background:#e8f5e9;color:var(--primary);font-size:.72rem;padding:.15rem .45rem;border-radius:10px;display:inline-flex;align-items:center;gap:.2rem;font-weight:600}
+    </style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-container">
+    <a href="dashboard.html" class="logo">
+      <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+      <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="results.html" class="nav-link">Results</a>
+      <a href="recommendations.html" class="nav-link">Recommendations</a>
+      <a href="appointments.html" class="nav-link active">Appointments</a>
+      <a href="chat.html" class="nav-link"><img src="/icons/chatbubble.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Chat</a>
+    </nav>
+    <div class="nav-right">
+      <button class="icon-btn notification-btn" onclick="openNotifications()">
+        <img src="notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+        <span class="notification-badge" id="notifBadge">0</span>
+      </button>
+      <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+        <img src="profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+      </button>
+      <div class="profile-menu" id="profileMenu" style="display:none;">
+        <div class="menu-header"><p id="navWelcome">Welcome, User</p></div>
+        <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+        <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+        <hr style="margin:.5rem 0;">
+        <a href="#" class="menu-item logout" onclick="doLogout()"><img src="logout.png" class="menu-icon">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard-container">
+  <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+    <h1 style="margin-bottom:.5rem;">Manage Appointments</h1>
+    <p style="color:var(--text-light);">Book and manage your child's pediatric consultations</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+    <!-- Booking Form -->
+    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+      <h2 style="color:var(--primary);margin-bottom:1.5rem;">Book New Appointment</h2>
+      <div id="bookSuccess" class="success-msg"></div>
+      <div id="bookError" class="error-msg"></div>
+      <div class="form-group">
+        <label class="form-label">Select Child</label>
+        <select id="childSelect" class="form-input" onchange="onChildChanged()">
+          <option value="">Loading your children…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select Pediatrician</label>
+        <select id="pedSelect" class="form-input"><option value="">Loading…</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Date</label>
+        <input type="date" id="apptDate" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Time</label>
+        <input type="time" id="apptTime" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason for Visit</label>
+        <select id="apptReason" class="form-input">
+          <option>Follow-up Assessment</option><option>Motor Skills Evaluation</option>
+          <option>Development Check</option><option>Concern Discussion</option><option>General Check-up</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Additional Notes</label>
+        <textarea id="apptNotes" class="form-input" style="resize:vertical;min-height:80px;line-height:1.4;" placeholder="Any specific concerns…"></textarea>
+      </div>
+
+      <!-- Age-Based Questions -->
+      <div class="questions-section" id="questionsSection">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;">
+          <div>
+            <p style="font-weight:700;color:var(--primary);margin:0;"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Developmental Screening</p>
+            <p style="font-size:.8rem;color:var(--text-light);margin:.2rem 0 0;" id="questionsAgeNote"></p>
+          </div>
+          <button onclick="toggleQuestions()" id="questionsToggleBtn"
+            style="background:none;border:1px solid var(--primary);color:var(--primary);padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-size:.8rem;">
+            Show Questions
+          </button>
+        </div>
+        <div id="questionsList" style="display:none;max-height:400px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Video Upload -->
+      <div class="form-group">
+        <label class="form-label">📹 Child Behavior Video <span style="font-weight:400;color:var(--text-light);font-size:.85rem;">(optional)</span></label>
+        <p style="font-size:.82rem;color:var(--text-light);margin-bottom:.6rem;">Upload a short video of your child's behavior or current condition to help the pediatrician prepare.</p>
+        <div class="video-drop-zone" id="videoDropZone" onclick="document.getElementById('videoFileInput').click()">
+          <input type="file" id="videoFileInput" accept="video/*" onchange="handleVideoSelect(event)">
+          <div style="font-size:2rem;margin-bottom:.4rem;">🎥</div>
+          <div style="font-weight:600;color:var(--text-dark);margin-bottom:.3rem;">Click or drag & drop a video</div>
+          <div style="font-size:.82rem;color:var(--text-light);">MP4, WebM, MOV · Max 150 MB</div>
+        </div>
+        <div class="upload-progress" id="videoProgress"><div class="upload-progress-bar" id="videoProgressBar"></div></div>
+        <div class="video-preview-wrap" id="videoPreviewWrap">
+          <video id="videoPreview" controls></video>
+          <button class="video-remove-btn" onclick="removeVideo()">✕</button>
+        </div>
+        <div class="video-info" id="videoInfo"></div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;padding:.9rem;" id="bookBtn" onclick="bookAppointment()">Book Appointment</button>
+    </div>
+
+    <!-- Appointment History -->
+    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+      <h2 style="color:var(--primary);margin-bottom:1.5rem;">Your Appointments</h2>
+      <div style="margin-bottom:2rem;">
+        <h3 style="color:var(--text-dark);margin-bottom:1rem;font-size:1rem;">Upcoming & Pending</h3>
+        <div id="upcomingList"><p style="color:var(--text-light);text-align:center;padding:1rem;">Loading…</p></div>
+      </div>
+      <div>
+        <h3 style="color:var(--text-dark);margin-bottom:1rem;font-size:1rem;">Past Appointments</h3>
+        <div id="pastList"><p style="color:var(--text-light);text-align:center;padding:1rem;">Loading…</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+  <div class="notifications-content">
+    <div class="notifications-header">
+      <h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button>
+    </div>
+    <div class="notifications-list" id="notifModalList"></div>
+  </div>
+</div>
+
+<script>
+const API='http://localhost:3001/api';
+function getToken(){return localStorage.getItem('kc_token');}
+function getUser(){try{return JSON.parse(localStorage.getItem('kc_user'));}catch{return null;}}
+function doLogout(){['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k=>localStorage.removeItem(k));window.location.href='login.html';}
+const _user=getUser();
+if(!getToken()||!_user){window.location.href='login.html';}
+else if(_user.role==='pediatrician'){window.location.href='pediatrician-dashboard.html';}
+else if(_user.role==='admin'){window.location.href='admin-dashboard.html';}
+if(_user){
+  document.getElementById('navWelcome').textContent=`Welcome, ${_user.firstName}`;
+  if(_user.profileIcon&&_user.profileIcon.startsWith('/uploads/'))document.getElementById('navProfilePic').src=_user.profileIcon;
+}
+async function apiFetch(endpoint,options={}){
+  const res=await fetch(`${API}${endpoint}`,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${getToken()}`,...options.headers}});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error||`Error ${res.status}`);
+  return data;
+}
+
+// ─── Video ─────────────────────────────────────────────────────
+let selectedVideoFile=null;
+function handleVideoSelect(e){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>150*1024*1024){alert('Video must be under 150 MB.');return;}
+  selectedVideoFile=file;
+  document.getElementById('videoPreview').src=URL.createObjectURL(file);
+  document.getElementById('videoPreviewWrap').style.display='block';
+  document.getElementById('videoInfo').textContent=`${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`;
+}
+function removeVideo(){
+  selectedVideoFile=null;
+  document.getElementById('videoFileInput').value='';
+  document.getElementById('videoPreviewWrap').style.display='none';
+  document.getElementById('videoInfo').textContent='';
+  document.getElementById('videoPreview').src='';
+}
+async function uploadVideoForAppointment(appointmentId){
+  if(!selectedVideoFile)return;
+  const progWrap=document.getElementById('videoProgress');
+  const progBar=document.getElementById('videoProgressBar');
+  progWrap.style.display='block';progBar.style.width='10%';
+  const fd=new FormData();
+  fd.append('video',selectedVideoFile);
+  fd.append('description',document.getElementById('apptNotes').value.trim());
+  return new Promise(resolve=>{
+    const xhr=new XMLHttpRequest();
+    xhr.upload.onprogress=e=>{if(e.lengthComputable)progBar.style.width=`${Math.round(e.loaded/e.total*100)}%`;};
+    xhr.onload=()=>{progBar.style.width='100%';setTimeout(()=>{progWrap.style.display='none';progBar.style.width='0%';},800);resolve();};
+    xhr.onerror=()=>resolve();
+    xhr.open('POST',`${API}/videos/appointment/${appointmentId}`);
+    xhr.setRequestHeader('Authorization',`Bearer ${getToken()}`);
+    xhr.send(fd);
+  });
+}
+const dz=document.getElementById('videoDropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('videoFileInput').files=dt.files;handleVideoSelect({target:{files:[f]}});}});
+
+// ─── Age-Based Questions ────────────────────────────────────────
+let staticQuestions=[],questionsVisible=false;
+async function onChildChanged(){
+  const childId=document.getElementById('childSelect').value;
+  if(!childId){document.getElementById('questionsSection').style.display='none';return;}
+  try{
+    const data=await apiFetch(`/questions/static/${childId}`);
+    staticQuestions=data.questions||[];
+    if(staticQuestions.length>0&&data.childAge>=3){
+      document.getElementById('questionsAgeNote').textContent=`${staticQuestions.length} questions for ${data.childAge}-year-old child`;
+      document.getElementById('questionsSection').style.display='block';
+      renderStaticQuestions();
+    }else{document.getElementById('questionsSection').style.display='none';}
+  }catch{document.getElementById('questionsSection').style.display='none';}
+}
+function toggleQuestions(){
+  questionsVisible=!questionsVisible;
+  document.getElementById('questionsList').style.display=questionsVisible?'block':'none';
+  document.getElementById('questionsToggleBtn').textContent=questionsVisible?'Hide Questions':'Show Questions';
+}
+function renderStaticQuestions(){
+  const ANSWERS=['Yes, consistently','Sometimes','Not yet'];
+  const DC={'Gross Motor':'domain-gross','Fine Motor':'domain-fine','Language':'domain-lang','Personal-Social':'domain-social'};
+  const AL={'3':'Age 3','3.5-4':'Age 3.5–4','4':'Age 4','5':'Age 5','6':'Age 6','7-8':'Age 7–8'};
+  const grouped={};
+  staticQuestions.forEach(q=>{if(!grouped[q.ageGroup])grouped[q.ageGroup]=[];grouped[q.ageGroup].push(q);});
+  let html='';
+  Object.entries(grouped).forEach(([g,qs])=>{
+    html+=`<div class="age-group-header">${AL[g]||g}</div>`;
+    qs.forEach(q=>{
+      html+=`<div class="question-item">
+        <span class="question-domain-badge ${DC[q.domain]||'domain-gross'}">${q.domain}</span>
+        <p style="font-size:.88rem;margin:0 0 .5rem;">${q.text}</p>
+        <div class="q-radio-group">
+          ${ANSWERS.map(a=>`<label class="q-radio-label"><input type="radio" name="sq_${q.id}" value="${a}"><span>${a}</span></label>`).join('')}
+        </div></div>`;
+    });
+  });
+  document.getElementById('questionsList').innerHTML=html;
+}
+function collectStaticAnswers(){
+  return staticQuestions.map(q=>{const c=document.querySelector(`input[name="sq_${q.id}"]:checked`);return c?{questionId:q.id,questionText:q.text,ageGroup:q.ageGroup,domain:q.domain,answer:c.value}:null;}).filter(Boolean);
+}
+async function saveStaticAnswers(childId,appointmentId,answers){
+  for(const a of answers){try{await apiFetch('/questions/static/answer',{method:'POST',body:JSON.stringify({childId,appointmentId,...a})});}catch{}}
+}
+
+// ─── Book ───────────────────────────────────────────────────────
+async function bookAppointment(){
+  const btn=document.getElementById('bookBtn');
+  const errEl=document.getElementById('bookError');const sucEl=document.getElementById('bookSuccess');
+  errEl.style.display='none';sucEl.style.display='none';
+  const childId=document.getElementById('childSelect').value;
+  const pediatricianId=document.getElementById('pedSelect').value;
+  const appointmentDate=document.getElementById('apptDate').value;
+  const appointmentTime=document.getElementById('apptTime').value;
+  const reason=document.getElementById('apptReason').value;
+  const notes=document.getElementById('apptNotes').value.trim();
+  if(!childId){errEl.textContent='Please select a child.';errEl.style.display='block';return;}
+  if(!pediatricianId){errEl.textContent='Please select a pediatrician.';errEl.style.display='block';return;}
+  if(!appointmentDate){errEl.textContent='Please select a date.';errEl.style.display='block';return;}
+  if(!appointmentTime){errEl.textContent='Please select a time.';errEl.style.display='block';return;}
+  btn.textContent='Booking…';btn.disabled=true;
+  try{
+    const data=await apiFetch('/appointments/create',{method:'POST',body:JSON.stringify({childId,pediatricianId,appointmentDate,appointmentTime,reason,notes})});
+    const appointmentId=data.appointmentId;
+    if(selectedVideoFile&&appointmentId){btn.textContent='Uploading video…';await uploadVideoForAppointment(appointmentId);}
+    const answers=collectStaticAnswers();
+    if(answers.length>0&&appointmentId)await saveStaticAnswers(parseInt(childId),appointmentId,answers);
+    sucEl.innerHTML=`✅ Appointment booked!${selectedVideoFile?' Video uploaded.':''} The pediatrician will review your request.`;
+    sucEl.style.display='block';
+    document.getElementById('apptDate').value='';document.getElementById('apptTime').value='';document.getElementById('apptNotes').value='';
+    removeVideo();document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+    loadAppointments();
+  }catch(e){errEl.textContent=e.message;errEl.style.display='block';}
+  finally{btn.textContent='Book Appointment';btn.disabled=false;}
+}
+
+// ─── Load Lists ─────────────────────────────────────────────────
+async function loadFormData(){
+  try{const d=await apiFetch('/children');const s=document.getElementById('childSelect');const ch=d.children||[];
+    s.innerHTML=ch.length?ch.map(c=>`<option value="${c.id}">${c.firstName} ${c.lastName}</option>`).join(''):'<option value="">No children registered yet</option>';}
+  catch{document.getElementById('childSelect').innerHTML='<option value="">Error loading children</option>';}
+  try{const d=await apiFetch('/appointments/pediatricians/list');const s=document.getElementById('pedSelect');const ps=d.pediatricians||[];
+    s.innerHTML=ps.length?ps.map(p=>`<option value="${p.id}">Dr. ${p.firstName} ${p.lastName}${p.specialization?' — '+p.specialization:''}</option>`).join(''):'<option value="">No pediatricians available</option>';}
+  catch{document.getElementById('pedSelect').innerHTML='<option value="">Error loading pediatricians</option>';}
+  document.getElementById('apptDate').min=new Date().toISOString().split('T')[0];
+  onChildChanged();
+}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${m[dt.getUTCMonth()]} ${dt.getUTCDate()}, ${dt.getUTCFullYear()}`;}
+async function loadAppointments(){
+  const user=getUser();if(!user)return;
+  try{
+    const data=await apiFetch(`/appointments/${user.id}`);const all=data.appointments||[];const now=new Date();
+    const upcoming=all.filter(a=>{const d=new Date(a.appointmentDate);return!['declined','rejected','cancelled'].includes(a.status)&&d>=new Date(now.toDateString());});
+    const past=all.filter(a=>{const d=new Date(a.appointmentDate);return['declined','rejected','cancelled'].includes(a.status)||d<new Date(now.toDateString());});
+    renderUpcoming(upcoming);renderPast(past);
+  }catch{document.getElementById('upcomingList').innerHTML='<p style="color:var(--text-light);text-align:center;">Could not load appointments.</p>';}
+}
+function renderUpcoming(list){
+  const el=document.getElementById('upcomingList');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-light);text-align:center;padding:1rem;">No upcoming appointments</p>';return;}
+  el.innerHTML=list.map(a=>`
+    <div class="appt-card ${a.status}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem;">
+        <div>
+          <p style="font-weight:600;color:var(--text-dark);margin:0 0 .2rem;">${a.pediatricianName?'Dr. '+a.pediatricianName:'Pediatrician TBD'}</p>
+          <p style="color:var(--text-light);font-size:.85rem;margin:0;"><img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${fmtDate(a.appointmentDate)} &nbsp;⏰ ${a.appointmentTime||'—'}</p>
+          <p style="color:var(--text-light);font-size:.85rem;margin:.15rem 0 0;"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${a.reason||'General checkup'}</p>
+        </div>
+        <span class="badge ${a.status}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+        ${a.hasVideo?'<span class="video-badge">📹 Video attached</span>':''}
+        ${a.status==='approved'?`<a href="chat.html?apptId=${a.id}" class="chat-btn"><img src="/icons/chatbubble.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Open Chat</a>`:''}
+      </div>
+      ${a.status==='pending'?'<p style="font-size:.8rem;color:#f39c12;margin:.5rem 0 0;">⏳ Waiting for pediatrician approval</p>':''}
+      ${a.status==='approved'?'<p style="font-size:.8rem;color:var(--primary);margin:.5rem 0 0;">✅ Appointment confirmed</p>':''}
+    </div>`).join('');
+}
+function renderPast(list){
+  const el=document.getElementById('pastList');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-light);text-align:center;padding:1rem;">No past appointments</p>';return;}
+  el.innerHTML=list.map(a=>`
+    <div class="appt-card past">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <p style="font-weight:600;color:var(--text-dark);margin:0 0 .2rem;">${a.pediatricianName?'Dr. '+a.pediatricianName:'Pediatrician'}</p>
+          <p style="color:var(--text-light);font-size:.85rem;margin:0;"><img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${fmtDate(a.appointmentDate)}</p>
+        </div>
+        <span class="badge" style="background:${['declined','rejected'].includes(a.status)?'#e74c3c':a.status==='completed'?'var(--primary)':'#888'};">
+          ${a.status.charAt(0).toUpperCase()+a.status.slice(1)}
+        </span>
+      </div>
+      ${a.status==='completed'?`<a href="chat.html?apptId=${a.id}" class="chat-btn" style="margin-top:.5rem;display:inline-flex;"><img src="/icons/chatbubble.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> View Chat</a>`:''}
+    </div>`).join('');
+}
+
+function openNotifications(){document.getElementById('notificationsModal').style.display='flex';}
+function closeNotifications(){document.getElementById('notificationsModal').style.display='none';}
+function toggleProfileMenu(){const m=document.getElementById('profileMenu');m.style.display=m.style.display==='none'?'block':'none';}
+document.addEventListener('click',e=>{if(!e.target.closest('.profile-btn'))document.getElementById('profileMenu').style.display='none';});
+document.addEventListener('DOMContentLoaded',()=>{loadFormData();loadAppointments();});
+</script>
+</body>
+</html>

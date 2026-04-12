@@ -1,0 +1,420 @@
+<!-- Pediatrician dashboard
+Purpose:
+- shows summary cards, pending requests, and recent activity
+- this version adds the My Questions navigation link so pedia can open custom questions directly
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem}
+        .stat-card{background:white;border-radius:15px;padding:1.5rem;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+        .stat-label{color:var(--text-light);font-size:.85rem;margin-bottom:.4rem}
+        .stat-num{font-size:2rem;font-weight:700;color:var(--primary)}
+        .stat-num.red{color:var(--accent-red)}
+        .stat-sub{font-size:.82rem;margin-top:.4rem;color:var(--text-light)}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+        @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+        .panel{background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+        .panel h2{color:var(--primary);font-size:1.3rem;margin-bottom:1.5rem}
+        .apt-card{background:var(--bg-primary);padding:1.5rem;border-radius:10px;border-left:4px solid var(--accent-red);margin-bottom:1rem}
+        .apt-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem}
+        .apt-header h4{margin:0 0 .25rem;color:var(--text-dark)}
+        .apt-header p{margin:0;color:var(--text-light);font-size:.85rem}
+        .badge-pending{background:var(--accent-red);color:white;padding:.25rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+        .scores-row{background:white;padding:.8rem;border-radius:8px;margin:.8rem 0;font-size:.82rem;color:var(--text-dark);line-height:1.8}
+        .btn-approve{background:var(--primary);color:white;border:none;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.85rem;flex:1;font-weight:600}
+        .btn-reject{background:white;color:var(--accent-red);border:2px solid var(--accent-red);padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.85rem;flex:1;font-weight:600}
+        .btn-approve:hover{opacity:.88}
+        .btn-reject:hover{background:#fde8e8}
+        .activity-item{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--bg-primary);border-radius:8px;margin-bottom:.8rem}
+        .activity-title{font-weight:600;color:var(--text-dark);font-size:.9rem;margin:0 0 .2rem}
+        .activity-time{color:var(--text-light);font-size:.8rem;margin:0}
+        .activity-icon{font-size:1.4rem;flex-shrink:0}
+        .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text-light)}
+        .empty-state span{font-size:2.5rem;display:block;margin-bottom:.8rem}
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/pedia/pediatrician-dashboard.html" class="logo">
+                <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <!-- Added My Questions link so it is visible without opening Chat first -->
+                <a href="/pedia/pediatrician-dashboard.html" class="nav-link" style="border-bottom:3px solid var(--accent-red);">Dashboard</a>
+                <a href="/pedia/pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="/pedia/pedia-chat.html" class="nav-link">Chat</a>
+                <a href="/pedia/pediatrician-appointments.html" class="nav-link">Appointments</a>
+                <a href="/pedia/pedia-questions.html" class="nav-link"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> My Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    <span class="notification-badge" id="notifCount" style="display:none;">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, Doctor</p></div>
+                    <a href="/pedia/pediatrician-profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/pedia/pediatrician-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="/icons/help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08);">
+            <h1 id="pageTitle" style="margin-bottom:.4rem;">Pediatrician Dashboard</h1>
+            <p style="color:var(--text-light);">Manage your patients and appointments</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><p class="stat-label">Total Patients</p><p class="stat-num" id="statTotal">—</p><p class="stat-sub" id="statTotalSub"></p></div>
+            <div class="stat-card"><p class="stat-label">Pending Approvals</p><p class="stat-num red" id="statPending">—</p><p class="stat-sub" id="statPendingSub"></p></div>
+            <div class="stat-card"><p class="stat-label">Assessments Reviewed</p><p class="stat-num" id="statReviewed">—</p><p class="stat-sub">This month</p></div>
+            <div class="stat-card"><p class="stat-label">Upcoming Appointments</p><p class="stat-num" id="statUpcoming">—</p><p class="stat-sub">Next 7 days</p></div>
+        </div>
+
+        <div class="two-col">
+            <div class="panel">
+                <h2><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Pending Appointment Requests</h2>
+                <div id="pendingList"><div class="empty-state"><span><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>Loading…</div></div>
+            </div>
+            <div class="panel">
+                <h2><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Recent Patient Activity</h2>
+                <div id="activityList"><div class="empty-state"><span><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>Loading…</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifList">
+                <p style="text-align:center;color:var(--text-light);padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API='http://localhost:3001/api';
+        const getToken=()=>localStorage.getItem('kc_token');
+        const getUser=()=>{try{return JSON.parse(localStorage.getItem('kc_user'));}catch{return null;}};
+        function doLogout(){['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k=>localStorage.removeItem(k));window.location.href='/login.html';}
+
+const _u = getUser();
+
+
+
+
+if (!getToken() || !_u) {
+    window.location.href = '/login.html';
+} else if ((_u.role || '').trim().toLowerCase() !== 'pediatrician') {
+    
+    window.location.href = '/login.html';
+}
+        if(_u){
+            document.getElementById('navWelcome').textContent=`Welcome, Dr. ${_u.firstName}`;
+            document.getElementById('pageTitle').textContent=`Welcome, Dr. ${_u.firstName} ${_u.lastName}`;
+            if(_u.profileIcon&&_u.profileIcon.startsWith('/uploads/'))
+                document.getElementById('navProfilePic').src=_u.profileIcon;
+        }
+
+        async function apiFetch(ep,opts={}){
+            const res=await fetch(`${API}${ep}`,{...opts,headers:{'Content-Type':'application/json',Authorization:`Bearer ${getToken()}`,...opts.headers}});
+            const d=await res.json();
+            if(!res.ok)throw new Error(d.error||`Error ${res.status}`);
+            return d;
+        }
+
+        function fmtDate(d) {
+            if (!d) return '—';
+            var s = String(d).split('T')[0];
+            var p = s.split('-');
+            if (p.length !== 3) return s;
+            var months = ['January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
+            return months[parseInt(p[1],10)-1] + ' ' + parseInt(p[2],10) + ', ' + p[0];
+        }
+        function fmtTime(t) {
+            if (!t) return '—';
+            var s = String(t);
+            if (s.indexOf('T') !== -1 || s.indexOf('Z') !== -1 || s.length > 8) {
+                var d = new Date(s);
+                if (!isNaN(d.getTime())) {
+                    var h = d.getUTCHours(), m = String(d.getUTCMinutes()).padStart(2,'0');
+                    return (h%12||12) + ':' + m + ' ' + (h>=12?'PM':'AM');
+                }
+            }
+            var parts = s.split(':');
+            var h = parseInt(parts[0],10), m = String(parts[1]||'00').padStart(2,'0');
+            if (isNaN(h)) return s;
+            return (h%12||12) + ':' + m + ' ' + (h>=12?'PM':'AM');
+        }
+                async function loadDashboard(){
+            try{
+                const data=await apiFetch('/appointments/pedia-notifications');
+                const all=(data.notifications||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                const pending=all.filter(n=>n.status==='pending');
+                const approved=all.filter(n=>n.status==='approved');
+
+                document.getElementById('statTotal').textContent=all.length;
+                document.getElementById('statPending').textContent=pending.length;
+                document.getElementById('statReviewed').textContent=approved.length;
+                document.getElementById('statTotalSub').textContent=all.length>0?`↑ ${all.length} total`:'No patients yet';
+
+                const pSub=document.getElementById('statPendingSub');
+                if(pending.length>0){pSub.textContent='⚠️ Needs attention';pSub.style.color='var(--accent-red)';}
+                else{pSub.textContent='✓ All clear';pSub.style.color='#27ae60';}
+
+                const now=new Date(),in7=new Date(now.getTime()+7*24*60*60*1000);
+                document.getElementById('statUpcoming').textContent=approved.filter(n=>{const d=new Date(n.appointmentDate);return d>=now&&d<=in7;}).length;
+
+                renderPending(pending);
+                renderActivity(all);
+            }catch(e){
+                document.getElementById('pendingList').innerHTML='<div class="empty-state"><span>⚠️</span>Could not load. Is the server running?</div>';
+                document.getElementById('activityList').innerHTML='<div class="empty-state"><span>⚠️</span>Could not load activity.</div>';
+            }
+        }
+
+        function renderPending(pending){
+            const el=document.getElementById('pendingList');
+            if(pending.length===0){el.innerHTML='<div class="empty-state"><span>✅</span>No pending appointment requests.<br><small style="color:var(--text-light);">Requests from parents will appear here once booked.</small></div>';return;}
+            el.innerHTML=pending.map(n=>`
+                <div class="apt-card" id="apt-${n.id}">
+                    <div class="apt-header">
+                        <div>
+                            <h4>${n.parentName||'Parent'} — ${n.childName||'Child'}</h4>
+                            <p>${fmtDate(n.appointmentDate)} at ${fmtTime(n.appointmentTime)}</p>
+                            <p><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${n.reason||'General checkup'}</p>
+                        </div>
+                        <span class="badge-pending">Pending</span>
+                    </div>
+                    ${n.overallScore!=null
+                        ?`<div class="scores-row"><strong style="color:var(--primary);"><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Assessment Results:</strong><br>
+                           Communication: <strong>${n.communicationScore||0}%</strong>${n.communicationStatus?' ('+n.communicationStatus+')':''} &nbsp;·&nbsp;
+                           Social: <strong>${n.socialScore||0}%</strong>${n.socialStatus?' ('+n.socialStatus+')':''} &nbsp;·&nbsp;
+                           Cognitive: <strong>${n.cognitiveScore||0}%</strong>${n.cognitiveStatus?' ('+n.cognitiveStatus+')':''} &nbsp;·&nbsp;
+                           Motor: <strong>${n.motorScore||0}%</strong>${n.motorStatus?' ('+n.motorStatus+')':''}<br>
+                           Overall: <strong style="color:var(--primary);font-size:1rem;">${n.overallScore||0}%</strong></div>`
+                        :`<p style="color:var(--text-light);font-size:.85rem;font-style:italic;margin:.5rem 0;">No assessment results on file yet.</p>`
+                    }
+                    <div style="display:flex;gap:.8rem;">
+                        <button class="btn-approve" onclick="respond(${n.id},'approved')">Approve</button>
+                        <button class="btn-reject"  onclick="respond(${n.id},'declined')">Decline</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderActivity(all){
+            const el=document.getElementById('activityList');
+            if(all.length===0){el.innerHTML='<div class="empty-state"><span><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>No patient activity yet.<br><small style="color:var(--text-light);">Activity appears here once parents book appointments.</small></div>';return;}
+            const iconMap={pending:'•',approved:'✓',declined:'✗'};
+            const labelMap={pending:'Appointment Requested',approved:'Appointment Approved',declined:'Appointment Declined'};
+            el.innerHTML=all.slice(0,6).map(n=>`
+                <div class="activity-item">
+                    <div>
+                        <p class="activity-title">${labelMap[n.status]||'Activity'}: ${n.childName||'Child'}</p>
+                        <p class="activity-time">Parent: ${n.parentName||'—'} · ${fmt(n.createdAt)}</p>
+                    </div>
+                    <span class="activity-icon">${iconMap[n.status]||'<img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">'}</span>
+                </div>`).join('');
+        }
+
+        async function respond(id,status){
+            const card=document.getElementById(`apt-${id}`);
+            if(card){card.style.opacity='.5';card.style.pointerEvents='none';}
+            try{
+                await apiFetch(`/appointments/pedia-notifications/${id}`,{method:'PUT',body:JSON.stringify({status})});
+                loadDashboard();
+            }catch(e){
+                alert('Error: '+e.message);
+                if(card){card.style.opacity='1';card.style.pointerEvents='auto';}
+            }
+        }
+
+        function fmt(ts){
+            if(!ts)return'—';
+            const d=new Date(ts),diff=Date.now()-d.getTime(),mins=Math.floor(diff/60000);
+            if(mins<1)return'just now';
+            if(mins<60)return`${mins}m ago`;
+            const hrs=Math.floor(mins/60);
+            if(hrs<24)return`${hrs}h ago`;
+            const days=Math.floor(hrs/24);
+            if(days===1)return'1 day ago';
+            if(days<7)return`${days} days ago`;
+            return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        }
+
+        function toggleProfileMenu(){const m=document.getElementById('profileMenu');m.style.display=m.style.display==='none'?'block':'none';}
+
+        function escapeHtml(value){
+            return String(value ?? '')
+                .replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;')
+                .replace(/'/g,'&#39;');
+        }
+
+        function formatDateTime(value){
+            if(!value) return '—';
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return String(value);
+            return d.toLocaleString('en-US',{
+                month:'short',
+                day:'numeric',
+                year:'numeric',
+                hour:'numeric',
+                minute:'2-digit'
+            });
+        }
+
+        // Keep dashboard notifications consistent with the other pediatrician pages.
+        function notificationDestination(n){
+            const title = String(n?.title || '').toLowerCase();
+            const msg = String(n?.message || '').toLowerCase();
+
+            if (title.includes('appointment') || msg.includes('appointment')) return '/pedia/pediatrician-appointments.html';
+            if (title.includes('question') || msg.includes('question')) return '/pedia/pedia-questions.html';
+            if (title.includes('chat') || msg.includes('message')) return '/pedia/pedia-chat.html';
+            return '/pedia/pediatrician-dashboard.html';
+        }
+
+        async function loadNotificationCount(){
+            try{
+                const data = await apiFetch('/notifications/count');
+                const badge = document.getElementById('notifCount');
+                if(!badge) return;
+                const unread = data.unread || 0;
+                badge.textContent = unread;
+                badge.style.display = unread > 0 ? 'flex' : 'none';
+            }catch{
+                const badge = document.getElementById('notifCount');
+                if(badge){
+                    badge.textContent = '0';
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        async function markNotificationRead(id){
+            try{
+                await apiFetch(`/notifications/${id}/read`, { method:'PUT' });
+                await loadNotificationCount();
+            }catch{}
+        }
+
+        async function deleteNotification(id){
+            if(!confirm('Remove this notification?')) return;
+            try{
+                await apiFetch(`/notifications/${id}`, { method:'DELETE' });
+                await openNotifications();
+                await loadNotificationCount();
+            }catch(err){
+                alert('Could not remove notification: ' + err.message);
+            }
+        }
+
+        async function clearAllNotifications(){
+            if(!confirm('Clear all notifications?')) return;
+            try{
+                await apiFetch('/notifications/clear-all', { method:'DELETE' });
+                await openNotifications();
+                await loadNotificationCount();
+            }catch(err){
+                alert('Could not clear notifications: ' + err.message);
+            }
+        }
+
+        async function markAllNotificationsRead(){
+            try{
+                await apiFetch('/notifications/read-all', { method:'PUT' });
+                await openNotifications();
+                await loadNotificationCount();
+            }catch(err){
+                alert('Could not mark notifications as read: ' + err.message);
+            }
+        }
+
+        async function goToNotificationTarget(id, target){
+            await markNotificationRead(id);
+            window.location.href = target;
+        }
+
+        async function openNotifications(){
+            const modal = document.getElementById('notificationsModal');
+            const list = document.getElementById('notifList');
+            if(!modal || !list) return;
+
+            modal.style.display='flex';
+            list.innerHTML='<p style="text-align:center;color:var(--text-light);padding:1rem;">Loading...</p>';
+
+            try{
+                const data = await apiFetch('/notifications');
+                const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+                if(!notifications.length){
+                    list.innerHTML='<p style="text-align:center;color:var(--text-light);padding:1.5rem;">No notifications yet.</p>';
+                    return;
+                }
+
+                notifications.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                const hasUnread = notifications.some(n => !n.isRead);
+
+                const tools = `
+                    <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);background:white;position:sticky;top:0;z-index:1;">
+                        ${hasUnread ? '<button onclick="markAllNotificationsRead()" style="border:1px solid var(--border);background:white;color:var(--primary);padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Mark all read</button>' : ''}
+                        <button onclick="clearAllNotifications()" style="border:1px solid #e6b0b0;background:white;color:#c0392b;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Clear all</button>
+                    </div>`;
+
+                const items = notifications.map(n => {
+                    const dest = notificationDestination(n);
+                    const unreadStyle = n.isRead ? '' : 'background:#f0f7f0;border-left:3px solid var(--primary);';
+                    const clickAction = dest
+                        ? `goToNotificationTarget(${n.id}, '${dest}')`
+                        : `markNotificationRead(${n.id})`;
+
+                    return `
+                        <div class="notification-item" style="display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border);${unreadStyle}">
+                            <div onclick="${clickAction}" style="flex:1;cursor:pointer;min-width:0;">
+                                <p style="font-weight:${n.isRead ? '400' : '700'};font-size:.9rem;margin:0 0 .2rem;color:var(--text-dark);">${escapeHtml(n.title || '')}</p>
+                                <p style="font-size:.82rem;color:#555;margin:0 0 .25rem;line-height:1.45;">${escapeHtml(n.message || '')}</p>
+                                <p style="font-size:.75rem;color:#aaa;margin:0;">${formatDateTime(n.createdAt)}</p>
+                                ${dest ? '<p style="font-size:.72rem;color:var(--primary);margin:.35rem 0 0;">Open related page →</p>' : ''}
+                            </div>
+                            <button onclick="event.stopPropagation();deleteNotification(${n.id})" title="Remove notification" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:.15rem .25rem;">✕</button>
+                        </div>`;
+                }).join('');
+
+                list.innerHTML = tools + items;
+            }catch{
+                list.innerHTML='<p style="text-align:center;color:var(--text-light);padding:1rem;">Could not load notifications.</p>';
+            }
+        }
+
+        function closeNotifications(){
+            document.getElementById('notificationsModal').style.display='none';
+        }
+
+        document.addEventListener('click',e=>{if(!e.target.closest('.profile-btn'))document.getElementById('profileMenu').style.display='none';});
+        document.addEventListener('DOMContentLoaded',()=>{loadDashboard();loadNotificationCount();setInterval(loadDashboard,30010);});
+    </script>
+</body>
+</html>

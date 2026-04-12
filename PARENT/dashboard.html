@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+<header class="top-nav">
+    <div class="nav-container">
+        <a href="/parent/dashboard.html" class="logo">
+            <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+            <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+        </a>
+        <nav class="main-nav">
+            <a href="/parent/dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="/parent/results.html" class="nav-link">Results</a>
+            <a href="/parent/recommendations.html" class="nav-link">Recommendations</a>
+            <a href="/parent/chat.html" class="nav-link">Chat</a>
+            <a href="/parent/appointments.html" class="nav-link">Appointments</a>
+        </nav>
+        <div class="nav-right">
+            <button class="icon-btn notification-btn" onclick="openNotifications()">
+                <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                <span class="notification-badge">0</span>
+            </button>
+            <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+            </button>
+            <div class="profile-menu" id="profileMenu" style="display:none;">
+                <div class="menu-header"><p id="navWelcome">Welcome</p></div>
+                <a href="/parent/profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                <a href="/parent/settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                <hr style="margin:0.5rem 0;">
+                <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <div class="child-card">
+        <div class="child-info">
+            <h1 id="childName">Loading…</h1>
+            <p id="childMeta"></p>
+        </div>
+        <button class="btn btn-primary" onclick="window.location.href='/parent/profile.html'">Edit Profile</button>
+    </div>
+
+    <div class="overview-grid">
+        <div class="overview-card">
+            <h3><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Skill Overview</h3>
+            <div class="skill-list" id="skillList">
+                <p style="color:var(--text-light);text-align:center;">No assessment yet</p>
+            </div>
+        </div>
+        <div class="overview-card">
+            <h3><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Latest Assessment</h3>
+            <div class="assessment-box" id="assessmentBox">
+                <p style="color:var(--text-light);text-align:center;padding:1rem;">No assessment yet</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><img src="/icons/recommendations.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Recommendations</h3>
+        <div id="recList">
+            <p style="color:var(--text-light);text-align:center;">No recommendations yet</p>
+        </div>
+        <button class="btn btn-accent" style="width:100%;margin-top:1.5rem;padding:0.9rem;background:white;color:var(--primary);border:2px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;" onclick="window.location.href='/parent/recommendations.html'">View Full Recommendations</button>
+    </div>
+
+    <div class="actions-card">
+        <h3>⚡ Quick Actions</h3>
+        <div class="actions-buttons">
+            <button class="btn btn-primary" onclick="window.location.href='/parent/screening.html'">Reassessment</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/parent/results.html'">View Results</button>
+            <button class="btn btn-primary" onclick="window.location.href='/parent/appointments.html'">Book Appointment</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/parent/custom-questions.html'">Custom Questions</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><img src="/icons/notif_bell.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Latest Notifications</h3>
+        <div id="notifPreview" style="display:flex;flex-direction:column;gap:1rem;">
+            <p style="color:var(--text-light);text-align:center;">Loading…</p>
+        </div>
+    </div>
+</div>
+
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+    <div class="notifications-content">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" onclick="closeNotifications()">✕</button>
+        </div>
+        <div class="notifications-list">
+            <p style="text-align:center;color:var(--text-light);">Loading…</p>
+        </div>
+    </div>
+</div>
+
+<!-- Shared helpers: auth, notifications, logout, API fetch -->
+    <script src="/api.js"></script>
+<script>
+// Require login before this page can load
+        requireAuth();
+const _user = KC.user();
+if (_user?.role === 'pediatrician') window.location.href = '/pedia/pediatrician-dashboard.html';
+else if (_user?.role === 'admin') window.location.href = '/admin/admin-dashboard.html';
+
+function calcAge(dob) {
+    const d = new Date(dob), now = new Date();
+    let y = now.getFullYear() - d.getFullYear(), m = now.getMonth() - d.getMonth();
+    if (m < 0) { y--; m += 12; }
+    return y > 0 ? `${y} year${y>1?'s':''} ${m} month${m!==1?'s':''}` : `${m} month${m!==1?'s':''}`;
+}
+
+// Load parent dashboard summary, child info, and latest results
+        async function loadDashboard() {
+    let childId = null;
+    try {
+        const data = await apiFetch('/children');
+        const children = data.children || [];
+        if (children.length > 0) {
+            const c = children[0];
+            childId = c.id;
+            localStorage.setItem('kc_childId', childId);
+            document.getElementById('childName').textContent = `${c.firstName} ${c.lastName}`;
+            const dob = new Date(c.dateOfBirth);
+            document.getElementById('childMeta').textContent = `Age: ${calcAge(c.dateOfBirth)} | Birthdate: ${dob.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+        } else {
+            document.getElementById('childName').textContent = 'No child registered';
+            document.getElementById('childMeta').textContent = 'Go to Profile to add a child';
+        }
+    } catch {
+        document.getElementById('childName').textContent = 'Unable to load child data';
+    }
+
+    if (childId) {
+        try {
+            const hist = await apiFetch(`/assessments/${childId}/history`);
+            const assessments = (hist.assessments || []).filter(a => a.overallScore !== null);
+            if (assessments.length > 0) {
+                const latest = assessments[0];
+                localStorage.setItem('kc_assessmentId', latest.id);
+                renderSkills(latest);
+                renderAssessment(latest);
+                try {
+                    const recs = await apiFetch(`/recommendations/${latest.id}`);
+                    renderRecs(recs.recommendations || []);
+                } catch {}
+            }
+        } catch {}
+    }
+
+    await loadNotifPreview();
+}
+
+function renderSkills(a) {
+    const scores = [
+        { label:'Communication', val: a.communicationScore },
+        { label:'Social Skills',  val: a.socialScore },
+        { label:'Cognitive',      val: a.cognitiveScore },
+        { label:'Motor Skills',   val: a.motorScore }
+    ];
+    document.getElementById('skillList').innerHTML = scores.map(s => `
+        <div class="skill-item">
+            <div class="skill-name"><span>${s.label}</span><span class="skill-percent">${s.val}%</span></div>
+            <div class="skill-bar"><div class="skill-fill" style="width:${s.val}%"></div></div>
+        </div>`).join('');
+}
+
+function renderAssessment(a) {
+    const date = a.completedAt ? new Date(a.completedAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : 'Recent';
+    document.getElementById('assessmentBox').innerHTML = `
+        <p class="assessment-date">${date}</p>
+        <div class="assessment-scores">
+            <div class="score-item"><div class="score-num">${a.communicationScore}%</div><div class="score-label">Communication</div></div>
+            <div class="score-item"><div class="score-num">${a.socialScore}%</div><div class="score-label">Social</div></div>
+            <div class="score-item"><div class="score-num">${a.cognitiveScore}%</div><div class="score-label">Cognitive</div></div>
+            <div class="score-item"><div class="score-num">${a.motorScore}%</div><div class="score-label">Motor</div></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="window.location.href='/parent/results.html'">View Detailed Results</button>`;
+}
+
+function renderRecs(recs) {
+    if (!recs || !recs.length) return;
+    const icons = { communication:'<img src="/icons/communication.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">', social:'<img src="/icons/social.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">', cognitive:'<img src="/icons/cognitive.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">', motor:'<img src="/icons/motor.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">' };
+    document.getElementById('recList').innerHTML = recs.slice(0,3).map((r, i, arr) => `
+        <div style="margin-bottom:${i<arr.length-1?'1.5rem':'0'};padding-bottom:${i<arr.length-1?'1.5rem':'0'};border-bottom:${i<arr.length-1?'1px solid var(--border)':'none'}">
+            <p style="font-weight:600;margin-bottom:0.3rem;">${icons[r.skill]||'<img src="/icons/recommendations.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">'} ${r.skill.charAt(0).toUpperCase()+r.skill.slice(1)}</p>
+            <p style="color:var(--text-light);font-size:0.9rem;">${r.suggestion}</p>
+        </div>`).join('');
+}
+
+async function loadNotifPreview() {
+    try {
+        const data = await apiFetch('/notifications');
+        const notifications = data.notifications || [];
+        const preview = document.getElementById('notifPreview');
+        if (!notifications.length) {
+            preview.innerHTML = `<div style="padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid var(--primary);">
+                <div style="font-weight:600;margin-bottom:0.3rem;">Welcome to KinderCura!</div>
+                <div style="font-size:0.85rem;color:var(--text-light);">Your account is set up and ready.</div>
+            </div>`;
+            return;
+        }
+
+        preview.innerHTML = notifications.slice(0,3).map(n => {
+            const target = notificationDestination(n) || '/parent/appointments.html';
+            return `<div onclick="window.location.href='${target}'" style="cursor:pointer;padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid ${n.isRead ? 'var(--border)' : 'var(--primary)'};">
+                <div style="font-weight:600;margin-bottom:0.3rem;">${n.title}</div>
+                <div style="font-size:0.85rem;color:var(--text-light);">${n.message || ''}</div>
+            </div>`;
+        }).join('');
+
+        loadNotificationCount();
+    } catch {
+        document.getElementById('notifPreview').innerHTML = '<p style="color:var(--text-light);text-align:center;">Could not load notifications.</p>';
+    }
+}
+
+// Start dashboard data load after page is ready
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

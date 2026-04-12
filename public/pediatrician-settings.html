@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="pediatrician-dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            
+            <nav class="main-nav">
+                <a href="pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+            </nav>
+
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon">
+                    <span class="notification-badge">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon">
+                </button>
+
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="menu-header">
+                        <p>Welcome, Dr. Patricia</p>
+                    </div>
+                    <a href="pediatrician-profile.html" class="menu-item">
+                        <img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="pediatrician-settings.html" class="menu-item">
+                        <img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item">
+                        <img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin: 0.5rem 0;">
+                    <a href="login.html" class="menu-item logout">
+                        <img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Page Header -->
+        <div style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom: 0.5rem;">Settings</h1>
+            <p style="color: var(--text-light);">Manage your preferences and notification settings</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+            <!-- Settings Sidebar -->
+            <div style="background: white; border-radius: 15px; padding: 1.5rem; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 100px;">
+                <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Settings Menu</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="#account" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; background: var(--primary); color: white; text-decoration: none;" onclick="switchTab('account')">Account</a>
+                    <a href="#notifications" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); text-decoration: none; transition: all 0.3s ease;" onclick="switchTab('notifications')">Notifications</a>
+                    <a href="#availability" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); text-decoration: none; transition: all 0.3s ease;" onclick="switchTab('availability')">Availability</a>
+                    <a href="#questions" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); text-decoration: none; transition: all 0.3s ease;" onclick="switchTab('questions')">Upload Questions</a>
+                    <a href="#privacy" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); text-decoration: none; transition: all 0.3s ease;" onclick="switchTab('privacy')">Privacy</a>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div>
+                <!-- Account Settings -->
+                <div id="account-tab">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Account Settings</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Email Address</label>
+                            <input type="email" value="patricia.harris@hospital.com" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Phone Number</label>
+                            <input type="tel" value="+63 917 123 4567" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Consultation Fee (PHP)</label>
+                            <input type="number" value="1000" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Bio/Description</label>
+                            <textarea style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem; height: 100px; resize: vertical;"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div id="notifications-tab" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Notification Preferences</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Email Notifications for New Appointment Requests</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>In-App Notifications</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>SMS Notifications</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Notify When Assessment is Completed by Patient</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox">
+                                <span>Daily Summary of Activities</span>
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Notification settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Availability Settings -->
+                <div id="availability-tab" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Availability</h2>
+
+                        <div style="margin-bottom: 2rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 1rem;">Set Your Available Hours</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Start Time</label>
+                                    <input type="time" value="09:00" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">End Time</label>
+                                    <input type="time" value="17:00" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 1rem;">Days Available</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.8rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox" checked> Monday</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox" checked> Tuesday</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox" checked> Wednesday</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox" checked> Thursday</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox" checked> Friday</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"><input type="checkbox"> Saturday</label>
+                            </div>
+                        </div>
+
+                        <!-- Max Patients Per Day -->
+                        <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: 10px; border-left: 4px solid var(--primary);">
+                            <label style="display: block; font-weight: 700; margin-bottom: 0.5rem;">Maximum Patients Per Day</label>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 1rem;">Set a daily cap for new appointment requests. Requests beyond this limit will be placed on a waitlist.</p>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <input type="number" id="max-patients-input" min="1" max="50" value="10"
+                                    style="width: 90px; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; font-weight: 600; text-align: center;">
+                                <span style="color: var(--text-light); font-size: 0.9rem;">patients per day</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveAvailability()" style="padding: 0.8rem 1.5rem;">Save Availability</button>
+                    </div>
+                </div>
+
+                <!-- Upload Assessment Questions -->
+                <div id="questions-tab" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Upload Assessment Questions</h2>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 2rem;">Submit new screening questions to help improve the KinderCura assessment model. All questions are reviewed before being added to the system.</p>
+
+                        <!-- Single Question Entry Form -->
+                        <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: 12px;">
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--text-dark);">Add a New Question</h3>
+
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Question Text *</label>
+                                <textarea id="q-text" rows="2" placeholder="e.g. Can the child stack at least 3 blocks without them falling?" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; resize: vertical; font-size: 0.9rem;"></textarea>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Domain *</label>
+                                    <select id="q-domain" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                                        <option value="">Select...</option>
+                                        <option value="communication">Communication</option>
+                                        <option value="social">Social Skills</option>
+                                        <option value="cognitive">Cognitive</option>
+                                        <option value="motor">Motor Skills</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Age Group *</label>
+                                    <select id="q-age" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                                        <option value="">Select...</option>
+                                        <option value="preschool">Preschool (3–5 yrs)</option>
+                                        <option value="early_school">Early School (6–8 yrs)</option>
+                                        <option value="both">Both Groups</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Difficulty *</label>
+                                    <select id="q-difficulty" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                                        <option value="">Select...</option>
+                                        <option value="easy">Easy</option>
+                                        <option value="moderate">Moderate</option>
+                                        <option value="advanced">Advanced</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Clinical Reference / Notes (optional)</label>
+                                <input type="text" id="q-notes" placeholder="e.g. Based on WHO Motor Milestones, 24 months" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px;">
+                            </div>
+
+                            <button class="btn btn-primary" onclick="submitQuestion()" style="padding: 0.8rem 1.5rem;">Submit Question for Review</button>
+                        </div>
+
+                        <!-- Bulk Upload via JSON -->
+                        <div style="padding: 1.5rem; border: 2px dashed var(--border); border-radius: 12px;">
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-dark);">Bulk Upload via File</h3>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 1rem;">Upload a JSON or CSV file containing multiple questions. <a href="#" onclick="downloadTemplate()" style="color: var(--primary); font-weight: 600;">Download template</a></p>
+
+                            <div id="upload-drop-area" style="background: #f8f9f6; border-radius: 8px; padding: 2rem; text-align: center; margin-bottom: 1rem; cursor: pointer;" onclick="document.getElementById('bulk-file-input').click()">
+                                <p style="font-size: 2rem; margin-bottom: 0.5rem;">📂</p>
+                                <p style="font-weight: 600; color: var(--text-dark); margin-bottom: 0.3rem;">Click to select or drag &amp; drop file</p>
+                                <p style="font-size: 0.82rem; color: var(--text-light);">Accepted formats: .json, .csv — Max 5MB</p>
+                                <input type="file" id="bulk-file-input" accept=".json,.csv" style="display:none;" onchange="previewFile(this)">
+                            </div>
+                            <div id="file-preview" style="display:none; background:#f0f7f0; padding:0.8rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.85rem; color: var(--primary);"></div>
+                            <button class="btn btn-primary" id="bulk-upload-btn" onclick="bulkUpload()" style="padding: 0.8rem 1.5rem;" disabled>Upload File</button>
+                        </div>
+
+                        <!-- Submitted Questions List -->
+                        <div style="margin-top: 2rem;">
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-dark);">Your Submitted Questions</h3>
+                            <div id="submitted-questions-list">
+                                <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <p style="font-weight: 600; font-size: 0.9rem; color: var(--text-dark);">Can the child hold a crayon and draw a circle?</p>
+                                        <p style="font-size: 0.78rem; color: var(--text-light); margin-top: 0.2rem;">Motor Skills · Preschool · Moderate</p>
+                                    </div>
+                                    <span style="background: #fff3cd; color: #856404; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Pending Review</span>
+                                </div>
+                                <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <p style="font-weight: 600; font-size: 0.9rem; color: var(--text-dark);">Does the child respond to their own name?</p>
+                                        <p style="font-size: 0.78rem; color: var(--text-light); margin-top: 0.2rem;">Communication · Both Groups · Easy</p>
+                                    </div>
+                                    <span style="background: #d4edda; color: #155724; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Approved</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div id="privacy-tab" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Privacy Settings</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Show My Profile to Parents</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Allow Parents to See My Availability</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Share Assessment Recommendations with Parents</span>
+                            </label>
+                        </div>
+
+                        <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                            <p style="font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;"><img src="/icons/privacy.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Data Privacy</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem;">Your patient data is encrypted and protected according to DPA (Data Privacy Act) of the Philippines and DOH guidelines.</p>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Privacy settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display: none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list">
+                <p style="text-align: center; padding: 1rem; color: var(--text-light);">No new notifications</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('account-tab').style.display = 'none';
+            document.getElementById('notifications-tab').style.display = 'none';
+            document.getElementById('availability-tab').style.display = 'none';
+            document.getElementById('questions-tab').style.display = 'none';
+            document.getElementById('privacy-tab').style.display = 'none';
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').style.display = 'block';
+
+            // Update sidebar button styling
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.style.background = 'transparent';
+                tab.style.color = 'var(--primary)';
+            });
+            event.target.style.background = 'var(--primary)';
+            event.target.style.color = 'white';
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openNotifications() {
+            document.getElementById('notificationsModal').style.display = 'flex';
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        function saveAvailability() {
+            const max = document.getElementById('max-patients-input').value;
+            // Backend: PUT /api/pediatricians/availability { days, startTime, endTime, maxPatientsPerDay: max }
+            alert('Availability saved! Max patients per day set to: ' + max);
+        }
+
+        function submitQuestion() {
+            const text = document.getElementById('q-text').value.trim();
+            const domain = document.getElementById('q-domain').value;
+            const age = document.getElementById('q-age').value;
+            const difficulty = document.getElementById('q-difficulty').value;
+            if (!text || !domain || !age || !difficulty) {
+                alert('Please fill in all required fields (Question, Domain, Age Group, Difficulty).');
+                return;
+            }
+            // Backend: POST /api/questions/submit { text, domain, ageGroup, difficulty, notes }
+            const list = document.getElementById('submitted-questions-list');
+            const item = document.createElement('div');
+            item.style.cssText = 'padding:1rem; background:var(--bg-primary); border-radius:8px; margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center;';
+            item.innerHTML = '<div><p style="font-weight:600; font-size:0.9rem; color:var(--text-dark);">' + text + '</p><p style="font-size:0.78rem; color:var(--text-light); margin-top:0.2rem;">' + domain + ' · ' + age + ' · ' + difficulty + '</p></div><span style="background:#fff3cd; color:#856404; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Pending Review</span>';
+            list.insertBefore(item, list.firstChild);
+            document.getElementById('q-text').value = '';
+            document.getElementById('q-domain').value = '';
+            document.getElementById('q-age').value = '';
+            document.getElementById('q-difficulty').value = '';
+            document.getElementById('q-notes').value = '';
+            alert('Question submitted successfully! It will be reviewed before being added to the system.');
+        }
+
+        function previewFile(input) {
+            if (input.files && input.files[0]) {
+                const f = input.files[0];
+                document.getElementById('file-preview').style.display = 'block';
+                document.getElementById('file-preview').textContent = '📄 ' + f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)';
+                document.getElementById('bulk-upload-btn').disabled = false;
+            }
+        }
+
+        function bulkUpload() {
+            const input = document.getElementById('bulk-file-input');
+            if (!input.files || !input.files[0]) { alert('Please select a file first.'); return; }
+            // Backend: POST /api/questions/bulk-upload (multipart form with file)
+            alert('File uploaded successfully! Questions are queued for admin review.');
+            document.getElementById('file-preview').style.display = 'none';
+            document.getElementById('bulk-upload-btn').disabled = true;
+            input.value = '';
+        }
+
+        function downloadTemplate() {
+            const template = JSON.stringify([{"text":"Sample question text","domain":"communication","ageGroup":"preschool","difficulty":"easy","notes":"Optional clinical reference"}], null, 2);
+            const blob = new Blob([template], {type:'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = 'kindercura-questions-template.json'; a.click();
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-btn')) {
+                document.getElementById('profileMenu').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

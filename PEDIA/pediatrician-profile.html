@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .profile-pic-wrap { position:relative; width:110px; margin:0 auto 0.8rem; }
+        .profile-pic-wrap img { width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid var(--primary); display:block; }
+        .pic-edit-btn { position:absolute; bottom:0; right:0; background:var(--primary); color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .info-block { background:var(--bg-primary); padding:1rem; border-radius:8px; margin-bottom:0.8rem; }
+        .info-label { font-size:0.78rem; color:var(--text-light); margin-bottom:0.2rem; }
+        .info-value { font-weight:600; color:var(--text-dark); }
+        .success-msg { background:#d4edda; color:#155724; padding:0.7rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.88rem; display:none; }
+        .error-msg   { background:#fde8e8; color:#c0392b;  padding:0.7rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.88rem; display:none; }
+        .form-label  { display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.9rem; }
+        .form-input  { width:100%; padding:0.75rem; border:2px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.9rem; box-sizing:border-box; }
+        .form-input:focus { outline:none; border-color:var(--primary); }
+        .form-group  { margin-bottom:1rem; }
+        .section-card { background:white; border-radius:15px; padding:2rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); margin-bottom:2rem; }
+        .section-title { color:var(--primary); font-size:1.2rem; margin-bottom:1.5rem; }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/pedia/pediatrician-dashboard.html" class="logo">
+                <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="/pedia/pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/pedia/pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="/pedia/pediatrician-appointments.html" class="nav-link">Appointments</a>
+                <a href="/pedia/pedia-chat.html" class="nav-link">Chat</a>
+                <a href="/pedia/pedia-questions.html" class="nav-link">My Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    <span class="notification-badge" id="notifCount">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, Doctor</p></div>
+                    <a href="/pedia/pediatrician-profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/pedia/pediatrician-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="/icons/help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="section-card" style="padding:1.5rem 2rem;">
+            <h1 style="margin-bottom:0.3rem;">Professional Profile</h1>
+            <p style="color:var(--text-light);">Your account information from sign-up</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:2rem;">
+
+            <!-- LEFT: Photo + quick info -->
+            <div>
+                <div class="section-card" style="text-align:center;">
+                    <h2 class="section-title" style="text-align:left;">Your Profile</h2>
+                    <div class="profile-pic-wrap">
+                        <img id="profilePic" src="/icons/profile.png" alt="Profile">
+                        <label class="pic-edit-btn" for="picUpload" title="Change photo">📷</label>
+                        <input type="file" id="picUpload" accept="image/*" style="display:none;" onchange="uploadPhoto(this)">
+                    </div>
+                    <p style="font-size:0.75rem;color:#888;margin-bottom:1.5rem;">Click 📷 to update photo</p>
+
+                    <div id="quickInfo">
+                        <div class="info-block"><p class="info-label">Full Name</p><p class="info-value" id="infoName">—</p></div>
+                        <div class="info-block"><p class="info-label">Email</p><p class="info-value" id="infoEmail">—</p></div>
+                        <div class="info-block"><p class="info-label">Username</p><p class="info-value" id="infoUsername">—</p></div>
+                        <div class="info-block"><p class="info-label">Account Type</p><p class="info-value">Pediatrician</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Professional details + edit -->
+            <div>
+                <div class="section-card">
+                    <h2 class="section-title">Professional Information</h2>
+                    <div id="profInfo">
+                        <div class="info-block"><p class="info-label">License Number</p><p class="info-value" id="infoLicense">—</p></div>
+                        <div class="info-block"><p class="info-label">Hospital / Institution</p><p class="info-value" id="infoInstitution">—</p></div>
+                        <div class="info-block"><p class="info-label">Specialization</p><p class="info-value" id="infoSpecialization">—</p></div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:1rem;padding:0.85rem;" onclick="toggleEditProf()">Edit Professional Info</button>
+
+                    <!-- Edit form (hidden by default) -->
+                    <div id="editProfForm" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+                        <h3 style="margin-bottom:1rem;font-size:1rem;">Edit Professional Info</h3>
+                        <div id="editProfErr" class="error-msg"></div>
+                        <div id="editProfSuc" class="success-msg"></div>
+                        <div class="form-group"><label class="form-label">License Number</label><input type="text" id="editLicense" class="form-input" placeholder="PRC-XXXXX"></div>
+                        <div class="form-group"><label class="form-label">Hospital / Institution</label><input type="text" id="editInstitution" class="form-input" placeholder="General Hospital"></div>
+                        <div class="form-group"><label class="form-label">Specialization</label><input type="text" id="editSpecialization" class="form-input" placeholder="Pediatric Development"></div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-primary" style="flex:1;" onclick="saveProfInfo()">Save</button>
+                            <button class="btn btn-secondary" style="flex:1;" onclick="toggleEditProf()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">Personal Info</h2>
+                    <div id="editProfErr2" class="error-msg"></div>
+                    <div id="editProfSuc2" class="success-msg"></div>
+                    <div class="form-group"><label class="form-label">First Name</label><input type="text" id="editFirst" class="form-input"></div>
+                    <div class="form-group"><label class="form-label">Last Name</label><input type="text" id="editLast" class="form-input"></div>
+                    <button class="btn btn-primary" style="width:100%;padding:0.85rem;" onclick="savePersonalInfo()">Save Name</button>
+
+                    <div style="border-top:1px solid var(--border);margin-top:1.5rem;padding-top:1.5rem;">
+                        <h3 style="margin-bottom:1rem;font-size:1rem;">Change Password</h3>
+                        <div id="pwErr" class="error-msg"></div>
+                        <div id="pwSuc" class="success-msg"></div>
+                        <div class="form-group"><label class="form-label">New Password</label><input type="password" id="newPw" class="form-input" placeholder="At least 8 characters"></div>
+                        <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="confirmPw" class="form-input" placeholder="Repeat new password"></div>
+                        <button class="btn btn-secondary" style="width:100%;padding:0.85rem;" onclick="changePassword()">Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifList">
+                <p style="text-align:center;color:var(--text-light);padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3001/api';
+        function getToken() { return localStorage.getItem('kc_token'); }
+        function getUser()  { try { return JSON.parse(localStorage.getItem('kc_user')); } catch { return null; } }
+        function doLogout() {
+            ['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k => localStorage.removeItem(k));
+            window.location.href = '/login.html';
+        }
+
+        // Auth + role guard
+        const _u = getUser();
+        if (!getToken() || !_u) { window.location.href = '/login.html'; }
+        else if (_u.role !== 'pediatrician') {
+            if(_u.role==='admin') window.location.href='/admin/admin-dashboard.html'; else if(_u.role==='parent') window.location.href='/parent/dashboard.html'; else window.location.href='/login.html';
+        }
+
+        async function apiFetch(endpoint, options = {}) {
+            const res = await fetch(`${API}${endpoint}`, {
+                ...options,
+                headers: { 'Content-Type':'application/json', Authorization:`Bearer ${getToken()}`, ...options.headers }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+            return data;
+        }
+
+        async function loadProfile() {
+            try {
+                // Always fetch fresh from server
+                const data = await apiFetch('/auth/me');
+                const u = data.user;
+
+                // Update localStorage with fresh data
+                localStorage.setItem('kc_user', JSON.stringify(u));
+
+                // Nav
+                document.getElementById('navWelcome').textContent = `Welcome, Dr. ${u.firstName}`;
+                if (u.profileIcon && u.profileIcon.startsWith('/uploads/')) {
+                    document.getElementById('navProfilePic').src = u.profileIcon;
+                    document.getElementById('profilePic').src    = u.profileIcon;
+                }
+
+                // Display fields
+                document.getElementById('infoName').textContent          = `Dr. ${u.firstName}${u.middleName ? ' ' + u.middleName : ''} ${u.lastName}`;
+                document.getElementById('infoEmail').textContent         = u.email;
+                document.getElementById('infoUsername').textContent      = u.username;
+                document.getElementById('infoLicense').textContent       = u.licenseNumber    || '—';
+                document.getElementById('infoInstitution').textContent   = u.institution      || '—';
+                document.getElementById('infoSpecialization').textContent= u.specialization   || '—';
+
+                // Pre-fill edit fields
+                document.getElementById('editFirst').value        = u.firstName    || '';
+                document.getElementById('editLast').value         = u.lastName     || '';
+                document.getElementById('editLicense').value      = u.licenseNumber   || '';
+                document.getElementById('editInstitution').value  = u.institution     || '';
+                document.getElementById('editSpecialization').value = u.specialization || '';
+
+            } catch (e) {
+                // Fall back to localStorage
+                const u = getUser();
+                if (u) {
+                    document.getElementById('navWelcome').textContent = `Welcome, Dr. ${u.firstName}`;
+                    document.getElementById('infoName').textContent   = `Dr. ${u.firstName} ${u.lastName}`;
+                    document.getElementById('infoEmail').textContent  = u.email;
+                    document.getElementById('editFirst').value        = u.firstName;
+                    document.getElementById('editLast').value         = u.lastName;
+                }
+            }
+
+            // Load the shared unread notification count for the bell
+            await loadNotificationCount();
+        }
+
+        async function uploadPhoto(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append('photo', file);
+            try {
+                const res  = await fetch(`${API}/upload/profile`, { method:'POST', headers:{ Authorization:`Bearer ${getToken()}` }, body:fd });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('profilePic').src    = data.path;
+                    document.getElementById('navProfilePic').src = data.path;
+                    const u = getUser(); u.profileIcon = data.path;
+                    localStorage.setItem('kc_user', JSON.stringify(u));
+                } else { alert('Upload failed: ' + (data.error || 'Unknown error')); }
+            } catch (e) { alert('Upload failed: ' + e.message); }
+        }
+
+        function toggleEditProf() {
+            const f = document.getElementById('editProfForm');
+            f.style.display = f.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function saveProfInfo() {
+            const err = document.getElementById('editProfErr');
+            const suc = document.getElementById('editProfSuc');
+            err.style.display = 'none'; suc.style.display = 'none';
+            try {
+                await apiFetch('/auth/update-profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        licenseNumber:  document.getElementById('editLicense').value.trim(),
+                        institution:    document.getElementById('editInstitution').value.trim(),
+                        specialization: document.getElementById('editSpecialization').value.trim()
+                    })
+                });
+                suc.textContent = '✅ Professional info updated!'; suc.style.display = 'block';
+                loadProfile();
+            } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+        }
+
+        async function savePersonalInfo() {
+            const err = document.getElementById('editProfErr2');
+            const suc = document.getElementById('editProfSuc2');
+            err.style.display = 'none'; suc.style.display = 'none';
+            const firstName = document.getElementById('editFirst').value.trim();
+            const lastName  = document.getElementById('editLast').value.trim();
+            if (!firstName || !lastName) { err.textContent = 'Name is required.'; err.style.display='block'; return; }
+            try {
+                await apiFetch('/auth/update-profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ firstName, lastName })
+                });
+                const u = getUser(); u.firstName = firstName; u.lastName = lastName;
+                localStorage.setItem('kc_user', JSON.stringify(u));
+                suc.textContent = '✅ Name updated!'; suc.style.display = 'block';
+                loadProfile();
+            } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+        }
+
+        async function changePassword() {
+            const err = document.getElementById('pwErr');
+            const suc = document.getElementById('pwSuc');
+            err.style.display = 'none'; suc.style.display = 'none';
+            const pw  = document.getElementById('newPw').value;
+            const cpw = document.getElementById('confirmPw').value;
+            if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display='block'; return; }
+            if (pw !== cpw)    { err.textContent = 'Passwords do not match.'; err.style.display='block'; return; }
+            try {
+                await apiFetch('/auth/change-password', { method:'PUT', body:JSON.stringify({ password: pw }) });
+                suc.textContent = '✅ Password updated!'; suc.style.display = 'block';
+                document.getElementById('newPw').value = '';
+                document.getElementById('confirmPw').value = '';
+            } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+        }
+
+        
+// Format notification timestamps in one consistent style
+function formatDateTime(ts) {
+    if (!ts) return '—';
+    return new Date(ts).toLocaleString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+}
+
+// Small escape helper so notification text is safe to render in HTML
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch]));
+}
+
+// Decide where a notification should open based on the current user role
+function notificationDestination(n) {
+    let role = '';
+    try {
+        role = String((JSON.parse(localStorage.getItem('kc_user')) || {}).role || '').toLowerCase();
+    } catch {}
+
+    const title = String(n?.title || '').toLowerCase();
+    const type  = String(n?.type  || '').toLowerCase();
+    const msg   = String(n?.message || '').toLowerCase();
+
+    if (role === 'pediatrician') {
+        if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/pedia/pedia-chat.html';
+        if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/pedia/pediatrician-appointments.html';
+        if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question answered')) return '/pedia/pedia-questions.html';
+        if (title.includes('diagnosis') || msg.includes('diagnosis') || title.includes('recommendation') || msg.includes('recommendation')) return '/pedia/pediatrician-patients.html';
+        return '/pedia/pediatrician-dashboard.html';
+    }
+
+    if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/parent/chat.html';
+    if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/parent/appointments.html';
+    if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question assigned') || title.includes('question answered')) return '/parent/custom-questions.html';
+    if (title.includes('recommendation') || msg.includes('recommendation')) return '/parent/recommendations.html';
+    if (title.includes('result') || title.includes('diagnosis') || msg.includes('diagnosis')) return '/parent/results.html';
+    return '/parent/dashboard.html';
+}
+
+// Keep the bell badge in sync on every page that uses the shared modal
+async function loadNotificationCount() {
+    try {
+        const data = await apiFetch('/notifications/count');
+        const badge = document.querySelector('.notification-badge');
+        if (!badge) return;
+        const unread = data.unread || 0;
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    } catch {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Mark only one notification as read when the user opens or clicks it
+async function markNotificationRead(id) {
+    try {
+        await apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
+        await loadNotificationCount();
+    } catch {}
+}
+
+// Remove one notification from the user's list
+async function deleteNotification(id) {
+    if (!confirm('Remove this notification?')) return;
+    try {
+        await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not remove notification: ' + err.message);
+    }
+}
+
+// Delete every notification so old items do not stay in the modal forever
+async function clearAllNotifications() {
+    if (!confirm('Clear all notifications?')) return;
+    try {
+        await apiFetch('/notifications/clear-all', { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not clear notifications: ' + err.message);
+    }
+}
+
+// Optional helper so users can mark everything as seen without deleting them
+async function markAllNotificationsRead() {
+    try {
+        await apiFetch('/notifications/read-all', { method: 'PUT' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not mark notifications as read: ' + err.message);
+    }
+}
+
+// Mark read first, then send the user to the related page
+async function goToNotificationTarget(id, target) {
+    await markNotificationRead(id);
+    window.location.href = target;
+}
+
+// Shared notification modal renderer used by both parent and pediatrician pages
+async function openNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    const listEl = modal ? modal.querySelector('.notifications-list') : null;
+    if (!modal || !listEl) return;
+
+    modal.style.display = 'flex';
+    listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading...</p>';
+
+    try {
+        const data = await apiFetch('/notifications');
+        const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+        if (!notifications.length) {
+            listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1.5rem;">No notifications yet.</p>';
+            return;
+        }
+
+        const hasUnread = notifications.some(n => !n.isRead);
+        const tools = `
+            <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);background:white;position:sticky;top:0;z-index:1;">
+                ${hasUnread ? '<button onclick="markAllNotificationsRead()" style="border:1px solid var(--border);background:white;color:var(--primary);padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Mark all read</button>' : ''}
+                <button onclick="clearAllNotifications()" style="border:1px solid #e6b0b0;background:white;color:#c0392b;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Clear all</button>
+            </div>`;
+
+        const items = notifications.map((n) => {
+            const dest = notificationDestination(n);
+            const unreadStyle = n.isRead ? '' : 'background:#f0f7f0;border-left:3px solid var(--primary);';
+            const click = dest
+                ? `goToNotificationTarget(${n.id}, '${dest}')`
+                : `markNotificationRead(${n.id})`;
+
+            return `
+                <div class="notification-item" style="display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border);${unreadStyle}">
+                    <div onclick="${click}" style="flex:1;cursor:pointer;min-width:0;">
+                        <p style="font-weight:${n.isRead ? '400' : '700'};font-size:.9rem;margin:0 0 .2rem;color:var(--text-dark);">${escapeHtml(n.title || '')}</p>
+                        <p style="font-size:.82rem;color:#555;margin:0 0 .25rem;line-height:1.45;">${escapeHtml(n.message || '')}</p>
+                        <p style="font-size:.75rem;color:#aaa;margin:0;">${formatDateTime(n.createdAt)}</p>
+                        ${dest ? '<p style="font-size:.72rem;color:var(--primary);margin:.35rem 0 0;">Open related page →</p>' : ''}
+                    </div>
+                    <button onclick="event.stopPropagation();deleteNotification(${n.id})" title="Remove notification" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:.15rem .25rem;">✕</button>
+                </div>`;
+        }).join('');
+
+        listEl.innerHTML = tools + items;
+    } catch {
+        listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Could not load notifications.</p>';
+    }
+}
+
+function closeNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+
+function toggleProfileMenu() {
+            const m = document.getElementById('profileMenu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.profile-btn')) document.getElementById('profileMenu').style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>

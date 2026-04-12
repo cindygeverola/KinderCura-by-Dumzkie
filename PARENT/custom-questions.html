@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Questions - KinderCura</title>
+  <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+  <style>
+    .page-card{background:white;padding:2rem;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:1.5rem;}
+    .question-card{background:white;border-radius:14px;padding:1.2rem 1.3rem;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:1rem;border:1px solid var(--border);}
+    .meta-badges{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.7rem;}
+    .badge{display:inline-block;padding:.22rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700;}
+    .badge-domain{background:#dff3e7;color:#2d6a4f;}
+    .badge-type{background:#e8f0fe;color:#3056d3;}
+    .badge-state{background:#fff3cd;color:#856404;}
+    .badge-done{background:#d4edda;color:#155724;}
+    .badge-child{background:#f3e8ff;color:#6b21a8;}
+    .answer-box{margin-top:.9rem;}
+    .choice-row{display:flex;flex-direction:column;gap:.55rem;margin-top:.7rem;}
+    .choice-btn{background:white;border:2px solid var(--border);border-radius:10px;padding:.8rem .95rem;text-align:left;cursor:pointer;font:inherit;}
+    .choice-btn:hover,.choice-btn.selected{border-color:var(--primary);background:#f8fbf8;}
+    .text-answer{width:100%;min-height:96px;padding:.9rem;border:2px solid var(--border);border-radius:10px;font:inherit;resize:vertical;box-sizing:border-box;}
+    .text-answer:focus{outline:none;border-color:var(--primary);}
+    .top-actions{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+    .empty-state{background:white;padding:2.5rem;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.08);text-align:center;color:var(--text-light);}
+    .child-picker{min-width:220px;padding:.8rem 1rem;border:2px solid var(--border);border-radius:10px;font:inherit;background:white;}
+    .child-picker:focus{outline:none;border-color:var(--primary);}
+  </style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-container">
+    <a href="/parent/dashboard.html" class="logo">
+      <img src="/icons/logo.png" class="logo-img" alt="KinderCura Logo">
+      <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+    </a>
+    <!-- Parent navigation -->
+    <nav class="main-nav">
+      <a href="/parent/dashboard.html" class="nav-link">Dashboard</a>
+      <a href="/parent/results.html" class="nav-link">Results</a>
+      <a href="/parent/recommendations.html" class="nav-link">Recommendations</a>
+      <a href="/parent/appointments.html" class="nav-link">Appointments</a>
+      <a href="/parent/chat.html" class="nav-link">Chat</a>
+      <a href="/parent/custom-questions.html" class="nav-link active">Questions</a>
+    </nav>
+    <div class="nav-right">
+      <button class="icon-btn notification-btn" onclick="openNotifications()">
+        <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+        <span class="notification-badge">0</span>
+      </button>
+      <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+        <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+      </button>
+      <div class="profile-menu" id="profileMenu" style="display:none;">
+        <div class="menu-header"><p id="navWelcome">Welcome</p></div>
+        <a href="/parent/profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+        <a href="/parent/settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+        <hr style="margin:.5rem 0;">
+        <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard-container">
+  <div class="page-card">
+    <h1 style="margin:0 0 .35rem;">Custom Questions from Pediatrician</h1>
+    <p style="color:var(--text-light);margin:0;">View and answer the extra questions your child's pediatrician assigned.</p>
+  </div>
+
+  <div class="page-card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <div>
+      <p style="margin:0 0 .25rem;font-weight:700;" id="childNameLine">Loading children…</p>
+      <p style="margin:0;color:var(--text-light);font-size:.9rem;" id="questionSummary">Loading assigned questions…</p>
+    </div>
+    <div class="top-actions">
+      <select id="childPicker" class="child-picker" onchange="changeChildFilter()">
+        <option value="all">All children</option>
+      </select>
+      <button class="btn btn-secondary" onclick="openAppointmentsPage()">Back to Appointments</button>
+      <button class="btn btn-primary" onclick="loadAssignedQuestions()">Refresh</button>
+    </div>
+  </div>
+
+  <div id="flashMsg" style="display:none;margin-bottom:1rem;"></div>
+
+  <div class="page-card">
+    <h3 style="margin-top:0;">Pending Answers</h3>
+    <div id="pendingList">
+      <p style="color:var(--text-light);">Loading…</p>
+    </div>
+  </div>
+
+  <div class="page-card">
+    <h3 style="margin-top:0;">Answered Questions</h3>
+    <div id="answeredList">
+      <p style="color:var(--text-light);">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+  <div class="notifications-content">
+    <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+    <div class="notifications-list"></div>
+  </div>
+</div>
+
+<script src="/api.js"></script>
+<script>
+// Protect page and allow parents only
+
+requireAuth();
+const user = KC.user();
+if (user && user.role !== 'parent') {
+  if (user.role === 'pediatrician') window.location.href = '/pedia/pediatrician-dashboard.html';
+  else if (user.role === 'admin') window.location.href = '/admin/admin-dashboard.html';
+}
+
+// Track selected child so assigned questions can be filtered
+function safeRequestedChildId() {
+  try {
+    return typeof getRequestedChildId === 'function'
+      ? getRequestedChildId()
+      : new URLSearchParams(window.location.search).get('childId');
+  } catch {
+    return null;
+  }
+}
+
+function storedChildId() {
+  try { return typeof KC?.childId === 'function' ? KC.childId() : localStorage.getItem('kc_childId'); }
+  catch { return localStorage.getItem('kc_childId'); }
+}
+
+function storedAssessmentId() {
+  try { return typeof KC?.assessmentId === 'function' ? KC.assessmentId() : localStorage.getItem('kc_assessmentId'); }
+  catch { return localStorage.getItem('kc_assessmentId'); }
+}
+
+function saveParentChildContext(childId, assessmentId = null) {
+  if (typeof setParentContext === 'function') {
+    setParentContext(childId, assessmentId);
+    return;
+  }
+  if (childId) localStorage.setItem('kc_childId', childId);
+  else localStorage.removeItem('kc_childId');
+  if (assessmentId) localStorage.setItem('kc_assessmentId', assessmentId);
+  else localStorage.removeItem('kc_assessmentId');
+}
+
+function updateParentNavLinks() {
+  const childId = currentChildId !== 'all' ? currentChildId : storedChildId();
+  const assessmentId = storedAssessmentId();
+  const setHref = (selector, baseHref, includeAssessment = false) => {
+    const link = document.querySelector(selector);
+    if (!link) return;
+    const q = new URLSearchParams();
+    if (childId) q.set('childId', childId);
+    if (includeAssessment && assessmentId) q.set('assessmentId', assessmentId);
+    link.href = q.toString() ? `${baseHref}?${q.toString()}` : baseHref;
+  };
+
+  // Keep question navigation in sync with the active child filter.
+  setHref('.main-nav a[href="/parent/dashboard.html"]', '/parent/dashboard.html');
+  setHref('.main-nav a[href="/parent/results.html"]', '/parent/results.html', true);
+  setHref('.main-nav a[href="/parent/recommendations.html"]', '/parent/recommendations.html', true);
+  setHref('.main-nav a[href="/parent/appointments.html"]', '/parent/appointments.html');
+  setHref('.main-nav a[href="/parent/custom-questions.html"]', '/parent/custom-questions.html');
+}
+
+let currentChildId = safeRequestedChildId() || storedChildId() || 'all';
+let allChildren = [];
+
+function flash(msg, ok = true) {
+  const el = document.getElementById('flashMsg');
+  el.style.display = 'block';
+  el.style.padding = '0.9rem 1rem';
+  el.style.borderRadius = '10px';
+  el.style.background = ok ? '#dff3e7' : '#fde8e8';
+  el.style.color = ok ? '#2d6a4f' : '#c0392b';
+  el.textContent = msg;
+  setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Load every child of the logged-in parent
+async function loadChildren() {
+  const data = await apiFetch('/children');
+  allChildren = data.children || [];
+
+  const picker = document.getElementById('childPicker');
+  picker.innerHTML = '<option value="all">All children</option>';
+
+  if (!allChildren.length) {
+    document.getElementById('childNameLine').textContent = 'No child registered';
+    document.getElementById('questionSummary').textContent = 'Please add a child first in your profile.';
+    return [];
+  }
+
+  allChildren.forEach(child => {
+    picker.innerHTML += `<option value="${child.id}">${esc(child.firstName)} ${esc(child.lastName)}</option>`;
+  });
+
+  const exists = allChildren.some(c => String(c.id) === String(currentChildId));
+  if (!exists && currentChildId !== 'all') currentChildId = allChildren.length === 1 ? allChildren[0].id : 'all';
+  if (currentChildId === 'all' && allChildren.length === 1) currentChildId = allChildren[0].id;
+
+  picker.value = currentChildId;
+  if (currentChildId !== 'all') saveParentChildContext(currentChildId, storedAssessmentId());
+  updateHeaderLine();
+  updateParentNavLinks();
+  return allChildren;
+}
+
+function updateHeaderLine() {
+  if (!allChildren.length) {
+    document.getElementById('childNameLine').textContent = 'No child registered';
+    return;
+  }
+
+  if (currentChildId === 'all') {
+    document.getElementById('childNameLine').textContent = `All children (${allChildren.length})`;
+  } else {
+    const active = allChildren.find(c => String(c.id) === String(currentChildId));
+    document.getElementById('childNameLine').textContent = active
+      ? `${active.firstName} ${active.lastName}`
+      : 'Selected child';
+  }
+}
+
+function openAppointmentsPage() {
+  const childId = currentChildId !== 'all' ? currentChildId : storedChildId();
+  if (childId) saveParentChildContext(childId, storedAssessmentId());
+  window.location.href = childId
+    ? `/parent/appointments.html?childId=${encodeURIComponent(childId)}`
+    : '/parent/appointments.html';
+}
+
+// Change visible questions based on selected child
+function changeChildFilter() {
+  currentChildId = document.getElementById('childPicker').value;
+  if (currentChildId !== 'all') saveParentChildContext(currentChildId, storedAssessmentId());
+  updateHeaderLine();
+  updateParentNavLinks();
+  loadAssignedQuestions();
+}
+
+// Build the answer input based on question type
+function buildAnswerInput(a) {
+  const options = Array.isArray(a.options) ? a.options : [];
+
+  if (a.questionType === 'yes_no') {
+    return `
+      <div class="choice-row" id="choices_${a.assignmentId}">
+        <button class="choice-btn" type="button" onclick="selectChoice(${a.assignmentId}, 'Yes')">Yes</button>
+        <button class="choice-btn" type="button" onclick="selectChoice(${a.assignmentId}, 'No')">No</button>
+      </div>
+      <input type="hidden" id="answer_${a.assignmentId}" value="">
+    `;
+  }
+
+  if (a.questionType === 'multiple_choice') {
+    return `
+      <div class="choice-row" id="choices_${a.assignmentId}">
+        ${options.map(opt => `<button class="choice-btn" type="button" onclick="selectChoice(${a.assignmentId}, ${JSON.stringify(opt)})">${esc(opt)}</button>`).join('')}
+      </div>
+      <input type="hidden" id="answer_${a.assignmentId}" value="">
+    `;
+  }
+
+  return `<textarea class="text-answer" id="answer_${a.assignmentId}" placeholder="Type your answer here..."></textarea>`;
+}
+
+// Show questions that still need an answer
+function renderPending(assignments) {
+  const el = document.getElementById('pendingList');
+  if (!assignments.length) {
+    el.innerHTML = '<div class="empty-state">No pending custom questions right now.</div>';
+    return;
+  }
+
+  el.innerHTML = assignments.map(a => `
+    <div class="question-card">
+      <div class="meta-badges">
+        <span class="badge badge-child">${esc(a.childName || 'Child')}</span>
+        <span class="badge badge-domain">${esc(a.domain || 'Other')}</span>
+        <span class="badge badge-type">${esc((a.questionType || '').replace('_',' / '))}</span>
+        <span class="badge badge-state">Pending</span>
+      </div>
+      <p style="font-weight:700;font-size:1rem;margin:.1rem 0 .4rem;">${esc(a.questionText)}</p>
+      <p style="font-size:.82rem;color:var(--text-light);margin:.15rem 0 0;">Assigned by: Dr. ${esc(a.pediatricianName || 'Pediatrician')}</p>
+      <div class="answer-box">${buildAnswerInput(a)}</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+        <button class="btn btn-primary" onclick="submitAnswer(${a.assignmentId})">Submit Answer</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Show questions that the parent already answered
+function renderAnswered(assignments) {
+  const el = document.getElementById('answeredList');
+  if (!assignments.length) {
+    el.innerHTML = '<div class="empty-state">No answered custom questions yet.</div>';
+    return;
+  }
+
+  el.innerHTML = assignments.map(a => `
+    <div class="question-card">
+      <div class="meta-badges">
+        <span class="badge badge-child">${esc(a.childName || 'Child')}</span>
+        <span class="badge badge-domain">${esc(a.domain || 'Other')}</span>
+        <span class="badge badge-type">${esc((a.questionType || '').replace('_',' / '))}</span>
+        <span class="badge badge-done">Answered</span>
+      </div>
+      <p style="font-weight:700;font-size:1rem;margin:.1rem 0 .4rem;">${esc(a.questionText)}</p>
+      <p style="font-size:.82rem;color:var(--text-light);margin:.15rem 0 .7rem;">Assigned by: Dr. ${esc(a.pediatricianName || 'Pediatrician')}</p>
+      <div style="background:var(--bg-primary);border-radius:10px;padding:.9rem 1rem;">
+        <p style="margin:0 0 .25rem;font-size:.8rem;color:var(--text-light);">Your answer</p>
+        <p style="margin:0;font-weight:600;">${esc(a.answer || '')}</p>
+      </div>
+      <p style="margin:.7rem 0 0;font-size:.78rem;color:var(--text-light);">Answered at: ${a.answeredAt ? new Date(a.answeredAt).toLocaleString() : '—'}</p>
+    </div>
+  `).join('');
+}
+
+// Save a selected choice to the hidden answer field
+function selectChoice(assignmentId, value) {
+  const hidden = document.getElementById(`answer_${assignmentId}`);
+  if (hidden) hidden.value = value;
+
+  const wrap = document.getElementById(`choices_${assignmentId}`);
+  if (!wrap) return;
+  wrap.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.textContent.trim() === String(value).trim());
+  });
+}
+
+// Submit one answer back to the backend
+async function submitAnswer(assignmentId) {
+  const input = document.getElementById(`answer_${assignmentId}`);
+  const answer = input ? input.value.trim() : '';
+  if (!answer) {
+    flash('Please answer the question first.', false);
+    return;
+  }
+
+  try {
+    await apiFetch(`/questions/answer/${assignmentId}`, {
+      method: 'POST',
+      body: JSON.stringify({ answer })
+    });
+    flash('Answer submitted successfully.');
+    await loadAssignedQuestions();
+  } catch (e) {
+    flash(e.message, false);
+  }
+}
+
+// Load all assigned custom questions for the parent
+async function loadAssignedQuestions() {
+  try {
+    await loadChildren();
+
+    if (!allChildren.length) {
+      document.getElementById('pendingList').innerHTML = '<div class="empty-state">No child found.</div>';
+      document.getElementById('answeredList').innerHTML = '<div class="empty-state">No child found.</div>';
+      return;
+    }
+
+    const targetChildren = currentChildId === 'all'
+      ? allChildren
+      : allChildren.filter(c => String(c.id) === String(currentChildId));
+
+    const bundles = await Promise.all(
+      targetChildren.map(async child => {
+        const data = await apiFetch(`/questions/assigned/${child.id}`);
+        return (data.assignments || []).map(a => ({
+          ...a,
+          childId: child.id,
+          childName: `${child.firstName} ${child.lastName}`
+        }));
+      })
+    );
+
+    const assignments = bundles.flat().sort((a, b) => {
+      const da = new Date(a.answeredAt || a.createdAt || 0).getTime();
+      const db = new Date(b.answeredAt || b.createdAt || 0).getTime();
+      return db - da;
+    });
+
+    const pending = assignments.filter(a => !a.answer);
+    const answered = assignments.filter(a => !!a.answer);
+
+    const summaryLabel = currentChildId === 'all'
+      ? `Across ${targetChildren.length} child${targetChildren.length > 1 ? 'ren' : ''}`
+      : `For selected child`;
+
+    document.getElementById('questionSummary').textContent = `${summaryLabel} · ${pending.length} pending · ${answered.length} answered`;
+    updateParentNavLinks();
+    renderPending(pending);
+    renderAnswered(answered);
+  } catch (e) {
+    document.getElementById('questionSummary').textContent = 'Could not load custom questions.';
+    document.getElementById('pendingList').innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+    document.getElementById('answeredList').innerHTML = '<div class="empty-state">—</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initNav();
+  document.querySelectorAll('a.logout').forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    logout();
+  }));
+  loadAssignedQuestions();
+});
+</script>
+</body>
+</html>

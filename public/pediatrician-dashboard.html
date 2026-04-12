@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <style>
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem}
+        .stat-card{background:white;border-radius:15px;padding:1.5rem;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+        .stat-label{color:var(--text-light);font-size:.85rem;margin-bottom:.4rem}
+        .stat-num{font-size:2rem;font-weight:700;color:var(--primary)}
+        .stat-num.red{color:var(--accent-red)}
+        .stat-sub{font-size:.82rem;margin-top:.4rem;color:var(--text-light)}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+        @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+        .panel{background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+        .panel h2{color:var(--primary);font-size:1.3rem;margin-bottom:1.5rem}
+        .apt-card{background:var(--bg-primary);padding:1.5rem;border-radius:10px;border-left:4px solid var(--accent-red);margin-bottom:1rem}
+        .apt-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem}
+        .apt-header h4{margin:0 0 .25rem;color:var(--text-dark)}
+        .apt-header p{margin:0;color:var(--text-light);font-size:.85rem}
+        .badge-pending{background:var(--accent-red);color:white;padding:.25rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+        .scores-row{background:white;padding:.8rem;border-radius:8px;margin:.8rem 0;font-size:.82rem;color:var(--text-dark);line-height:1.8}
+        .btn-approve{background:var(--primary);color:white;border:none;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.85rem;flex:1;font-weight:600}
+        .btn-reject{background:white;color:var(--accent-red);border:2px solid var(--accent-red);padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.85rem;flex:1;font-weight:600}
+        .btn-approve:hover{opacity:.88}
+        .btn-reject:hover{background:#fde8e8}
+        .activity-item{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--bg-primary);border-radius:8px;margin-bottom:.8rem}
+        .activity-title{font-weight:600;color:var(--text-dark);font-size:.9rem;margin:0 0 .2rem}
+        .activity-time{color:var(--text-light);font-size:.8rem;margin:0}
+        .activity-icon{font-size:1.4rem;flex-shrink:0}
+        .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text-light)}
+        .empty-state span{font-size:2.5rem;display:block;margin-bottom:.8rem}
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="pediatrician-dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="pediatrician-dashboard.html" class="nav-link" style="border-bottom:3px solid var(--accent-red);">Dashboard</a>
+                <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifPanel()">
+                    <img src="notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    <span class="notification-badge" id="notifCount">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, Doctor</p></div>
+                    <a href="pediatrician-profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="pediatrician-settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08);">
+            <h1 id="pageTitle" style="margin-bottom:.4rem;">Pediatrician Dashboard</h1>
+            <p style="color:var(--text-light);">Manage your patients and appointments</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><p class="stat-label">Total Patients</p><p class="stat-num" id="statTotal">—</p><p class="stat-sub" id="statTotalSub"></p></div>
+            <div class="stat-card"><p class="stat-label">Pending Approvals</p><p class="stat-num red" id="statPending">—</p><p class="stat-sub" id="statPendingSub"></p></div>
+            <div class="stat-card"><p class="stat-label">Assessments Reviewed</p><p class="stat-num" id="statReviewed">—</p><p class="stat-sub">This month</p></div>
+            <div class="stat-card"><p class="stat-label">Upcoming Appointments</p><p class="stat-num" id="statUpcoming">—</p><p class="stat-sub">Next 7 days</p></div>
+        </div>
+
+        <div class="two-col">
+            <div class="panel">
+                <h2><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Pending Appointment Requests</h2>
+                <div id="pendingList"><div class="empty-state"><span><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>Loading…</div></div>
+            </div>
+            <div class="panel">
+                <h2><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Recent Patient Activity</h2>
+                <div id="activityList"><div class="empty-state"><span><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>Loading…</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifPanel()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifModalList">
+                <p style="text-align:center;color:var(--text-light);padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API='http://localhost:3001/api';
+        const getToken=()=>localStorage.getItem('kc_token');
+        const getUser=()=>{try{return JSON.parse(localStorage.getItem('kc_user'));}catch{return null;}};
+        function doLogout(){['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k=>localStorage.removeItem(k));window.location.href='login.html';}
+
+        const _u=getUser();
+        if(!getToken()||!_u){window.location.href='login.html';}
+        else if(_u.role!=='pediatrician'){window.location.href=_u.role==='admin'?'admin-dashboard.html':'dashboard.html';}
+
+        if(_u){
+            document.getElementById('navWelcome').textContent=`Welcome, Dr. ${_u.firstName}`;
+            document.getElementById('pageTitle').textContent=`Welcome, Dr. ${_u.firstName} ${_u.lastName}`;
+            if(_u.profileIcon&&_u.profileIcon.startsWith('/uploads/'))
+                document.getElementById('navProfilePic').src=_u.profileIcon;
+        }
+
+        async function apiFetch(ep,opts={}){
+            const res=await fetch(`${API}${ep}`,{...opts,headers:{'Content-Type':'application/json',Authorization:`Bearer ${getToken()}`,...opts.headers}});
+            const d=await res.json();
+            if(!res.ok)throw new Error(d.error||`Error ${res.status}`);
+            return d;
+        }
+
+        async function loadDashboard(){
+            try{
+                const data=await apiFetch('/appointments/pedia-notifications');
+                const all=data.notifications||[];
+                const pending=all.filter(n=>n.status==='pending');
+                const approved=all.filter(n=>n.status==='approved');
+
+                document.getElementById('statTotal').textContent=all.length;
+                document.getElementById('statPending').textContent=pending.length;
+                document.getElementById('statReviewed').textContent=approved.length;
+                document.getElementById('notifCount').textContent=pending.length;
+                document.getElementById('statTotalSub').textContent=all.length>0?`↑ ${all.length} total`:'No patients yet';
+
+                const pSub=document.getElementById('statPendingSub');
+                if(pending.length>0){pSub.textContent='⚠️ Needs attention';pSub.style.color='var(--accent-red)';}
+                else{pSub.textContent='✓ All clear';pSub.style.color='#27ae60';}
+
+                const now=new Date(),in7=new Date(now.getTime()+7*24*60*60*1000);
+                document.getElementById('statUpcoming').textContent=approved.filter(n=>{const d=new Date(n.appointmentDate);return d>=now&&d<=in7;}).length;
+
+                renderPending(pending);
+                renderActivity(all);
+            }catch(e){
+                document.getElementById('pendingList').innerHTML='<div class="empty-state"><span>⚠️</span>Could not load. Is the server running?</div>';
+                document.getElementById('activityList').innerHTML='<div class="empty-state"><span>⚠️</span>Could not load activity.</div>';
+            }
+        }
+
+        function renderPending(pending){
+            const el=document.getElementById('pendingList');
+            if(pending.length===0){el.innerHTML='<div class="empty-state"><span>✅</span>No pending appointment requests.<br><small style="color:var(--text-light);">Requests from parents will appear here once booked.</small></div>';return;}
+            el.innerHTML=pending.map(n=>`
+                <div class="apt-card" id="apt-${n.id}">
+                    <div class="apt-header">
+                        <div>
+                            <h4>${n.parentName||'Parent'} — ${n.childName||'Child'}</h4>
+                            <p><img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${n.appointmentDate||'—'} at ${n.appointmentTime||'—'}</p>
+                            <p><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${n.reason||'General checkup'}</p>
+                        </div>
+                        <span class="badge-pending">Pending</span>
+                    </div>
+                    ${n.overallScore!=null
+                        ?`<div class="scores-row"><strong style="color:var(--primary);"><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Assessment Results:</strong><br>
+                           Communication: <strong>${n.communicationScore||0}%</strong>${n.communicationStatus?' ('+n.communicationStatus+')':''} &nbsp;·&nbsp;
+                           Social: <strong>${n.socialScore||0}%</strong>${n.socialStatus?' ('+n.socialStatus+')':''} &nbsp;·&nbsp;
+                           Cognitive: <strong>${n.cognitiveScore||0}%</strong>${n.cognitiveStatus?' ('+n.cognitiveStatus+')':''} &nbsp;·&nbsp;
+                           Motor: <strong>${n.motorScore||0}%</strong>${n.motorStatus?' ('+n.motorStatus+')':''}<br>
+                           Overall: <strong style="color:var(--primary);font-size:1rem;">${n.overallScore||0}%</strong></div>`
+                        :`<p style="color:var(--text-light);font-size:.85rem;font-style:italic;margin:.5rem 0;">No assessment results on file yet.</p>`
+                    }
+                    <div style="display:flex;gap:.8rem;">
+                        <button class="btn-approve" onclick="respond(${n.id},'approved')">✅ Approve</button>
+                        <button class="btn-reject"  onclick="respond(${n.id},'declined')">❌ Decline</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderActivity(all){
+            const el=document.getElementById('activityList');
+            if(all.length===0){el.innerHTML='<div class="empty-state"><span><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>No patient activity yet.<br><small style="color:var(--text-light);">Activity appears here once parents book appointments.</small></div>';return;}
+            const iconMap={pending:'<img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">',approved:'✅',declined:'❌'};
+            const labelMap={pending:'Appointment Requested',approved:'Appointment Approved',declined:'Appointment Declined'};
+            el.innerHTML=[...all].reverse().slice(0,6).map(n=>`
+                <div class="activity-item">
+                    <div>
+                        <p class="activity-title">${labelMap[n.status]||'Activity'}: ${n.childName||'Child'}</p>
+                        <p class="activity-time">Parent: ${n.parentName||'—'} · ${fmt(n.createdAt)}</p>
+                    </div>
+                    <span class="activity-icon">${iconMap[n.status]||'<img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;">'}</span>
+                </div>`).join('');
+        }
+
+        async function respond(id,status){
+            const card=document.getElementById(`apt-${id}`);
+            if(card){card.style.opacity='.5';card.style.pointerEvents='none';}
+            try{
+                await apiFetch(`/appointments/pedia-notifications/${id}`,{method:'PUT',body:JSON.stringify({status})});
+                loadDashboard();
+            }catch(e){
+                alert('Error: '+e.message);
+                if(card){card.style.opacity='1';card.style.pointerEvents='auto';}
+            }
+        }
+
+        function fmt(ts){
+            if(!ts)return'—';
+            const d=new Date(ts),diff=Date.now()-d.getTime(),mins=Math.floor(diff/60000);
+            if(mins<1)return'just now';
+            if(mins<60)return`${mins}m ago`;
+            const hrs=Math.floor(mins/60);
+            if(hrs<24)return`${hrs}h ago`;
+            const days=Math.floor(hrs/24);
+            if(days===1)return'1 day ago';
+            if(days<7)return`${days} days ago`;
+            return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        }
+
+        function toggleProfileMenu(){const m=document.getElementById('profileMenu');m.style.display=m.style.display==='none'?'block':'none';}
+
+        function openNotifPanel(){
+            document.getElementById('notificationsModal').style.display='flex';
+            apiFetch('/appointments/pedia-notifications').then(data=>{
+                const pending=(data.notifications||[]).filter(n=>n.status==='pending');
+                const list=document.getElementById('notifModalList');
+                if(pending.length===0){list.innerHTML='<p style="text-align:center;color:var(--text-light);padding:1rem;">No new notifications</p>';return;}
+                list.innerHTML=pending.map(n=>`
+                    <div class="notification-item">
+                        <span class="notification-icon-small"><img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>
+                        <div>
+                            <p class="notification-title">${n.childName} (${n.parentName}) — ${n.appointmentDate}</p>
+                            <p class="notification-time">${n.reason||'General checkup'} · ${fmt(n.createdAt)}</p>
+                        </div>
+                    </div>`).join('');
+            }).catch(()=>{});
+        }
+        function closeNotifPanel(){document.getElementById('notificationsModal').style.display='none';}
+
+        document.addEventListener('click',e=>{if(!e.target.closest('.profile-btn'))document.getElementById('profileMenu').style.display='none';});
+        document.addEventListener('DOMContentLoaded',()=>{loadDashboard();setInterval(loadDashboard,30000);});
+    </script>
+</body>
+</html>

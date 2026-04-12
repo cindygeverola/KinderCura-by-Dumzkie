@@ -1,0 +1,549 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #6B8E6F;
+    --primary-light: #8BA98D;
+    --accent: #F4D89F;
+    --accent-light: #F8E5B5;
+    --accent-red: #E8A5A5;
+    --success: #A8C49D;
+    --danger: #D4897A;
+    --warning: #F4D89F;
+    --bg-primary: #FAFAF6;
+    --bg-secondary: #F0EFE8;
+    --text-dark: #3D4738;
+    --text-light: #6B7967;
+    --border: #DDD9CC;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #F0DCD8 100%);
+    color: var(--text-dark);
+}
+
+/* Header */
+.results-header {
+    background: white;
+    padding: 1.2rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.user-menu {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.profile-icon {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Container */
+.results-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.results-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+/* Results Header Section */
+.results-header-section {
+    margin-bottom: 1rem;
+}
+
+.results-header-section h1 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.child-info {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+/* Overall Summary */
+.overall-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.summary-card h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 2rem;
+}
+
+.summary-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.overall-score {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(107, 142, 111, 0.3);
+    flex-shrink: 0;
+}
+
+.score-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.score-label {
+    font-size: 1.2rem;
+}
+
+.score-interpretation h3 {
+    font-size: 1.3rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.score-interpretation p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.skills-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.skill-summary-item {
+    background: var(--bg-primary);
+    padding: 1.2rem;
+    border-radius: 10px;
+    text-align: center;
+    border-top: 3px solid var(--primary);
+}
+
+.skill-icon {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.skill-summary-item h4 {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.skill-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Detailed Results */
+.detailed-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detailed-results h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.skill-result-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-left: 5px solid var(--primary);
+}
+
+.skill-result-card.excellent {
+    border-left-color: var(--success);
+}
+
+.skill-result-card.good {
+    border-left-color: var(--accent);
+}
+
+.skill-result-card.fair {
+    border-left-color: var(--warning);
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.skill-header h3 {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.skill-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.skill-badge.excellent {
+    background: rgba(168, 196, 157, 0.1);
+    color: var(--success);
+}
+
+.skill-badge.good {
+    background: rgba(244, 216, 159, 0.1);
+    color: var(--accent);
+}
+
+.skill-badge.fair {
+    background: rgba(232, 165, 165, 0.1);
+    color: var(--accent-red);
+}
+
+.skill-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.skill-interpretation {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.strengths,
+.recommendations-box,
+.exercises-list {
+    background: var(--bg-primary);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.strengths h4,
+.recommendations-box h4 {
+    color: var(--primary);
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.strengths ul,
+.recommendations-box ul,
+.exercises-list {
+    list-style: none;
+    margin-left: 0;
+}
+
+.strengths li,
+.recommendations-box li {
+    padding: 0.4rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-light);
+}
+
+.strengths li::before,
+.recommendations-box li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: bold;
+}
+
+.recommendations-box.attention {
+    background: rgba(232, 165, 165, 0.08);
+    border-left: 4px solid var(--accent-red);
+}
+
+/* Automated Recommendations */
+.automated-recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.automated-recommendations h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.recommendation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.recommendation-item {
+    background: white;
+    border-radius: 15px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-top: 4px solid var(--border);
+}
+
+.recommendation-item.priority-high {
+    border-top-color: var(--accent-red);
+    background: linear-gradient(135deg, rgba(232, 165, 165, 0.05) 0%, rgba(244, 216, 159, 0.05) 100%);
+}
+
+.rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.rec-header h3 {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.priority-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.priority-badge.high {
+    background: rgba(232, 165, 165, 0.2);
+    color: var(--accent-red);
+}
+
+.recommendation-item p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.activities-list,
+.exercises-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.activities-list li,
+.exercises-list li {
+    padding: 0.6rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-light);
+}
+
+.activities-list li::before,
+.exercises-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.rec-actions {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+/* Action Section */
+.action-section {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.action-section h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 2rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 0.9rem 1.8rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(107, 142, 111, 0.3);
+}
+
+.btn-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: var(--text-dark);
+}
+
+.btn-accent:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(244, 216, 159, 0.3);
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-primary);
+    border-color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .results-header-section h1 {
+        font-size: 1.8rem;
+    }
+
+    .summary-content {
+        grid-template-columns: 1fr;
+    }
+
+    .skills-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .skill-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+    }
+
+    .rec-actions {
+        flex-direction: column;
+    }
+
+    .rec-actions .btn {
+        width: 100%;
+    }
+
+    .rec-header {
+        flex-direction: column;
+    }
+}

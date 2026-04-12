@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assessment Questions - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .card{background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:1.5rem;}
+        .form-group{margin-bottom:1.1rem;}
+        .form-label{display:block;font-weight:600;margin-bottom:.4rem;font-size:.9rem;}
+        .form-input{width:100%;padding:.75rem;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;box-sizing:border-box;}
+        .form-input:focus{outline:none;border-color:var(--primary);}
+        .btn-primary{background:var(--primary);color:white;border:none;padding:.7rem 1.4rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s;}
+        .btn-primary:hover{background:var(--primary-dark);}
+        .btn-outline{background:none;color:var(--primary);border:2px solid var(--primary);padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:.85rem;transition:.15s;}
+        .btn-outline:hover{background:var(--primary);color:white;}
+        .btn-danger{background:none;color:#e74c3c;border:1.5px solid #e74c3c;padding:.4rem .8rem;border-radius:6px;cursor:pointer;font-size:.8rem;transition:.15s;}
+        .btn-danger:hover{background:#e74c3c;color:white;}
+        .q-card{background:var(--bg-primary);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:.8rem;border:1px solid var(--border);position:relative;}
+        .q-card:hover{border-color:var(--primary);}
+        .q-type-badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:8px;margin-bottom:.4rem;}
+        .type-yes_no{background:#d4edda;color:#155724;}
+        .type-multiple_choice{background:#cce5ff;color:#004085;}
+        .type-short_answer{background:#fff3cd;color:#856404;}
+        .domain-badge{display:inline-block;font-size:.68rem;font-weight:600;padding:.15rem .45rem;border-radius:8px;margin-left:.4rem;}
+        .domain-gross{background:#fff3cd;color:#856404;}
+        .domain-fine{background:#d1ecf1;color:#0c5460;}
+        .domain-lang{background:#d4edda;color:#155724;}
+        .domain-social{background:#f8d7da;color:#721c24;}
+        .domain-other{background:#e2e3e5;color:#383d41;}
+        .q-actions{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap;align-items:center;}
+        .options-list{margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.3rem;}
+        .option-chip{background:white;border:1px solid var(--border);border-radius:12px;padding:.15rem .5rem;font-size:.75rem;color:var(--text-dark);}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+        .modal-box{background:white;border-radius:15px;padding:2rem;width:90%;max-width:520px;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+        .modal-title{color:var(--primary);font-size:1.15rem;font-weight:700;margin-bottom:.3rem;}
+        .modal-sub{color:var(--text-light);font-size:.82rem;margin-bottom:1.3rem;}
+        .options-input-row{display:flex;gap:.5rem;margin-bottom:.4rem;}
+        .options-input-row input{flex:1;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;}
+        .option-remove-btn{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;padding:0 .3rem;}
+        .age-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .assign-modal-list{max-height:260px;overflow-y:auto;}
+        .patient-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border-radius:8px;border:1px solid var(--border);margin-bottom:.5rem;}
+        .patient-row:hover{background:var(--bg-primary);}
+        .success-flash{background:#d4edda;color:#155724;padding:.6rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem;display:none;}
+        .error-flash{background:#fde8e8;color:#c0392b;padding:.6rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem;display:none;}
+    </style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="nav-container">
+    <a href="pediatrician-dashboard.html" class="logo">
+      <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+      <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+      <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+      <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+      <a href="pedia-chat.html" class="nav-link"><img src="/icons/chatbubble.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Chat</a>
+      <a href="pedia-questions.html" class="nav-link active"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> My Questions</a>
+    </nav>
+    <div class="nav-right">
+      <button class="icon-btn notification-btn" onclick="openNotifications()">
+        <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+        <span class="notification-badge" id="notifBadge">0</span>
+      </button>
+      <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+        <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+      </button>
+      <div class="profile-menu" id="profileMenu" style="display:none;">
+        <div class="menu-header"><p id="navWelcome">Welcome, Dr.</p></div>
+        <a href="pediatrician-profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+        <a href="pediatrician-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+        <hr style="margin:.5rem 0;">
+        <a href="#" class="menu-item logout" onclick="doLogout()"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard-container">
+  <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h1 style="margin-bottom:.3rem;"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> My Assessment Questions</h1>
+      <p style="color:var(--text-light);">Create and manage custom screening questions for your patients</p>
+    </div>
+    <button class="btn-primary" onclick="openCreateModal()">+ New Question</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;">
+    <!-- Left: Stats + Info -->
+    <div>
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;"><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Question Library</h3>
+        <div id="statsRow" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div style="background:var(--bg-primary);border-radius:8px;padding:1rem;text-align:center;">
+            <p style="font-size:1.8rem;font-weight:700;color:var(--primary);margin:0;" id="totalCount">—</p>
+            <p style="font-size:.78rem;color:var(--text-light);margin:0;">Total Questions</p>
+          </div>
+          <div style="background:var(--bg-primary);border-radius:8px;padding:1rem;text-align:center;">
+            <p style="font-size:1.8rem;font-weight:700;color:var(--primary);margin:0;" id="activeCount">—</p>
+            <p style="font-size:.78rem;color:var(--text-light);margin:0;">Active</p>
+          </div>
+        </div>
+        <div style="background:#f8fdf8;border:1px solid #c8e6c9;border-radius:8px;padding:1rem;">
+          <p style="font-weight:600;font-size:.88rem;color:var(--primary);margin:0 0 .5rem;"><img src="/icons/recommendations.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> How to use</p>
+          <p style="font-size:.8rem;color:var(--text-light);margin:0;line-height:1.5;">Create custom questions for screening. Use <strong>Assign</strong> to send them to a patient's parent — they'll receive a notification to answer them before or after consultation.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;">📐 Age-Based Static Questions</h3>
+        <p style="font-size:.82rem;color:var(--text-light);margin-bottom:1rem;line-height:1.5;">
+          The system auto-applies the standard developmental questionnaire (ages 3–8). These are shown to parents when booking and gradually expand as the child gets older.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 3</span><span style="color:var(--text-light);">8 questions</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 3.5–4</span><span style="color:var(--text-light);">+1 (9 total)</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 4</span><span style="color:var(--text-light);">+10 (19 total)</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 5</span><span style="color:var(--text-light);">+7 (26 total)</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 6</span><span style="color:var(--text-light);">+6 (32 total)</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;"><span>Age 7–8</span><span style="color:var(--text-light);">+2 (34 total)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Questions List -->
+    <div class="card" style="padding:1.5rem;">
+      <div id="successFlash" class="success-flash"></div>
+      <div id="errorFlash" class="error-flash"></div>
+      <div id="questionsList">
+        <div style="text-align:center;padding:2rem;color:var(--text-light);">Loading your questions…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="questionModal" style="display:none;">
+  <div class="modal-box">
+    <p class="modal-title" id="modalTitle">New Question</p>
+    <p class="modal-sub" id="modalSub">Create a custom assessment question for your patients</p>
+    <div id="modalError" class="error-flash" style="margin-bottom:.8rem;"></div>
+
+    <div class="form-group">
+      <label class="form-label">Question Text *</label>
+      <textarea id="qText" class="form-input" rows="3" placeholder="e.g. Does your child make eye contact during play?" style="resize:vertical;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Question Type *</label>
+      <select id="qType" class="form-input" onchange="onTypeChange()">
+        <option value="yes_no">Yes / No</option>
+        <option value="multiple_choice">Multiple Choice</option>
+        <option value="short_answer">Short Answer</option>
+      </select>
+    </div>
+    <div id="optionsSection" style="display:none;margin-bottom:1.1rem;">
+      <label class="form-label">Answer Options * (min 2)</label>
+      <div id="optionsContainer"></div>
+      <button onclick="addOption()" style="background:none;border:1px dashed var(--border);border-radius:6px;padding:.4rem 1rem;cursor:pointer;color:var(--text-light);font-size:.82rem;width:100%;margin-top:.3rem;">+ Add Option</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div class="form-group">
+        <label class="form-label">Domain</label>
+        <select id="qDomain" class="form-input">
+          <option value="Gross Motor">Gross Motor</option>
+          <option value="Fine Motor">Fine Motor</option>
+          <option value="Language">Language</option>
+          <option value="Personal-Social">Personal-Social</option>
+          <option value="Other" selected>Other</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;align-items:end;">
+        <div>
+          <label class="form-label">Min Age</label>
+          <input type="number" id="qAgeMin" class="form-input" value="0" min="0" max="18">
+        </div>
+        <div>
+          <label class="form-label">Max Age</label>
+          <input type="number" id="qAgeMax" class="form-input" value="18" min="0" max="18">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1.2rem;">
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="saveQBtn" onclick="saveQuestion()">Save Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal-overlay" id="assignModal" style="display:none;">
+  <div class="modal-box">
+    <p class="modal-title">Assign Question to Patient</p>
+    <p class="modal-sub" id="assignModalSub">Select a patient to assign this question to</p>
+    <div class="assign-modal-list" id="assignPatientList">
+      <div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>
+    </div>
+    <div style="margin-top:1rem;text-align:right;">
+      <button class="btn-outline" onclick="closeAssignModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+  <div class="notifications-content">
+    <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+    <div class="notifications-list" id="notifModalList"></div>
+  </div>
+</div>
+
+<script>
+const API='http://localhost:3001/api';
+function getToken(){return localStorage.getItem('kc_token');}
+function getUser(){try{return JSON.parse(localStorage.getItem('kc_user'));}catch{return null;}}
+function doLogout(){['kc_token','kc_user'].forEach(k=>localStorage.removeItem(k));window.location.href='login.html';}
+const _user=getUser();
+if(!getToken()||!_user){window.location.href='login.html';}
+else if(_user.role!=='pediatrician'){window.location.href='dashboard.html';}
+if(_user){
+  document.getElementById('navWelcome').textContent=`Dr. ${_user.firstName} ${_user.lastName||''}`;
+  if(_user.profileIcon&&_user.profileIcon.startsWith('/uploads/'))document.getElementById('navProfilePic').src=_user.profileIcon;
+}
+async function apiFetch(endpoint,options={}){
+  const res=await fetch(`${API}${endpoint}`,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${getToken()}`,...options.headers}});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||`Error ${res.status}`);return data;
+}
+
+let allQuestions=[],editingId=null,assigningQId=null;
+
+function flash(msg,type='success'){
+  const el=document.getElementById(type==='success'?'successFlash':'errorFlash');
+  el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',3500);
+}
+
+// ─── Load Questions ──────────────────────────────────────────
+async function loadQuestions(){
+  try{
+    const data=await apiFetch('/questions');
+    allQuestions=data.questions||[];
+    document.getElementById('totalCount').textContent=allQuestions.length;
+    document.getElementById('activeCount').textContent=allQuestions.filter(q=>q.isActive).length;
+    renderQuestions();
+  }catch(e){document.getElementById('questionsList').innerHTML=`<p style="color:#c0392b;">${e.message}</p>`;}
+}
+
+function renderQuestions(){
+  const container=document.getElementById('questionsList');
+  if(!allQuestions.length){
+    container.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-light);"><div style="font-size:2.5rem;margin-bottom:1rem;"><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></div><p style="font-weight:600;">No questions yet</p><p style="font-size:.85rem;">Click "New Question" to create your first assessment question.</p></div>';
+    return;
+  }
+  const DOMAIN_CLASS={'Gross Motor':'domain-gross','Fine Motor':'domain-fine','Language':'domain-lang','Personal-Social':'domain-social','Other':'domain-other'};
+  const TYPE_CLASS={'yes_no':'type-yes_no','multiple_choice':'type-multiple_choice','short_answer':'type-short_answer'};
+  const TYPE_LABEL={'yes_no':'Yes / No','multiple_choice':'Multiple Choice','short_answer':'Short Answer'};
+  container.innerHTML=allQuestions.map(q=>`
+    <div class="q-card" id="qcard_${q.id}" style="${!q.isActive?'opacity:.55;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+        <div style="flex:1;">
+          <span class="q-type-badge ${TYPE_CLASS[q.questionType]||'type-yes_no'}">${TYPE_LABEL[q.questionType]||q.questionType}</span>
+          <span class="domain-badge ${DOMAIN_CLASS[q.domain]||'domain-other'}">${q.domain||'Other'}</span>
+          ${q.ageMin>0||q.ageMax<18?`<span style="font-size:.68rem;color:var(--text-light);margin-left:.3rem;">Age ${q.ageMin}–${q.ageMax}</span>`:''}
+          <p style="font-size:.9rem;font-weight:600;color:var(--text-dark);margin:.4rem 0;">${q.questionText}</p>
+          ${q.questionType==='multiple_choice'&&q.options.length?`<div class="options-list">${q.options.map(o=>`<span class="option-chip">${o}</span>`).join('')}</div>`:''}
+        </div>
+        ${!q.isActive?'<span style="font-size:.7rem;color:#888;background:#eee;border-radius:8px;padding:.2rem .5rem;">Inactive</span>':''}
+      </div>
+      <div class="q-actions">
+        <button class="btn-outline" onclick="openEditModal(${q.id})" style="font-size:.78rem;padding:.3rem .7rem;">✏️ Edit</button>
+        <button class="btn-outline" onclick="openAssignModal(${q.id})" style="font-size:.78rem;padding:.3rem .7rem;"><img src="/icons/profile_icon.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Assign</button>
+        <button class="btn-outline" onclick="toggleActive(${q.id},${!q.isActive})" style="font-size:.78rem;padding:.3rem .7rem;">${q.isActive?'Deactivate':'Activate'}</button>
+        <button class="btn-danger" onclick="deleteQuestion(${q.id})">🗑 Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ─── Create / Edit Modal ────────────────────────────────────
+function openCreateModal(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='New Question';
+  document.getElementById('modalSub').textContent='Create a custom assessment question';
+  document.getElementById('qText').value='';
+  document.getElementById('qType').value='yes_no';
+  document.getElementById('qDomain').value='Other';
+  document.getElementById('qAgeMin').value='0';
+  document.getElementById('qAgeMax').value='18';
+  document.getElementById('modalError').style.display='none';
+  onTypeChange();clearOptions();
+  document.getElementById('questionModal').style.display='flex';
+}
+function openEditModal(id){
+  const q=allQuestions.find(x=>x.id===id);if(!q)return;
+  editingId=id;
+  document.getElementById('modalTitle').textContent='Edit Question';
+  document.getElementById('modalSub').textContent='Update your assessment question';
+  document.getElementById('qText').value=q.questionText;
+  document.getElementById('qType').value=q.questionType;
+  document.getElementById('qDomain').value=q.domain||'Other';
+  document.getElementById('qAgeMin').value=q.ageMin||0;
+  document.getElementById('qAgeMax').value=q.ageMax||18;
+  document.getElementById('modalError').style.display='none';
+  onTypeChange();clearOptions();
+  if(q.questionType==='multiple_choice'&&q.options.length)q.options.forEach(o=>addOption(o));
+  document.getElementById('questionModal').style.display='flex';
+}
+function closeModal(){document.getElementById('questionModal').style.display='none';}
+function onTypeChange(){
+  const t=document.getElementById('qType').value;
+  document.getElementById('optionsSection').style.display=t==='multiple_choice'?'block':'none';
+  if(t==='multiple_choice'&&document.getElementById('optionsContainer').children.length===0){addOption();addOption();}
+}
+let optionCount=0;
+function clearOptions(){document.getElementById('optionsContainer').innerHTML='';optionCount=0;}
+function addOption(val=''){
+  optionCount++;const id=`opt_${optionCount}`;
+  const div=document.createElement('div');div.className='options-input-row';
+  div.innerHTML=`<input type="text" id="${id}" value="${val}" placeholder="Option ${optionCount}" style="flex:1;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;">
+    <button class="option-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('optionsContainer').appendChild(div);
+}
+function getOptions(){
+  return Array.from(document.querySelectorAll('#optionsContainer input')).map(i=>i.value.trim()).filter(Boolean);
+}
+
+async function saveQuestion(){
+  const btn=document.getElementById('saveQBtn');const errEl=document.getElementById('modalError');
+  errEl.style.display='none';
+  const questionText=document.getElementById('qText').value.trim();
+  const questionType=document.getElementById('qType').value;
+  const domain=document.getElementById('qDomain').value;
+  const ageMin=parseInt(document.getElementById('qAgeMin').value)||0;
+  const ageMax=parseInt(document.getElementById('qAgeMax').value)||18;
+  if(!questionText){errEl.textContent='Question text is required.';errEl.style.display='block';return;}
+  const options=questionType==='multiple_choice'?getOptions():[];
+  if(questionType==='multiple_choice'&&options.length<2){errEl.textContent='Add at least 2 options.';errEl.style.display='block';return;}
+  btn.textContent='Saving…';btn.disabled=true;
+  try{
+    if(editingId){
+      await apiFetch(`/questions/${editingId}`,{method:'PUT',body:JSON.stringify({questionText,questionType,options,domain,ageMin,ageMax})});
+      flash('Question updated successfully.');
+    }else{
+      await apiFetch('/questions',{method:'POST',body:JSON.stringify({questionText,questionType,options,domain,ageMin,ageMax})});
+      flash('Question created successfully.');
+    }
+    closeModal();loadQuestions();
+  }catch(e){errEl.textContent=e.message;errEl.style.display='block';}
+  finally{btn.textContent='Save Question';btn.disabled=false;}
+}
+
+async function toggleActive(id,active){
+  try{await apiFetch(`/questions/${id}`,{method:'PUT',body:JSON.stringify({isActive:active?1:0})});loadQuestions();}
+  catch(e){flash(e.message,'error');}
+}
+async function deleteQuestion(id){
+  if(!confirm('Delete this question? This cannot be undone.'))return;
+  try{await apiFetch(`/questions/${id}`,{method:'DELETE'});flash('Question deleted.');loadQuestions();}
+  catch(e){flash(e.message,'error');}
+}
+
+// ─── Assign Modal ───────────────────────────────────────────
+async function openAssignModal(qId){
+  assigningQId=qId;
+  const q=allQuestions.find(x=>x.id===qId);
+  document.getElementById('assignModalSub').textContent=`"${q?q.questionText.substring(0,60)+'…':'Question'}"`;
+  document.getElementById('assignModal').style.display='flex';
+  document.getElementById('assignPatientList').innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>';
+  try{
+    const data=await apiFetch('/api/children')||await fetchPatients();
+    renderAssignList(data);
+  }catch{await fetchAssignPatients();}
+}
+async function fetchAssignPatients(){
+  try{
+    // Use the pediatrician's appointments to get unique children/parents
+    const data=await apiFetch('/appointments/pedia');
+    const seen=new Set();const patients=[];
+    (data.appointments||[]).forEach(a=>{
+      const key=`${a.childId}`;
+      if(!seen.has(key)){seen.add(key);patients.push({childId:a.childId,childName:`${a.childFirstName} ${a.childLastName}`,parentName:`${a.parentFirstName} ${a.parentLastName}`,appointmentId:a.id});}
+    });
+    renderAssignList({patients});
+  }catch(e){document.getElementById('assignPatientList').innerHTML=`<p style="color:#c0392b;padding:.5rem;">${e.message}</p>`;}
+}
+function renderAssignList(data){
+  const patients=data.patients||data.appointments||[];
+  if(!patients.length){document.getElementById('assignPatientList').innerHTML='<p style="color:var(--text-light);text-align:center;padding:1rem;">No patients yet. Approve some appointments first.</p>';return;}
+  document.getElementById('assignPatientList').innerHTML=patients.map(p=>`
+    <div class="patient-row">
+      <div>
+        <p style="font-weight:600;font-size:.88rem;margin:0;"><img src="/icons/profile_icon.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${p.childName||p.childFirstName+' '+p.childLastName}</p>
+        <p style="font-size:.78rem;color:var(--text-light);margin:.1rem 0 0;"><img src="/icons/account.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${p.parentName||p.parentFirstName+' '+p.parentLastName}</p>
+      </div>
+      <button class="btn-outline" style="font-size:.78rem;padding:.3rem .7rem;" onclick="assignToPatient(${p.childId},${p.appointmentId||null})">Assign</button>
+    </div>`).join('');
+}
+async function assignToPatient(childId,appointmentId){
+  try{
+    await apiFetch(`/questions/${assigningQId}/assign`,{method:'POST',body:JSON.stringify({childId,appointmentId:appointmentId||undefined})});
+    flash('Question assigned! Parent has been notified.');closeAssignModal();
+  }catch(e){flash(e.message,'error');}
+}
+function closeAssignModal(){document.getElementById('assignModal').style.display='none';assigningQId=null;}
+
+// Also try direct patient fetch from pedia appointments
+async function loadPatientsForAssign(){
+  try{
+    const data=await apiFetch('/appointments/pedia');
+    const seen=new Set();const patients=[];
+    (data.appointments||[]).forEach(a=>{
+      if(!seen.has(a.childId)){seen.add(a.childId);
+        patients.push({childId:a.childId,childName:`${a.childFirstName} ${a.childLastName}`,parentName:`${a.parentFirstName} ${a.parentLastName}`,appointmentId:a.id});}
+    });
+    return {patients};
+  }catch{return {patients:[]};}
+}
+
+// Patch openAssignModal to use correct data source
+async function openAssignModal(qId){
+  assigningQId=qId;
+  const q=allQuestions.find(x=>x.id===qId);
+  document.getElementById('assignModalSub').textContent=`"${q?q.questionText.substring(0,60)+'…':'Question'}"`;
+  document.getElementById('assignModal').style.display='flex';
+  document.getElementById('assignPatientList').innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>';
+  const data=await loadPatientsForAssign();
+  renderAssignList(data);
+}
+
+function openNotifications(){document.getElementById('notificationsModal').style.display='flex';}
+function closeNotifications(){document.getElementById('notificationsModal').style.display='none';}
+function toggleProfileMenu(){const m=document.getElementById('profileMenu');m.style.display=m.style.display==='none'?'block':'none';}
+document.addEventListener('click',e=>{if(!e.target.closest('.profile-btn'))document.getElementById('profileMenu').style.display='none';});
+document.addEventListener('DOMContentLoaded',loadQuestions);
+</script>
+</body>
+</html>

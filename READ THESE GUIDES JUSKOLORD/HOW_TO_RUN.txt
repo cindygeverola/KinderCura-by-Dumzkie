@@ -1,0 +1,95 @@
+═══════════════════════════════════════════════════════════
+  KinderCura v3.0 — HOW TO RUN
+═══════════════════════════════════════════════════════════
+
+FOLDER STRUCTURE
+────────────────
+KinderCura/
+├── server.js              ← START HERE: node server.js
+├── db.js                  ← Database connection
+├── api.js                 ← Shared JS for all pages
+├── .env                   ← Your credentials
+├── package.json
+│
+├── routes/                ← Backend API logic
+│   ├── auth.js            ← Login, register, OTP
+│   ├── appointments.js    ← Bookings, approve/decline
+│   ├── notifications.js   ← In-app notifications
+│   ├── children.js        ← Child profiles
+│   ├── assessments.js     ← Screening/assessment
+│   ├── recommendations.js
+│   ├── upload.js          ← Photo uploads
+│   └── admin.js
+│
+├── middleware/
+│   └── auth.js            ← JWT token check
+│
+├── database/
+│   ├── schema.sql         ← Run this first to create tables
+│   └── schema-update.sql  ← Run if upgrading
+│
+├── CSS files/             ← All stylesheets
+├── ICONS/                 ← All images and icons
+│
+├── SIGN-UP,LOGIN/         ← Auth pages
+│   ├── landing.html
+│   ├── login.html
+│   ├── signup.html
+│   └── verify-email.html
+│
+├── PARENT/                ← Parent user pages
+│   ├── dashboard.html
+│   ├── profile.html
+│   ├── appointments.html
+│   ├── results.html
+│   ├── recommendations.html
+│   ├── screening.html
+│   └── settings.html
+│
+├── PEDIA/                 ← Pediatrician pages
+│   ├── pediatrician-dashboard.html
+│   ├── pediatrician-profile.html
+│   ├── pediatrician-appointments.html
+│   ├── pediatrician-patients.html
+│   └── pediatrician-settings.html
+│
+└── ADMIN/                 ← Admin pages
+    ├── admin-dashboard.html
+    ├── admin-users.html
+    ├── admin-analytics.html
+    └── admin-settings.html
+
+──────────────────────────────────────────────────────────
+SETUP STEPS
+──────────────────────────────────────────────────────────
+1. Make sure SQL Server (SQLEXPRESS02) is Running
+   → Open services.msc → SQL Server (SQLEXPRESS02) → Start
+
+2. Run database/schema.sql in SSMS if tables don't exist yet
+
+3. Edit .env and confirm:
+      DB_SERVER=CindyGeverola\SQLEXPRESS02
+      DB_NAME=KinderCura
+      EMAIL_USER=cindygeverola54321@gmail.com
+      EMAIL_PASS=rcqhvzsbqakdcsuo
+      PORT=3001
+
+4. Open terminal in this folder and run:
+      npm install
+      node server.js
+
+5. Open browser:
+      http://localhost:3001
+
+──────────────────────────────────────────────────────────
+PAGE URLS
+──────────────────────────────────────────────────────────
+  Landing:     http://localhost:3001/
+  Login:       http://localhost:3001/login.html
+  Sign Up:     http://localhost:3001/signup.html
+
+  Parent:      http://localhost:3001/parent/dashboard.html
+  Pedia:       http://localhost:3001/pedia/pediatrician-dashboard.html
+  Admin:       http://localhost:3001/admin/admin-dashboard.html
+
+══════════════════════════════════════════════════════════

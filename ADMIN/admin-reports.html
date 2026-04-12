@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - KinderCura Admin</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .report-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+        .report-card, .report-section {
+            background:white;
+            border-radius:15px;
+            box-shadow:0 4px 15px rgba(0,0,0,0.08);
+        }
+        .report-card { padding:1.25rem; }
+        .report-card p { margin:0; }
+        .report-value { font-size:2rem; font-weight:700; color:var(--primary); margin-top:0.4rem; }
+        .report-label { color:var(--text-light); font-size:0.9rem; }
+        .report-section { padding:1.5rem; margin-bottom:1.5rem; }
+        .report-section h3 { margin-bottom:1rem; }
+        .report-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
+        .pill { display:inline-flex; align-items:center; padding:0.35rem 0.8rem; border-radius:999px; font-size:0.82rem; font-weight:600; }
+        .pill-green { background:#e9f6ea; color:#2f7d32; }
+        .pill-orange { background:#fff1dd; color:#b26a00; }
+        .pill-red { background:#fde7e7; color:#c0392b; }
+        .simple-table { width:100%; border-collapse:collapse; }
+        .simple-table th, .simple-table td { padding:0.85rem 0.75rem; border-bottom:1px solid var(--border); text-align:left; }
+        .simple-table th { background:var(--bg-primary); font-weight:600; }
+        .report-list { display:flex; flex-direction:column; gap:0.85rem; }
+        .report-item { padding:1rem; background:var(--bg-primary); border-radius:10px; border-left:4px solid var(--primary); }
+        .mini-bars { display:grid; gap:0.9rem; }
+        .mini-bar-track { height:10px; background:#ece8dc; border-radius:999px; overflow:hidden; }
+        .mini-bar-fill { height:100%; background:var(--primary); border-radius:999px; }
+        .muted { color:var(--text-light); }
+        @media print {
+            .top-nav, .notification-btn, .profile-btn, .profile-menu, .report-actions, .notifications-modal { display:none !important; }
+            body { background:white !important; }
+            .dashboard-container { padding-top:0 !important; }
+            .report-section, .report-card { box-shadow:none !important; border:1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/admin/admin-dashboard.html" class="logo"><img src="/icons/logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="/admin/admin-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/admin/admin-users.html" class="nav-link">Users</a>
+                <a href="/admin/admin-analytics.html" class="nav-link">Analytics</a>
+                <a href="/admin/admin-training.html" class="nav-link">Training</a>
+                <a href="/admin/admin-reports.html" class="nav-link active">Reports</a>
+                <a href="/admin/admin-settings.html" class="nav-link">Settings</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="/icons/notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, Admin</p></div>
+                    <a href="/admin/admin-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1>System Reports</h1>
+            <p>Printable summary of users, screenings, appointments, and recent activity</p>
+        </div>
+
+        <div class="report-section">
+            <div style="display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+                <div>
+                    <h3 style="margin-bottom:0.4rem;"><img src="/icons/logs.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Admin Summary Report</h3>
+                    <p class="muted">Use this page during checking, demo, and final presentation.</p>
+                    <p class="muted" id="reportGeneratedAt" style="margin-top:0.5rem;">Generated: —</p>
+                </div>
+                <div class="report-actions">
+                    <button class="btn btn-primary" onclick="printReport()">Print Report</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/admin/admin-training.html'">Open Training</button>
+                    <button class="btn btn-secondary" onclick="exportReportJson()">Export Report JSON</button>
+                    <button class="btn btn-secondary" onclick="downloadWithAuth('/admin/export-data', 'admin-users-export.json')">Export Users</button>
+                    <button class="btn btn-secondary" onclick="refreshReport()">Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-grid" id="summaryCards">
+            <div class="report-card"><p class="report-label">Loading report...</p><p class="report-value">—</p></div>
+        </div>
+
+        <div class="report-section">
+            <h3><img src="/icons/parent.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> User and Appointment Snapshot</h3>
+            <div style="overflow-x:auto;">
+                <table class="simple-table">
+                    <tbody id="snapshotTable">
+                        <tr><td>Loading snapshot...</td><td>—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:1.5rem;align-items:start;">
+            <div class="report-section">
+                <h3><img src="/icons/analytics.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Monthly Signups (Last 6 Months)</h3>
+                <div class="mini-bars" id="signupBars">
+                    <p class="muted">Loading signup chart...</p>
+                </div>
+            </div>
+            <div class="report-section">
+                <h3><img src="/icons/cognitive.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Average Assessment Scores</h3>
+                <div id="averageScoreBlocks" class="report-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+                    <div class="report-card"><p class="report-label">Loading...</p><p class="report-value">—</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+            <div class="report-section">
+                <h3><img src="/icons/appointment.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Appointment Status Breakdown</h3>
+                <div style="overflow-x:auto;">
+                    <table class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Share</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentBreakdownTable">
+                            <tr><td colspan="3" class="muted">Loading appointment breakdown...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h3><img src="/icons/logs.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> User Role Breakdown</h3>
+                <div style="overflow-x:auto;">
+                    <table class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Count</th>
+                                <th>Share</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roleBreakdownTable">
+                            <tr><td colspan="3" class="muted">Loading role breakdown...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Recent Activity</h3>
+            <div class="report-list" id="recentActivityList">
+                <div class="report-item"><p class="muted">Loading recent activity...</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Admin Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+    <script>
+        requireAuth();
+        const _u = KC.user();
+        if (_u && _u.role !== 'admin') window.location.href = '/parent/dashboard.html';
+
+        let reportCache = null;
+
+        // Small helper so the report shows readable percent values.
+        function percentOf(value, total) {
+            if (!total) return '0%';
+            return `${Math.round((value / total) * 100)}%`;
+        }
+
+        // Reusable row template for count tables.
+        function row(label, value, total) {
+            return `<tr><td>${label}</td><td>${value}</td><td>${percentOf(value, total)}</td></tr>`;
+        }
+
+        // Builds one summary card at the top of the report page.
+        function summaryCard(label, value) {
+            return `<div class="report-card"><p class="report-label">${label}</p><p class="report-value">${value}</p></div>`;
+        }
+
+        async function loadReport() {
+            try {
+                const [dashboard, analytics, pendingUsers] = await Promise.all([
+                    apiFetch('/admin/dashboard'),
+                    apiFetch('/admin/analytics'),
+                    apiFetch('/admin/users?status=pending')
+                ]);
+
+                const appointmentStats = analytics.appointmentStats || [];
+                const roleBreakdown = analytics.roleBreakdown || [];
+                const monthlySignups = analytics.monthlySignups || [];
+                const averageScores = analytics.averageScores || {};
+                const totalAppointments = appointmentStats.reduce((sum, item) => sum + (item.count || 0), 0);
+                const totalRoles = roleBreakdown.reduce((sum, item) => sum + (item.count || 0), 0);
+                const pendingCount = (pendingUsers.users || []).length;
+
+                reportCache = {
+                    generatedAt: new Date().toISOString(),
+                    dashboard,
+                    analytics,
+                    pendingCount,
+                    totalAppointments
+                };
+
+                document.getElementById('reportGeneratedAt').textContent = `Generated: ${new Date(reportCache.generatedAt).toLocaleString()}`;
+
+                // Top summary cards for the most important report numbers.
+                document.getElementById('summaryCards').innerHTML = [
+                    summaryCard('Total Users', dashboard.totalUsers ?? 0),
+                    summaryCard('Total Children', dashboard.childCount ?? 0),
+                    summaryCard('Completed Screenings', dashboard.completedScreenings ?? 0),
+                    summaryCard('Active Assessments', dashboard.activeAssessments ?? 0),
+                    summaryCard('Total Appointments', totalAppointments),
+                    summaryCard('Pending Approvals', pendingCount)
+                ].join('');
+
+                // Snapshot table gives the adviser a quick one-look report summary.
+                document.getElementById('snapshotTable').innerHTML = `
+                    <tr><td>Total parents</td><td>${dashboard.parentCount ?? 0}</td></tr>
+                    <tr><td>Total pediatricians</td><td>${dashboard.pediatricianCount ?? 0}</td></tr>
+                    <tr><td>Total admins</td><td>${dashboard.adminCount ?? 0}</td></tr>
+                    <tr><td>System uptime</td><td>${dashboard.uptime || '99.9%'}</td></tr>
+                    <tr><td>Pending account approvals</td><td>${pendingCount}</td></tr>
+                    <tr><td>Total appointment records</td><td>${totalAppointments}</td></tr>
+                `;
+
+                const maxSignup = Math.max(...monthlySignups.map(item => item.count || 0), 1);
+                document.getElementById('signupBars').innerHTML = monthlySignups.length
+                    ? monthlySignups.map(item => `
+                        <div>
+                            <div style="display:flex;justify-content:space-between;gap:1rem;margin-bottom:0.35rem;">
+                                <strong>${item.month}</strong>
+                                <span class="muted">${item.count} signup${item.count === 1 ? '' : 's'}</span>
+                            </div>
+                            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.max(8, Math.round(((item.count || 0) / maxSignup) * 100))}%;"></div></div>
+                        </div>`).join('')
+                    : '<p class="muted">No signup data available.</p>';
+
+                const scoreCards = [
+                    ['Communication', averageScores.avgCommunication],
+                    ['Social Skills', averageScores.avgSocial],
+                    ['Cognitive', averageScores.avgCognitive],
+                    ['Motor Skills', averageScores.avgMotor]
+                ];
+                document.getElementById('averageScoreBlocks').innerHTML = scoreCards.map(([label, value]) => summaryCard(label, value == null ? '—' : `${Math.round(value)}%`)).join('');
+
+                document.getElementById('appointmentBreakdownTable').innerHTML = appointmentStats.length
+                    ? appointmentStats.map(item => row(item.status, item.count || 0, totalAppointments)).join('')
+                    : '<tr><td colspan="3" class="muted">No appointment data available.</td></tr>';
+
+                document.getElementById('roleBreakdownTable').innerHTML = roleBreakdown.length
+                    ? roleBreakdown.map(item => row(item.role, item.count || 0, totalRoles)).join('')
+                    : '<tr><td colspan="3" class="muted">No role data available.</td></tr>';
+
+                const activities = dashboard.recentActivity || [];
+                document.getElementById('recentActivityList').innerHTML = activities.length
+                    ? activities.map(item => `
+                        <div class="report-item">
+                            <p style="font-weight:600;margin-bottom:0.2rem;">${item.type}</p>
+                            <p class="muted" style="margin-bottom:0.35rem;">${item.description}</p>
+                            <p class="muted" style="font-size:0.82rem;">${item.timestamp}</p>
+                        </div>`).join('')
+                    : '<div class="report-item"><p class="muted">No recent activity yet.</p></div>';
+            } catch (err) {
+                console.error('admin reports load error:', err);
+                document.getElementById('summaryCards').innerHTML = `<div class="report-card"><p class="report-label">Could not load report</p><p class="report-value" style="font-size:1rem;">${err.message}</p></div>`;
+            }
+        }
+
+        function refreshReport() {
+            loadReport();
+        }
+
+        // Print is useful during adviser checking or demo walkthrough.
+        function printReport() {
+            window.print();
+        }
+
+        // Exports the combined report data that is already shown on screen.
+        function exportReportJson() {
+            if (!reportCache) {
+                alert('Please wait for the report to finish loading first.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(reportCache, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'kindercura-admin-report.json';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReport);
+    </script>
+</body>
+</html>

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <link rel="stylesheet" href="/css/screening-styles.css">
+    <style>
+        /* Important: this only restyles the assessment page layout.
+           It does not change the backend logic of KinderCura. */
+        .assessment-shell {
+            display: grid;
+            grid-template-columns: 255px minmax(0, 1fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        .assessment-sidebar-card,
+        .assessment-question-card,
+        .assessment-hero-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .assessment-hero-card {
+            padding: 1.35rem 1.6rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .assessment-hero-card h1 {
+            margin: 0 0 0.35rem 0;
+            font-size: 2.45rem;
+            line-height: 1.03;
+            color: var(--text-dark);
+        }
+
+        .assessment-hero-card p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.98rem;
+            line-height: 1.35;
+        }
+
+        .assessment-hero-meta {
+            margin-top: 0.55rem !important;
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        .assessment-sidebar-card {
+            padding: 1rem;
+            position: sticky;
+            top: 90px;
+        }
+
+        .assessment-sidebar-title {
+            margin: 0 0 0.9rem 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .progress-block {
+            margin-bottom: 0.85rem;
+        }
+
+        .progress-topline {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.65rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.92rem;
+            color: var(--text-dark);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: var(--primary);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+
+        .assessment-mini-card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 0.85rem 0.8rem;
+            text-align: center;
+            margin-top: 0.7rem;
+        }
+
+        .assessment-mini-card p {
+            margin: 0;
+        }
+
+        .assessment-mini-label {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.45rem !important;
+        }
+
+        .assessment-mini-value {
+            color: var(--primary);
+            font-size: 1.55rem;
+            font-weight: 700;
+        }
+
+        .assessment-age-card {
+            border-left: 4px solid var(--primary);
+            text-align: left;
+            padding: 0.85rem 0.8rem;
+        }
+
+        .assessment-age-range {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.2rem !important;
+        }
+
+        .assessment-age-extra {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+
+        .assessment-question-card {
+            padding: 1.2rem;
+        }
+
+        .assessment-counter {
+            color: var(--text-light);
+            font-size: 0.96rem;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .assessment-question-box {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 0.8rem 0.85rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .assessment-question-domain {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .assessment-question-text {
+            color: var(--text-light);
+            font-size: 0.92rem;
+            line-height: 1.35;
+        }
+
+        .assessment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .assessment-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: var(--bg-primary);
+            color: var(--text-light);
+        }
+
+        .assessment-tag.easy { background: var(--accent); color: var(--text-dark); }
+        .assessment-tag.moderate { background: var(--accent-red); color: var(--text-dark); }
+        .assessment-tag.advanced { background: var(--primary); color: #fff; }
+
+        .assessment-answer-title {
+            margin: 0 0 0.65rem 0;
+            color: var(--text-dark);
+            font-size: 1.15rem;
+        }
+
+        .answer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 0.95rem;
+        }
+
+        .answer-option {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.72rem 0.85rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-size: 0.82rem;
+            background: #fff;
+        }
+
+        .answer-option input {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            flex: 0 0 auto;
+        }
+
+        .answer-option.is-selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(120, 157, 117, 0.08);
+        }
+
+        .assessment-actions {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 0.8rem;
+        }
+
+        .assessment-actions.single {
+            grid-template-columns: 1fr;
+        }
+
+        .assessment-action-btn {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 0.82rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            min-height: 48px;
+        }
+
+        .assessment-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .assessment-action-btn.primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .assessment-action-btn.secondary {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .assessment-loading,
+        .assessment-error {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 1.3rem;
+            text-align: center;
+        }
+
+
+        .dashboard-container {
+            max-width: 1520px;
+            padding-top: 1rem;
+        }
+
+        .assessment-question-card {
+            min-height: auto;
+        }
+
+        .assessment-shell {
+            margin-bottom: 0.5rem;
+        }
+
+        .assessment-question-box p,
+        .assessment-counter,
+        .progress-topline,
+        .assessment-age-extra,
+        .assessment-age-range,
+        .assessment-mini-label,
+        .assessment-mini-value,
+        .assessment-tag,
+        .assessment-answer-title,
+        .answer-option,
+        .assessment-action-btn {
+            letter-spacing: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .assessment-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .assessment-sidebar-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .assessment-hero-card h1 {
+                font-size: 1.95rem;
+            }
+
+            .assessment-question-card,
+            .assessment-sidebar-card,
+            .assessment-hero-card {
+                padding: 1rem;
+            }
+
+            .assessment-actions,
+            .assessment-actions.single {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/parent/dashboard.html" class="logo">
+                <img src="/icons/logo.png" class="logo-img">
+                <span class="logo-text">
+                    <span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span>
+                </span>
+            </a>
+            <nav class="main-nav">
+                <a href="/parent/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/parent/results.html" class="nav-link">Results</a>
+                <a href="/parent/recommendations.html" class="nav-link">Recommendations</a>
+                <a href="/parent/appointments.html" class="nav-link">Appointments</a>
+                <a href="/parent/chat.html" class="nav-link">Chat</a>
+                <a href="/parent/custom-questions.html" class="nav-link">Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon">
+                    <span class="notification-badge">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="welcomeName">Welcome</p></div>
+                    <a href="/parent/profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/parent/settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="assessment-hero-card">
+            <h1>Developmental Assessment</h1>
+            <p>Answer each question based on what you observe about your child.</p>
+            <p id="assessmentMeta" class="assessment-hero-meta">Loading interview-based checklist…</p>
+        </div>
+
+        <div class="assessment-shell">
+            <aside class="assessment-sidebar-card">
+                <h2 class="assessment-sidebar-title">Assessment Progress</h2>
+
+                <!-- Important: the progress order is fixed so the display stays consistent everywhere in KinderCura. -->
+                <div class="progress-block">
+                    <div class="progress-topline"><span>Communication</span><span id="comm-progress">0/0</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="comm-bar"></div></div>
+                </div>
+                <div class="progress-block">
+                    <div class="progress-topline"><span>Social Skills</span><span id="social-progress">0/0</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="social-bar"></div></div>
+                </div>
+                <div class="progress-block">
+                    <div class="progress-topline"><span>Cognitive</span><span id="cognitive-progress">0/0</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="cognitive-bar"></div></div>
+                </div>
+                <div class="progress-block">
+                    <div class="progress-topline"><span>Motor Skills</span><span id="motor-progress">0/0</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="motor-bar"></div></div>
+                </div>
+
+                <div class="assessment-mini-card">
+                    <p class="assessment-mini-label">Overall Progress</p>
+                    <p class="assessment-mini-value" id="overall-progress">0%</p>
+                </div>
+
+                <!-- Important: this card now shows the child's exact age and the matched question set. -->
+                <div class="assessment-mini-card assessment-age-card">
+                    <p class="assessment-mini-label">Age Group</p>
+                    <p class="assessment-age-range" id="ageRangeLabel">Loading…</p>
+                    <p class="assessment-age-extra" id="ageRangeDetails">Preparing child age details…</p>
+                </div>
+            </aside>
+
+            <main id="assessmentContent"></main>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+    <script>
+        requireAuth();
+
+        // Important: these are the interview-based questions from the doctor source.
+        // We keep BOTH the display domain and the KinderCura scoring domain so results,
+        // recommendations, dashboard cards, and pediatrician pages still work correctly.
+        const DOCTOR_QUESTION_BANK = [
+            { id: 'Q02', minAgeMonths: 36, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child draw a circle?',                                                difficulty: 'Easy' },
+            { id: 'Q05', minAgeMonths: 36, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child speak using 3–4 word sentences?',                             difficulty: 'Easy' },
+            { id: 'Q07', minAgeMonths: 36, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child dress with supervision?',                                    difficulty: 'Easy' },
+            { id: 'Q08', minAgeMonths: 36, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child wash hands properly?',                                          difficulty: 'Easy' },
+            { id: 'Q01', minAgeMonths: 36, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child ride a tricycle?',                                            difficulty: 'Moderate' },
+            { id: 'Q03', minAgeMonths: 36, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child draw a person with at least 2 body parts?',                 difficulty: 'Moderate' },
+            { id: 'Q04', minAgeMonths: 36, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child build a tower using 10 cubes?',                              difficulty: 'Moderate' },
+            { id: 'Q06', minAgeMonths: 36, displayDomain: 'Language',        scoreDomain: 'Cognitive',      text: 'Does your child understand simple prepositions (e.g., in, on, under)?',     difficulty: 'Moderate' },
+
+            { id: 'Q09', minAgeMonths: 42, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child draw a cube?',                                               difficulty: 'Moderate' },
+
+            { id: 'Q10', minAgeMonths: 48, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child hop?',                                                       difficulty: 'Easy' },
+            { id: 'Q11', minAgeMonths: 48, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child throw a ball overhead?',                                     difficulty: 'Easy' },
+            { id: 'Q14', minAgeMonths: 48, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child speak in complete sentences?',                                 difficulty: 'Easy' },
+            { id: 'Q18', minAgeMonths: 48, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child engage in group play?',                                        difficulty: 'Easy' },
+            { id: 'Q19', minAgeMonths: 48, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child use the toilet independently?',                                difficulty: 'Easy' },
+            { id: 'Q12', minAgeMonths: 48, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child use scissors to cut pictures?',                              difficulty: 'Moderate' },
+            { id: 'Q13', minAgeMonths: 48, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child draw a square?',                                             difficulty: 'Moderate' },
+            { id: 'Q15', minAgeMonths: 48, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child tell a simple story?',                                          difficulty: 'Moderate' },
+            { id: 'Q16', minAgeMonths: 48, displayDomain: 'Language',        scoreDomain: 'Cognitive',      text: 'Does your child understand size concepts (e.g., big vs small)?',            difficulty: 'Moderate' },
+            { id: 'Q17', minAgeMonths: 48, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child dress independently and correctly?',                         difficulty: 'Moderate' },
+
+            { id: 'Q26', minAgeMonths: 60, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child engage in pretend or role-playing activities?',                difficulty: 'Easy' },
+            { id: 'Q20', minAgeMonths: 60, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child skip?',                                                      difficulty: 'Moderate' },
+            { id: 'Q21', minAgeMonths: 60, displayDomain: 'Language',        scoreDomain: 'Cognitive',      text: 'Does your child understand basic concepts of time?',                         difficulty: 'Moderate' },
+            { id: 'Q22', minAgeMonths: 60, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child follow 3-step commands?',                                      difficulty: 'Moderate' },
+            { id: 'Q23', minAgeMonths: 60, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child pronounce most speech sounds clearly?',                       difficulty: 'Moderate' },
+            { id: 'Q24', minAgeMonths: 60, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child do simple errands or help with household tasks?',            difficulty: 'Moderate' },
+            { id: 'Q25', minAgeMonths: 60, displayDomain: 'Personal-Social', scoreDomain: 'Cognitive',      text: 'Does your child ask questions about the meaning of words?',                  difficulty: 'Moderate' },
+
+            { id: 'Q29', minAgeMonths: 72, displayDomain: 'Language',        scoreDomain: 'Communication', text: 'Does your child express emotions verbally?',                                    difficulty: 'Easy' },
+            { id: 'Q31', minAgeMonths: 72, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child dress completely on their own?',                              difficulty: 'Easy' },
+            { id: 'Q27', minAgeMonths: 72, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child copy letters (even if some are reversed)?',                  difficulty: 'Moderate' },
+            { id: 'Q28', minAgeMonths: 72, displayDomain: 'Fine Motor',      scoreDomain: 'Motor Skills',   text: 'Does your child draw a person with complete body parts (around 12 parts)?',  difficulty: 'Moderate' },
+            { id: 'Q30', minAgeMonths: 72, displayDomain: 'Language',        scoreDomain: 'Cognitive',      text: 'Does your child follow 3-step sequential commands?',                         difficulty: 'Moderate' },
+            { id: 'Q32', minAgeMonths: 72, displayDomain: 'Personal-Social', scoreDomain: 'Social Skills', text: 'Does your child tie shoelaces?',                                               difficulty: 'Moderate' },
+
+            { id: 'Q33', minAgeMonths: 84, displayDomain: 'Gross Motor',     scoreDomain: 'Motor Skills',   text: 'Does your child run and climb with good coordination?',                       difficulty: 'Easy' },
+            { id: 'Q34', minAgeMonths: 84, displayDomain: 'Fine Motor',      scoreDomain: 'Cognitive',      text: 'Does your child correctly identify left and right?',                         difficulty: 'Moderate' }
+        ];
+
+        const DOMAIN_ORDER = [
+            { key: 'Communication', label: 'Communication', progressId: 'comm-progress', barId: 'comm-bar' },
+            { key: 'Social Skills', label: 'Social Skills', progressId: 'social-progress', barId: 'social-bar' },
+            { key: 'Cognitive', label: 'Cognitive', progressId: 'cognitive-progress', barId: 'cognitive-bar' },
+            { key: 'Motor Skills', label: 'Motor Skills', progressId: 'motor-progress', barId: 'motor-bar' }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let assessmentId = null;
+        let selectedChild = null;
+        let QUESTION_SET = [];
+
+        function getDifficultyClass(level) {
+            const normalized = String(level || '').toLowerCase();
+            if (normalized === 'easy') return 'easy';
+            if (normalized === 'moderate') return 'moderate';
+            return 'advanced';
+        }
+
+        function difficultyRank(level) {
+            const normalized = String(level || '').toLowerCase();
+            if (normalized === 'easy') return 0;
+            if (normalized === 'moderate') return 1;
+            return 2;
+        }
+
+        function isValidObjectId(value) {
+            return /^[a-fA-F0-9]{24}$/.test(String(value || '').trim());
+        }
+
+        function getAgeInMonths(dateOfBirth) {
+            const dob = new Date(dateOfBirth);
+            const now = new Date();
+            let months = (now.getFullYear() - dob.getFullYear()) * 12;
+            months += now.getMonth() - dob.getMonth();
+            if (now.getDate() < dob.getDate()) months -= 1;
+            return months;
+        }
+
+        function formatExactAge(dateOfBirth) {
+            const months = getAgeInMonths(dateOfBirth);
+            const years = Math.floor(months / 12);
+            const remainingMonths = months % 12;
+            return `${years} year${years !== 1 ? 's' : ''} ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
+        }
+
+        function getAgeRangeLabel(ageMonths) {
+            if (ageMonths >= 36 && ageMonths <= 60) return 'Preschool (3-5 years)';
+            if (ageMonths > 60 && ageMonths <= 96) return 'School Age (5-8 years)';
+            return 'Child Assessment';
+        }
+
+        // Important: we keep the interview checklist progressive by age, then Easy before Moderate.
+        function buildQuestionSet(child) {
+            const ageMonths = getAgeInMonths(child.dateOfBirth);
+            return DOCTOR_QUESTION_BANK
+                .filter(q => ageMonths >= q.minAgeMonths)
+                .sort((a, b) => {
+                    if (a.minAgeMonths !== b.minAgeMonths) return a.minAgeMonths - b.minAgeMonths;
+                    if (difficultyRank(a.difficulty) !== difficultyRank(b.difficulty)) {
+                        return difficultyRank(a.difficulty) - difficultyRank(b.difficulty);
+                    }
+                    return a.id.localeCompare(b.id);
+                });
+        }
+
+        async function getSelectedChild() {
+            const data = await apiFetch('/children');
+            const children = Array.isArray(data.children) ? data.children : [];
+            if (!children.length) return null;
+
+            let childId = KC.childId();
+            if (!isValidObjectId(childId)) childId = localStorage.getItem('kc_viewChildId');
+
+            let child = children.find(c => c.id === childId);
+            if (!child) child = children[0];
+            if (child) localStorage.setItem('kc_childId', child.id);
+            return child || null;
+        }
+
+        function getAnswerPayload() {
+            return QUESTION_SET
+                .filter(q => answers[q.id])
+                .map(q => ({
+                    questionId: q.id,
+                    domain: q.scoreDomain,
+                    questionText: q.text,
+                    answer: answers[q.id]
+                }));
+        }
+
+        function updateAnswerOptionStyles() {
+            const q = QUESTION_SET[currentQuestion];
+            document.querySelectorAll('.answer-option').forEach(option => {
+                option.classList.toggle('is-selected', answers[q.id] === option.dataset.answer);
+            });
+        }
+
+        function updateProgress() {
+            const totals = Object.fromEntries(DOMAIN_ORDER.map(d => [d.key, 0]));
+            const answered = Object.fromEntries(DOMAIN_ORDER.map(d => [d.key, 0]));
+
+            QUESTION_SET.forEach(q => {
+                totals[q.scoreDomain] += 1;
+                if (answers[q.id]) answered[q.scoreDomain] += 1;
+            });
+
+            DOMAIN_ORDER.forEach(domain => {
+                const total = totals[domain.key] || 0;
+                const done = answered[domain.key] || 0;
+                document.getElementById(domain.progressId).textContent = `${done}/${total}`;
+                document.getElementById(domain.barId).style.width = total ? `${Math.round((done / total) * 100)}%` : '0%';
+            });
+
+            document.getElementById('overall-progress').textContent = `${Math.round((Object.keys(answers).length / Math.max(QUESTION_SET.length, 1)) * 100)}%`;
+        }
+
+        function renderQuestion() {
+            const q = QUESTION_SET[currentQuestion];
+            const content = document.getElementById('assessmentContent');
+            const hasPrevious = currentQuestion > 0;
+            const isLast = currentQuestion === QUESTION_SET.length - 1;
+
+            content.innerHTML = `
+                <section class="assessment-question-card">
+                    <p class="assessment-counter">Question ${currentQuestion + 1} of ${QUESTION_SET.length}</p>
+
+                    <div class="assessment-question-box">
+                        <span class="assessment-question-domain">${q.displayDomain}</span>
+                        <p class="assessment-question-text">${q.text}</p>
+                    </div>
+
+                    <div class="assessment-tags">
+                        <span class="assessment-tag ${getDifficultyClass(q.difficulty)}">${q.difficulty}</span>
+                        <span class="assessment-tag">Scored under ${q.scoreDomain}</span>
+                    </div>
+
+                    <h3 class="assessment-answer-title">How would you answer?</h3>
+
+                    <div class="answer-list">
+                        ${[
+                            { value: 'yes', label: 'Yes, consistently' },
+                            { value: 'sometimes', label: 'Sometimes' },
+                            { value: 'no', label: 'Not yet' }
+                        ].map(option => `
+                            <label class="answer-option ${answers[q.id] === option.value ? 'is-selected' : ''}" data-answer="${option.value}">
+                                <input type="radio" name="answer" value="${option.value}" ${answers[q.id] === option.value ? 'checked' : ''} onchange="recordAnswer('${option.value}')">
+                                <span>${option.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+
+                    <div class="assessment-actions ${hasPrevious ? '' : 'single'}">
+                        ${hasPrevious ? `<button type="button" class="assessment-action-btn secondary" onclick="previousQuestion()">← Back</button>` : ''}
+                        <button type="button" class="assessment-action-btn primary" onclick="nextQuestion()">${isLast ? 'Complete Assessment ✓' : 'Next Question'}</button>
+                    </div>
+                </section>
+            `;
+        }
+
+        function recordAnswer(answer) {
+            const q = QUESTION_SET[currentQuestion];
+            answers[q.id] = answer;
+            updateProgress();
+            updateAnswerOptionStyles();
+        }
+
+        function previousQuestion() {
+            if (currentQuestion <= 0) return;
+            currentQuestion -= 1;
+            renderQuestion();
+            updateAnswerOptionStyles();
+        }
+
+        async function saveDraftIfNeeded() {
+            if (!assessmentId) return;
+            const answeredCount = Object.keys(answers).length;
+            if (!answeredCount || answeredCount % 5 !== 0) return;
+
+            try {
+                await apiFetch('/assessments/save-draft', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        assessmentId,
+                        progress: Math.round((answeredCount / QUESTION_SET.length) * 100),
+                        answers: getAnswerPayload()
+                    })
+                });
+            } catch (_) {
+                // Important: silent on purpose so draft saving will not interrupt the parent flow.
+            }
+        }
+
+        async function nextQuestion() {
+            const q = QUESTION_SET[currentQuestion];
+            if (!answers[q.id]) {
+                alert('Please answer the question before continuing.');
+                return;
+            }
+
+            if (currentQuestion === QUESTION_SET.length - 1) {
+                completeAssessment();
+                return;
+            }
+
+            await saveDraftIfNeeded();
+            currentQuestion += 1;
+            renderQuestion();
+            updateAnswerOptionStyles();
+        }
+
+        async function completeAssessment() {
+            const content = document.getElementById('assessmentContent');
+            content.innerHTML = `
+                <div class="assessment-loading">
+                    <p style="font-size:1.15rem;font-weight:700;margin:0 0 0.7rem 0;">Submitting assessment…</p>
+                    <p style="margin:0;color:var(--text-light);">Please wait while KinderCura calculates the result.</p>
+                </div>
+            `;
+
+            try {
+                const data = await apiFetch('/assessments/submit', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        assessmentId,
+                        childId: selectedChild.id,
+                        answers: getAnswerPayload()
+                    })
+                });
+
+                if (data.assessmentId) {
+                    localStorage.setItem('kc_assessmentId', data.assessmentId);
+                }
+
+                // Important: after finishing the assessment, return the parent to the dashboard first.
+                // The latest result will still appear in Dashboard, Results, and Recommendations.
+                window.location.href = '/parent/dashboard.html';
+            } catch (e) {
+                content.innerHTML = `
+                    <div class="assessment-error">
+                        <p style="color:red;font-weight:700;margin:0 0 0.9rem 0;">Submission failed: ${e.message}</p>
+                        <button type="button" class="assessment-action-btn primary" onclick="completeAssessment()" style="max-width:220px;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function initAssessment() {
+            const content = document.getElementById('assessmentContent');
+            content.innerHTML = `
+                <div class="assessment-loading">
+                    <p style="margin:0;font-weight:700;">Loading assessment…</p>
+                </div>
+            `;
+
+            try {
+                selectedChild = await getSelectedChild();
+                if (!selectedChild) {
+                    alert('No child registered. Please complete your profile first.');
+                    window.location.href = '/parent/profile.html';
+                    return;
+                }
+
+                const ageMonths = getAgeInMonths(selectedChild.dateOfBirth);
+                if (ageMonths < 36) {
+                    alert('This assessment is available for children aged 3 to 8 only.');
+                    window.location.href = '/parent/dashboard.html';
+                    return;
+                }
+
+                QUESTION_SET = buildQuestionSet(selectedChild);
+
+                const exactAge = formatExactAge(selectedChild.dateOfBirth);
+                const ageRange = getAgeRangeLabel(ageMonths);
+                document.getElementById('assessmentMeta').textContent = `Interview-based checklist loaded for age ${exactAge} • ${QUESTION_SET.length} questions`;
+                document.getElementById('ageRangeLabel').textContent = ageRange;
+                document.getElementById('ageRangeDetails').innerHTML = `Current child age: ${exactAge}<br>Question set for this child: ${QUESTION_SET.length}`;
+
+                // Important: create the backend assessment record first so the answers still save correctly.
+                const initData = await apiFetch('/assessments/initialize', {
+                    method: 'POST',
+                    body: JSON.stringify({ childId: selectedChild.id })
+                });
+                assessmentId = initData.assessmentId;
+
+                updateProgress();
+                renderQuestion();
+                updateAnswerOptionStyles();
+            } catch (e) {
+                console.error('Assessment init error:', e);
+                content.innerHTML = `
+                    <div class="assessment-error">
+                        <p style="color:red;font-weight:700;margin:0 0 0.9rem 0;">Failed to load the assessment: ${e.message}</p>
+                        <button type="button" class="assessment-action-btn primary" onclick="initAssessment()" style="max-width:220px;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAssessment);
+    </script>
+</body>
+</html>

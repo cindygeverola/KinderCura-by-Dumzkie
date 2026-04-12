@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <link rel="stylesheet" href="screening-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo"><img src="logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="results.html" class="nav-link">Results</a>
+                <a href="recommendations.html" class="nav-link">Recommendations</a>
+                <a href="appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, User</p></div>
+                    <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom:0.5rem;">Developmental Screening</h1>
+            <p style="color:var(--text-light);">Answer each question based on what you observe about your child</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="background:white;padding:1.5rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;">
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.3rem;">
+                        <span>Communication</span><span id="comm-progress">0/5</span>
+                    </div>
+                    <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:var(--primary);transition:width 0.3s;" id="comm-bar"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.3rem;">
+                        <span>Social Skills</span><span id="social-progress">0/5</span>
+                    </div>
+                    <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:var(--primary);transition:width 0.3s;" id="social-bar"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.3rem;">
+                        <span>Cognitive</span><span id="cognitive-progress">0/5</span>
+                    </div>
+                    <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:var(--primary);transition:width 0.3s;" id="cognitive-bar"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.3rem;">
+                        <span>Motor Skills</span><span id="motor-progress">0/5</span>
+                    </div>
+                    <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:var(--primary);transition:width 0.3s;" id="motor-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center;">
+                <p style="font-size:0.9rem;color:var(--text-light);">Overall Progress</p>
+                <p style="font-size:1.5rem;font-weight:700;color:var(--primary);" id="overall-progress">0%</p>
+            </div>
+        </div>
+
+        <!-- Question Container -->
+        <div id="screeningContainer"></div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"><div class="notification-item"><span><img src="/icons/clipboard.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span><div><p class="notification-title">Assessment Completed</p></div></div></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const QUESTIONS = [
+            { id:1,  domain:'Communication', text:"Does your child respond when their name is called?",                                         difficulty:'Easy' },
+            { id:2,  domain:'Communication', text:'Does your child understand simple words such as "mama," "dada," or "no"?',                   difficulty:'Easy' },
+            { id:3,  domain:'Communication', text:'Does your child babble or produce speech-like sounds?',                                       difficulty:'Easy' },
+            { id:4,  domain:'Communication', text:'Does your child try to communicate needs using gestures like pointing or waving?',            difficulty:'Moderate' },
+            { id:5,  domain:'Communication', text:'Does your child attempt to imitate words or sounds they hear from others?',                   difficulty:'Moderate' },
+            { id:6,  domain:'Social Skills', text:'Does your child smile or react positively when interacting with others?',                     difficulty:'Easy' },
+            { id:7,  domain:'Social Skills', text:'Does your child make eye contact when someone talks or plays with them?',                     difficulty:'Easy' },
+            { id:8,  domain:'Social Skills', text:'Does your child show interest in playing with other children or adults?',                     difficulty:'Moderate' },
+            { id:9,  domain:'Social Skills', text:'Does your child respond to emotional expressions such as laughter or sadness?',               difficulty:'Moderate' },
+            { id:10, domain:'Social Skills', text:'Does your child try to get attention by showing objects or making sounds?',                   difficulty:'Moderate' },
+            { id:11, domain:'Cognitive',     text:'Does your child explore toys or objects with curiosity?',                                     difficulty:'Easy' },
+            { id:12, domain:'Cognitive',     text:'Does your child recognize familiar people or objects?',                                       difficulty:'Easy' },
+            { id:13, domain:'Cognitive',     text:'Does your child try to solve simple problems, like reaching for a toy that is out of reach?', difficulty:'Moderate' },
+            { id:14, domain:'Cognitive',     text:'Can your child follow simple instructions like "come here" or "give me the toy"?',            difficulty:'Moderate' },
+            { id:15, domain:'Cognitive',     text:'Does your child show interest in learning new activities or games?',                          difficulty:'Moderate' },
+            { id:16, domain:'Motor Skills',  text:'Can your child sit, stand, or walk depending on their age?',                                  difficulty:'Easy' },
+            { id:17, domain:'Motor Skills',  text:'Does your child pick up small objects using fingers (like snacks or small toys)?',            difficulty:'Moderate' },
+            { id:18, domain:'Motor Skills',  text:'Can your child hold and move toys intentionally?',                                            difficulty:'Moderate' },
+            { id:19, domain:'Motor Skills',  text:'Does your child attempt movements such as crawling, running, or climbing?',                   difficulty:'Moderate' },
+            { id:20, domain:'Motor Skills',  text:'Can your child perform simple hand tasks like stacking blocks or turning book pages?',        difficulty:'Advanced' }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let assessmentId = null;
+
+        function getDifficultyColor(d) {
+            return d==='Easy' ? 'var(--accent)' : d==='Moderate' ? 'var(--accent-red)' : 'var(--primary)';
+        }
+
+        async function initAssessment() {
+            const childId = KC.childId();
+            if (!childId) { alert('No child registered. Please complete your profile first.'); window.location.href='profile.html'; return; }
+            try {
+                const data = await apiFetch('/assessments/initialize', { method:'POST', body: JSON.stringify({ childId: parseInt(childId) }) });
+                assessmentId = data.assessmentId;
+                renderQuestion();
+            } catch (e) { console.error(e); renderQuestion(); /* fallback offline */ }
+        }
+
+        function renderQuestion() {
+            const q = QUESTIONS[currentQuestion];
+            const container = document.getElementById('screeningContainer');
+            container.innerHTML = `
+                <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                    <p style="color:var(--text-light);margin-bottom:1rem;">Question ${currentQuestion+1} of ${QUESTIONS.length}</p>
+                    <div style="background:var(--bg-primary);padding:0.8rem;border-radius:8px;margin-bottom:1rem;">
+                        <p style="font-weight:600;color:var(--primary);font-size:0.9rem;margin-bottom:0.3rem;">${q.domain}</p>
+                        <p style="color:var(--text-light);font-size:0.85rem;">${q.text}</p>
+                    </div>
+                    <span style="background:${getDifficultyColor(q.difficulty)};color:var(--text-dark);padding:0.3rem 0.8rem;border-radius:20px;font-size:0.75rem;font-weight:600;">${q.difficulty}</span>
+
+                    <div style="margin:1.5rem 0;">
+                        <p style="font-weight:600;margin-bottom:1rem;color:var(--text-dark);">How would you answer?</p>
+                        <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                            ${['yes','sometimes','no'].map((v,i) => `
+                            <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;padding:0.8rem;border:2px solid ${answers[q.id]===v?'var(--primary)':'var(--border)'};border-radius:8px;transition:border-color 0.2s;">
+                                <input type="radio" name="answer" value="${v}" ${answers[q.id]===v?'checked':''} onchange="recordAnswer('${v}')">
+                                <span>${['Yes, consistently','Sometimes','Not yet'][i]}</span>
+                            </label>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:1rem;">
+                        ${currentQuestion > 0 ? `<button class="btn btn-secondary" onclick="previousQuestion()" style="flex:1;">← Back</button>` : ''}
+                        <button class="btn btn-primary" onclick="nextQuestion()" style="flex:1;">
+                            ${currentQuestion === QUESTIONS.length-1 ? 'Complete Assessment ✓' : 'Next →'}
+                        </button>
+                    </div>
+                </div>`;
+            window.scrollTo(0,0);
+        }
+
+        function recordAnswer(answer) {
+            answers[QUESTIONS[currentQuestion].id] = answer;
+            updateProgress();
+            renderQuestion(); // re-render to highlight selected
+        }
+
+        function nextQuestion() {
+            if (!answers[QUESTIONS[currentQuestion].id]) { alert('Please answer the question before continuing.'); return; }
+            if (currentQuestion === QUESTIONS.length - 1) { completeAssessment(); return; }
+            // Auto-save draft every 5 questions
+            if ((currentQuestion + 1) % 5 === 0 && assessmentId) {
+                apiFetch('/assessments/save-draft', { method:'POST', body: JSON.stringify({ assessmentId, answers, progress: Math.round(((currentQuestion+1)/QUESTIONS.length)*100) }) }).catch(()=>{});
+            }
+            currentQuestion++;
+            renderQuestion();
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) { currentQuestion--; renderQuestion(); }
+        }
+
+        function updateProgress() {
+            const counts = { Communication:0, 'Social Skills':0, Cognitive:0, 'Motor Skills':0 };
+            QUESTIONS.forEach(q => { if (answers[q.id]) counts[q.domain]++; });
+            document.getElementById('comm-progress').textContent      = counts['Communication']+'/5';
+            document.getElementById('social-progress').textContent    = counts['Social Skills']+'/5';
+            document.getElementById('cognitive-progress').textContent = counts['Cognitive']+'/5';
+            document.getElementById('motor-progress').textContent     = counts['Motor Skills']+'/5';
+            document.getElementById('comm-bar').style.width      = (counts['Communication']/5*100)+'%';
+            document.getElementById('social-bar').style.width    = (counts['Social Skills']/5*100)+'%';
+            document.getElementById('cognitive-bar').style.width = (counts['Cognitive']/5*100)+'%';
+            document.getElementById('motor-bar').style.width     = (counts['Motor Skills']/5*100)+'%';
+            document.getElementById('overall-progress').textContent =
+                Math.round((Object.keys(answers).length / QUESTIONS.length)*100)+'%';
+        }
+
+        async function completeAssessment() {
+            const childId = KC.childId();
+            const container = document.getElementById('screeningContainer');
+            container.innerHTML = `<div style="background:white;padding:2rem;border-radius:15px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <p style="font-size:1.2rem;font-weight:600;margin-bottom:1rem;">⏳ Submitting assessment…</p>
+                <p style="color:var(--text-light);">Please wait while we calculate results.</p></div>`;
+
+            try {
+                const data = await apiFetch('/assessments/submit', {
+                    method: 'POST',
+                    body: JSON.stringify({ assessmentId, childId: parseInt(childId), answers })
+                });
+                localStorage.setItem('kc_assessmentId', data.assessmentId);
+                window.location.href = 'results.html';
+            } catch (e) {
+                container.innerHTML = `<div style="background:white;padding:2rem;border-radius:15px;text-align:center;">
+                    <p style="color:red;">Submission failed: ${e.message}</p>
+                    <button class="btn btn-primary" onclick="completeAssessment()" style="margin-top:1rem;">Retry</button></div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAssessment);
+    </script>
+</body>
+</html>

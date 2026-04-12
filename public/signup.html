@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - KinderCura</title>
+    <link rel="stylesheet" href="auth-new-styles.css">
+    <style>
+        .form-step{display:none}.form-step.active{display:block;animation:fadeIn 0.3s ease forwards}
+        @keyframes fadeIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+        .error-msg{background:#fde8e8;color:#c0392b;padding:.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;display:none}
+        .success-msg{background:#d4edda;color:#155724;padding:.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;display:none}
+
+        /* Photo Upload */
+        .photo-upload-area{border:2px dashed #6B8E6F;border-radius:16px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:#f9fdf9;position:relative}
+        .photo-upload-area:hover{background:#f0f7f0;border-color:#4a7a4e}
+        .photo-preview{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #6B8E6F;margin:0 auto .8rem;display:block}
+        .photo-placeholder{width:100px;height:100px;border-radius:50%;background:#e8f4e8;margin:0 auto .8rem;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+        .photo-upload-btn{background:#6B8E6F;color:white;border:none;padding:.5rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.9rem;margin-top:.5rem}
+        .photo-upload-btn:hover{background:#4a7a4e}
+        .photo-hint{font-size:.8rem;color:#888;margin-top:.4rem}
+        input[type="file"].hidden-input{display:none}
+
+        /* 4-digit OTP */
+        .otp-boxes{display:flex;gap:.8rem;justify-content:center;margin:1.2rem 0}
+        .otp-boxes input{width:65px;height:70px;text-align:center;font-size:2rem;font-weight:700;border:2px solid #ddd;border-radius:12px;outline:none;transition:border .2s}
+        .otp-boxes input:focus{border-color:#6B8E6F;box-shadow:0 0 0 3px rgba(107,142,111,.15)}
+        .resend-btn{background:none;border:none;color:#6B8E6F;cursor:pointer;font-weight:600;text-decoration:underline;font-size:.9rem}
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-sidebar" style="position:fixed;left:0;top:0;height:100vh;width:50%;overflow-y:auto;z-index:10;">
+        <div class="sidebar-logo">
+            <img src="logo.png" alt="KinderCura Logo" class="sidebar-logo-img">
+            <h1><span style="color:#E8A5A5;">Kinder</span><span style="color:#6B8E6F;">Cura</span></h1>
+        </div>
+        <p class="sidebar-tagline">Supporting Your Child's Development Journey</p>
+        <p class="sidebar-subtitle">Comprehensive screening, expert guidance, and professional tools all in one place</p>
+        <div class="sidebar-features">
+            <div class="feature"><span class="check-icon">✓</span><p>Comprehensive Screening</p></div>
+            <div class="feature"><span class="check-icon">✓</span><p>Progress Tracking</p></div>
+            <div class="feature"><span class="check-icon">✓</span><p>Expert Recommendations</p></div>
+            <div class="feature"><span class="check-icon">✓</span><p>Appointment System</p></div>
+        </div>
+    </div>
+
+    <div class="auth-form-section" style="margin-left:50%;flex:1;">
+    <div class="form-container">
+
+    <!-- STEP 1: Role -->
+    <div class="form-step active" id="s1">
+        <div class="form-header"><h2>Create Your Account</h2><p>Select your role to get started</p></div>
+        <div class="form-section">
+            <h3>Select Your Role</h3>
+            <div class="role-options">
+                <label class="role-option">
+                    <input type="radio" name="role" value="parent">
+                    <div class="role-content"><span class="role-icon"><img src="/icons/parent.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>
+                    <div class="role-info"><h4>Parent/Guardian</h4><p>Monitor your child's development</p></div></div>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="pediatrician">
+                    <div class="role-content"><span class="role-icon"><img src="/icons/pediatrician.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></span>
+                    <div class="role-info"><h4>Pediatrician</h4><p>Professional monitoring tools</p></div></div>
+                </label>
+            </div>
+            <div id="e1" class="error-msg"></div>
+            <button class="btn btn-primary btn-full" onclick="go(2)">Continue</button>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- ════════ PARENT FLOW ════════ -->
+
+    <!-- P-STEP 2: Child Info + Child Photo -->
+    <div class="form-step" id="sp2">
+        <div class="form-header"><h2>Child Information</h2><p>Tell us about your child first</p></div>
+        <div class="form-section">
+            <div id="ep2" class="error-msg"></div>
+
+            <!-- Child Photo Upload -->
+            <div class="form-group">
+                <label>Child's Profile Picture <span style="color:#888;font-weight:400;"></span></label>
+                <div class="photo-upload-area" onclick="document.getElementById('childPhotoInput').click()">
+                    <div class="photo-placeholder" id="childPhotoPlaceholder"><img src="/icons/profile_icon.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></div>
+                    <img id="childPhotoPreview" class="photo-preview" style="display:none;" src="" alt="Child photo">
+                    <button type="button" class="photo-upload-btn">📷 Upload Photo</button>
+                    <p class="photo-hint">JPG, PNG up to 5MB</p>
+                </div>
+                <input type="file" id="childPhotoInput" class="hidden-input" accept="image/*" onchange="previewPhoto('childPhotoInput','childPhotoPreview','childPhotoPlaceholder')">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group"><label>Child's First Name</label><input type="text" id="childFirst" placeholder="Jane"></div>
+                <div class="form-group"><label>Child's Last Name</label><input type="text" id="childLast" placeholder="Doe"></div>
+            </div>
+            <div class="form-group"><label>Child's Middle Name <span style="color:#888;font-weight:400;">(optional)</span></label><input type="text" id="childMiddle" placeholder="Optional"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="dob">
+                    <small>Child must be between ages 3–8</small>
+                </div>
+                <div class="form-group"><label>Gender</label>
+                    <select id="childGender">
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="go(1)">Back</button>
+                <button class="btn btn-primary" onclick="go(3)">Continue</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- P-STEP 3: Parent Info + Parent Photo -->
+    <div class="form-step" id="sp3">
+        <div class="form-header"><h2>Your Information</h2><p>Tell us about yourself</p></div>
+        <div class="form-section">
+            <div id="ep3" class="error-msg"></div>
+
+            <!-- Parent Photo Upload -->
+            <div class="form-group">
+                <label>Your Profile Picture <span style="color:#888;font-weight:400;"></span></label>
+                <div class="photo-upload-area" onclick="document.getElementById('parentPhotoInput').click()">
+                    <div class="photo-placeholder" id="parentPhotoPlaceholder"><img src="/icons/account.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></div>
+                    <img id="parentPhotoPreview" class="photo-preview" style="display:none;" src="" alt="Your photo">
+                    <button type="button" class="photo-upload-btn">📷 Upload Photo</button>
+                    <p class="photo-hint">JPG, PNG up to 5MB</p>
+                </div>
+                <input type="file" id="parentPhotoInput" class="hidden-input" accept="image/*" onchange="previewPhoto('parentPhotoInput','parentPhotoPreview','parentPhotoPlaceholder')">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group"><label>First Name</label><input type="text" id="pFirst" placeholder="John"></div>
+                <div class="form-group"><label>Middle Name</label><input type="text" id="pMiddle" placeholder="Optional"></div>
+            </div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="pLast" placeholder="Doe"></div>
+            <div class="form-group"><label>Relationship to Child</label>
+                <select id="relationship">
+                    <option value="">Select relationship</option>
+                    <option value="mother">Mother</option>
+                    <option value="father">Father</option>
+                    <option value="guardian">Guardian</option>
+                    <option value="grandparent">Grandparent</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="go(2)">Back</button>
+                <button class="btn btn-primary" onclick="go(4)">Continue</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- P-STEP 4: Credentials -->
+    <div class="form-step" id="sp4">
+        <div class="form-header"><h2>Login Credentials</h2><p>Set up your username and password</p></div>
+        <div class="form-section">
+            <div id="ep4" class="error-msg"></div>
+            <div class="form-group"><label>Username</label><input type="text" id="pUsername" placeholder="Choose a username"></div>
+            <div class="form-group"><label>Email Address</label><input type="email" id="pEmail" placeholder="you@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="pPassword" placeholder="At least 8 characters"></div>
+            <div class="form-group"><label>Confirm Password</label><input type="password" id="pConfirm" placeholder="Repeat password"></div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="go(3)">Back</button>
+                <button class="btn btn-primary" onclick="sendOTP()">Send Verification Code</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- P-STEP 5: 4-digit OTP -->
+    <div class="form-step" id="sp5">
+        <div class="form-header"><h2>Verify Your Email</h2><p>Enter the 4-digit code we sent you</p></div>
+        <div class="form-section">
+            <div id="ep5e" class="error-msg"></div>
+            <div id="ep5s" class="success-msg"></div>
+            <p style="text-align:center;color:#888;margin-bottom:.5rem;">Code sent to <strong id="otpEmail"></strong></p>
+            <div class="otp-boxes">
+                <input type="text" id="o1" maxlength="1" oninput="otpNext(this,'o2')" onkeydown="otpBack(event,'',this)">
+                <input type="text" id="o2" maxlength="1" oninput="otpNext(this,'o3')" onkeydown="otpBack(event,'o1',this)">
+                <input type="text" id="o3" maxlength="1" oninput="otpNext(this,'o4')" onkeydown="otpBack(event,'o2',this)">
+                <input type="text" id="o4" maxlength="1" onkeydown="otpBack(event,'o3',this)">
+            </div>
+            <p style="text-align:center;">Didn't receive it? <button class="resend-btn" onclick="sendOTP(true)">Resend Code</button></p>
+            <div class="form-actions" style="margin-top:1.5rem;">
+                <button class="btn btn-secondary" onclick="go(4)">Back</button>
+                <button class="btn btn-primary" id="verifyBtn" onclick="verifyAndRegister()">Verify & Create Account</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- ════════ PEDIATRICIAN FLOW ════════ -->
+
+    <!-- D-STEP 2: Personal Info + Doctor Photo -->
+    <div class="form-step" id="sd2">
+        <div class="form-header"><h2>Personal Information</h2><p>Tell us about yourself</p></div>
+        <div class="form-section">
+            <div id="ed2" class="error-msg"></div>
+
+            <!-- Doctor Photo Upload -->
+            <div class="form-group">
+                <label>Profile Picture <span style="color:#888;font-weight:400;"></span></label>
+                <div class="photo-upload-area" onclick="document.getElementById('docPhotoInput').click()">
+                    <div class="photo-placeholder" id="docPhotoPlaceholder"><img src="/icons/pediatrician.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"></div>
+                    <img id="docPhotoPreview" class="photo-preview" style="display:none;" src="" alt="Doctor photo">
+                    <button type="button" class="photo-upload-btn">📷 Upload Photo</button>
+                    <p class="photo-hint">JPG, PNG up to 5MB</p>
+                </div>
+                <input type="file" id="docPhotoInput" class="hidden-input" accept="image/*" onchange="previewPhoto('docPhotoInput','docPhotoPreview','docPhotoPlaceholder')">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group"><label>First Name</label><input type="text" id="dFirst" placeholder="John"></div>
+                <div class="form-group"><label>Middle Name</label><input type="text" id="dMiddle" placeholder="Optional"></div>
+            </div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="dLast" placeholder="Doe"></div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="go(1)">Back</button>
+                <button class="btn btn-primary" onclick="go(3)">Continue</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- D-STEP 3: Credentials -->
+    <div class="form-step" id="sd3">
+        <div class="form-header"><h2>Login Credentials</h2></div>
+        <div class="form-section">
+            <div id="ed3" class="error-msg"></div>
+            <div class="form-group"><label>Username</label><input type="text" id="dUsername" placeholder="Choose a username"></div>
+            <div class="form-group"><label>Email Address</label><input type="email" id="dEmail" placeholder="you@hospital.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="dPassword" placeholder="At least 8 characters"></div>
+            <div class="form-group"><label>Confirm Password</label><input type="password" id="dConfirm" placeholder="Repeat password"></div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="go(2)">Back</button>
+                <button class="btn btn-primary" onclick="go(4)">Continue</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- D-STEP 4: OTP Verification -->
+    <div class="form-step" id="sd4">
+        <div class="form-header"><h2>Verify Your Email ✉️</h2><p>Enter the 4-digit code we sent you</p></div>
+        <div class="form-section">
+            <div id="ed4e" class="error-msg"></div>
+            <div id="ed4s" class="success-msg"></div>
+            <p style="text-align:center;color:#888;margin-bottom:.5rem;">Code sent to <strong id="dOtpEmail"></strong></p>
+            <div class="otp-boxes">
+                <input type="text" id="d1" maxlength="1" oninput="otpNext(this,'d2')" onkeydown="otpBack(event,'',this)">
+                <input type="text" id="d2" maxlength="1" oninput="otpNext(this,'d3')" onkeydown="otpBack(event,'d1',this)">
+                <input type="text" id="d3" maxlength="1" oninput="otpNext(this,'d4')" onkeydown="otpBack(event,'d2',this)">
+                <input type="text" id="d4" maxlength="1" onkeydown="otpBack(event,'d3',this)">
+            </div>
+            <p style="text-align:center;">Didn't receive it? <button class="resend-btn" onclick="sendDoctorOTP(true)">Resend Code</button></p>
+            <div class="form-actions" style="margin-top:1.5rem;">
+                <button class="btn btn-secondary" onclick="go(3)">Back</button>
+                <button class="btn btn-primary" id="dVerifyBtn" onclick="verifyDoctorOTP()">Verify & Continue</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    <!-- D-STEP 5: Professional Info -->
+    <div class="form-step" id="sd5">
+        <div class="form-header"><h2>Professional Information</h2></div>
+        <div class="form-section">
+            <div id="ed5" class="error-msg"></div>
+            <div class="form-group"><label>Professional License Number</label><input type="text" id="license" placeholder="PRC-XXXXX"></div>
+            <div class="form-group"><label>Hospital / Institution</label><input type="text" id="institution" placeholder="General Hospital"></div>
+            <div class="form-group"><label>Specialization</label><input type="text" id="specialization" placeholder="e.g., Pediatric Development"></div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="show('sd4')">Back</button>
+                <button class="btn btn-primary" id="dSubmitBtn" onclick="registerPedia()">Create Account</button>
+            </div>
+        </div>
+        <div class="form-footer"><p>Already have an account? <a href="login.html">Sign in</a></p></div>
+    </div>
+
+    </div>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:3001/api';
+let role = '', step = 1;
+const PARENT_STEPS = {1:'s1',2:'sp2',3:'sp3',4:'sp4',5:'sp5'};
+const PEDIA_STEPS  = {1:'s1',2:'sd2',3:'sd3',4:'sd4',5:'sd5'};
+
+function err(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function clr(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+function suc(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function show(id){document.querySelectorAll('.form-step').forEach(e=>e.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+// Preview photo on select
+function previewPhoto(inputId, previewId, placeholderId) {
+    const file = document.getElementById(inputId).files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById(previewId);
+        const placeholder = document.getElementById(placeholderId);
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+// OTP navigation
+function otpNext(el, nextId) { if(el.value.length===1 && nextId){document.getElementById(nextId).focus();} }
+function otpBack(e, prevId, el) { if(e.key==='Backspace' && !el.value && prevId){document.getElementById(prevId).focus();} }
+function getOTP() { return ['o1','o2','o3','o4'].map(id=>document.getElementById(id).value).join(''); }
+
+function go(toStep) {
+    if (step === 1) {
+        const r = document.querySelector('input[name="role"]:checked');
+        if (!r) { err('e1','Please select a role.'); return; }
+        role = r.value; clr('e1');
+    }
+    if (role === 'parent') {
+        if (step === 2) {
+            if (!document.getElementById('childFirst').value.trim() || !document.getElementById('dob').value) { err('ep2','Child name and date of birth are required.'); return; }
+            const age = new Date().getFullYear() - new Date(document.getElementById('dob').value).getFullYear();
+            if (age < 3 || age > 8) { err('ep2','Child must be between ages 3 and 8.'); return; }
+            clr('ep2');
+        }
+        if (step === 3) {
+            if (!document.getElementById('pFirst').value.trim() || !document.getElementById('pLast').value.trim()) { err('ep3','First and last name are required.'); return; }
+            if (!document.getElementById('relationship').value) { err('ep3','Please select your relationship to the child.'); return; }
+            clr('ep3');
+        }
+        if (step === 4) { sendOTP(); return; }
+        step = toStep; show(PARENT_STEPS[step]);
+    } else {
+        if (step === 2) {
+            if (!document.getElementById('dFirst').value.trim() || !document.getElementById('dLast').value.trim()) { err('ed2','First and last name are required.'); return; }
+            clr('ed2');
+        }
+        if (step === 3) {
+            const pw = document.getElementById('dPassword').value;
+            if (!document.getElementById('dUsername').value.trim()) { err('ed3','Username is required.'); return; }
+            if (!document.getElementById('dEmail').value.trim()) { err('ed3','Email is required.'); return; }
+            if (pw.length < 8) { err('ed3','Password must be at least 8 characters.'); return; }
+            if (pw !== document.getElementById('dConfirm').value) { err('ed3','Passwords do not match.'); return; }
+            clr('ed3');
+            sendDoctorOTP(); return;
+        }
+        step = toStep; show(PEDIA_STEPS[step]);
+    }
+}
+
+async function sendOTP(isResend=false) {
+    clr('ep4');
+    const email = document.getElementById('pEmail').value.trim();
+    const pw    = document.getElementById('pPassword').value;
+    if (!document.getElementById('pUsername').value.trim()) { err('ep4','Username is required.'); return; }
+    if (!email) { err('ep4','Email is required.'); return; }
+    if (pw.length < 8) { err('ep4','Password must be at least 8 characters.'); return; }
+    if (pw !== document.getElementById('pConfirm').value) { err('ep4','Passwords do not match.'); return; }
+    try {
+        const res  = await fetch(`${API}/auth/send-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        document.getElementById('otpEmail').textContent = email;
+        step = 5; show('sp5');
+        // If email not configured, auto-fill the OTP for testing
+        if (data.devOtp) {
+            const digits = String(data.devOtp).split('');
+            ['o1','o2','o3','o4'].forEach((id,i) => {
+                document.getElementById(id).value = digits[i] || '';
+            });
+            suc('ep5s', `⚠️ Email not configured. Code auto-filled: ${data.devOtp}`);
+        } else {
+            if (isResend) suc('ep5s','A new 4-digit code has been sent!');
+        }
+    } catch(e) { err('ep4', e.message); }
+}
+
+async function verifyAndRegister() {
+    clr('ep5e');
+    const code = getOTP();
+    if (code.length < 4) { err('ep5e','Please enter all 4 digits.'); return; }
+    const btn = document.getElementById('verifyBtn');
+    btn.textContent='Verifying…'; btn.disabled=true;
+    try {
+        const email = document.getElementById('pEmail').value.trim();
+
+        // 1. Verify OTP
+        const vr = await fetch(`${API}/auth/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code})});
+        const vd = await vr.json();
+        if (!vr.ok) throw new Error(vd.error);
+
+        // 2. Register account
+        const rr = await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+            role:'parent',
+            firstName:document.getElementById('pFirst').value.trim(),
+            middleName:document.getElementById('pMiddle').value.trim(),
+            lastName:document.getElementById('pLast').value.trim(),
+            username:document.getElementById('pUsername').value.trim(),
+            email, password:document.getElementById('pPassword').value,
+            relationship:document.getElementById('relationship').value,
+            childFirstName:document.getElementById('childFirst').value.trim(),
+            childLastName:document.getElementById('childLast').value.trim(),
+            childMiddleName:document.getElementById('childMiddle').value.trim(),
+            dateOfBirth:document.getElementById('dob').value,
+            gender:document.getElementById('childGender').value
+        })});
+        const rd = await rr.json();
+        if (!rr.ok) throw new Error(rd.error);
+
+        localStorage.setItem('kc_token', rd.token);
+        localStorage.setItem('kc_user', JSON.stringify(rd.user));
+        if (rd.childId) localStorage.setItem('kc_childId', rd.childId);
+
+        // 3. Upload parent photo if selected
+        const parentFile = document.getElementById('parentPhotoInput').files[0];
+        if (parentFile) {
+            const fd = new FormData(); fd.append('photo', parentFile);
+            await fetch(`${API}/upload/profile`,{method:'POST',headers:{Authorization:`Bearer ${rd.token}`},body:fd});
+        }
+
+        // 4. Upload child photo if selected
+        const childFile = document.getElementById('childPhotoInput').files[0];
+        if (childFile && rd.childId) {
+            const fd = new FormData(); fd.append('photo', childFile);
+            const cr = await fetch(`${API}/upload/child/${rd.childId}`,{method:'POST',headers:{Authorization:`Bearer ${rd.token}`},body:fd});
+            const cd = await cr.json();
+            if (cd.success) localStorage.setItem('kc_childPhoto', cd.path);
+        }
+
+        window.location.href = 'screening.html';
+    } catch(e) {
+        err('ep5e', e.message);
+        btn.textContent='Verify & Create Account'; btn.disabled=false;
+    }
+}
+
+async function registerPedia() {
+    clr('ed5');
+    const btn = document.getElementById('dSubmitBtn');
+    btn.textContent='Creating account…'; btn.disabled=true;
+    try {
+        const res = await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+            role:'pediatrician',
+            firstName:document.getElementById('dFirst').value.trim(),
+            middleName:document.getElementById('dMiddle').value.trim(),
+            lastName:document.getElementById('dLast').value.trim(),
+            username:document.getElementById('dUsername').value.trim(),
+            email:document.getElementById('dEmail').value.trim(),
+            password:document.getElementById('dPassword').value,
+            licenseNumber:document.getElementById('license').value.trim(),
+            institution:document.getElementById('institution').value.trim(),
+            specialization:document.getElementById('specialization').value.trim()
+        })});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        // Upload doctor photo if selected
+        const docFile = document.getElementById('docPhotoInput').files[0];
+        if (docFile && data.token) {
+            const fd = new FormData(); fd.append('photo', docFile);
+            await fetch(`${API}/upload/profile`,{method:'POST',headers:{Authorization:`Bearer ${data.token}`},body:fd});
+        }
+
+        alert('✅ Account created! You can now log in to your pediatrician dashboard.');
+        window.location.href = 'login.html';
+    } catch(e) {
+        err('ed5', e.message);
+        btn.textContent='Create Account'; btn.disabled=false;
+    }
+}
+
+async function sendDoctorOTP(isResend=false) {
+    clr('ed3');
+    const email = document.getElementById('dEmail').value.trim();
+    try {
+        const res  = await fetch(`${API}/auth/send-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        document.getElementById('dOtpEmail').textContent = email;
+        step = 4; show('sd4');
+        // Clear OTP boxes
+        ['d1','d2','d3','d4'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('d1').focus();
+        // Dev mode: auto-fill OTP
+        if (data.devOtp) {
+            const digits = String(data.devOtp).split('');
+            ['d1','d2','d3','d4'].forEach((id,i) => { document.getElementById(id).value = digits[i] || ''; });
+            suc('ed4s', `⚠️ Email not configured. Code auto-filled: ${data.devOtp}`);
+        } else {
+            if (isResend) suc('ed4s', 'A new 4-digit code has been sent!');
+        }
+    } catch(e) { err('ed3', e.message); }
+}
+
+async function verifyDoctorOTP() {
+    clr('ed4e');
+    const code = ['d1','d2','d3','d4'].map(id => document.getElementById(id).value).join('');
+    if (code.length < 4) { err('ed4e','Please enter all 4 digits.'); return; }
+    const btn = document.getElementById('dVerifyBtn');
+    btn.textContent='Verifying…'; btn.disabled=true;
+    try {
+        const email = document.getElementById('dEmail').value.trim();
+        const vr = await fetch(`${API}/auth/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code})});
+        const vd = await vr.json();
+        if (!vr.ok) throw new Error(vd.error);
+        // OTP verified — proceed to professional info
+        step = 5; show('sd5');
+    } catch(e) {
+        err('ed4e', e.message);
+        btn.textContent='Verify & Continue'; btn.disabled=false;
+    }
+}
+</script>
+</body>
+</html>
