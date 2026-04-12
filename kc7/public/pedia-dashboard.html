@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .stat-label { color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .stat-number { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .stat-number.red { color: var(--accent-red); }
+        .stat-sub { font-size: 0.85rem; margin-top: 0.5rem; }
+        .stat-sub.green { color: var(--success, #27ae60); }
+        .stat-sub.red   { color: var(--accent-red); }
+        .stat-sub.muted { color: var(--text-light); }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .panel h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        /* Appointment request cards */
+        .apt-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-red);
+            margin-bottom: 1rem;
+        }
+        .apt-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .apt-card-header h4 { margin: 0 0 0.3rem; font-weight: 600; color: var(--text-dark); }
+        .apt-card-header p  { margin: 0; color: var(--text-light); font-size: 0.85rem; }
+        .badge-pending  { background: var(--accent-red); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+        .badge-approved { background: #27ae60; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-declined { background: #888; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .apt-detail { color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.4rem; }
+        .apt-actions { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .btn-approve { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; flex: 1; font-weight: 600; }
+        .btn-approve:hover { opacity: 0.9; }
+        .btn-reject  { background: white; color: var(--accent-red); border: 2px solid var(--accent-red); padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; flex: 1; font-weight: 600; }
+        .btn-reject:hover { background: #fde8e8; }
+
+        /* Activity feed */
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+        }
+        .activity-item p { margin: 0; }
+        .activity-title { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+        .activity-time  { color: var(--text-light); font-size: 0.8rem; margin-top: 0.2rem !important; }
+        .activity-icon  { font-size: 1.5rem; }
+
+        .empty-state { text-align: center; padding: 2rem; color: var(--text-light); }
+        .loading      { text-align: center; padding: 2rem; color: var(--text-light); }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="pedia-dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="pedia-dashboard.html" class="nav-link active" style="border-bottom: 3px solid var(--accent-red);">Dashboard</a>
+                <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon">
+                    <span class="notification-badge" id="notifCount">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon" id="profileImg" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="welcomeName">Welcome, Doctor</p></div>
+                    <a href="pediatrician-profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="pediatrician-settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Page Header -->
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 id="dashTitle" style="margin-bottom:0.5rem;">Pediatrician Dashboard</h1>
+            <p style="color:var(--text-light);">Manage your patients and appointments</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Total Patients</p>
+                <p class="stat-number" id="statTotal">—</p>
+                <p class="stat-sub green" id="statNewMonth"></p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Pending Approvals</p>
+                <p class="stat-number red" id="statPending">—</p>
+                <p class="stat-sub red" id="statPendingNote"></p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Assessments Reviewed</p>
+                <p class="stat-number" id="statReviewed">—</p>
+                <p class="stat-sub muted">This month</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Upcoming Appointments</p>
+                <p class="stat-number" id="statUpcoming">—</p>
+                <p class="stat-sub muted">Next 7 days</p>
+            </div>
+        </div>
+
+        <!-- Two-column grid -->
+        <div class="two-col">
+            <!-- Pending Appointment Requests -->
+            <div class="panel">
+                <h2>📋 Pending Appointment Requests</h2>
+                <div id="pendingList"><div class="loading">Loading…</div></div>
+            </div>
+
+            <!-- Recent Patient Activity -->
+            <div class="panel">
+                <h2>📊 Recent Patient Activity</h2>
+                <div id="activityList"><div class="loading">Loading…</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifModalList">
+                <p style="text-align:center;color:var(--text-light);">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+
+            const user = KC.user();
+
+            // Role guard — only pediatricians allowed here
+            if (!user || user.role !== 'pediatrician') {
+                window.location.href = user?.role === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+                return;
+            }
+
+            // Set welcome name
+            document.getElementById('welcomeName').textContent = `Welcome, Dr. ${user.firstName}`;
+            document.getElementById('dashTitle').textContent   = `Welcome, Dr. ${user.firstName} ${user.lastName}`;
+
+            // Update profile pic if uploaded
+            if (user.profileIcon && user.profileIcon.startsWith('/uploads/')) {
+                document.getElementById('profileImg').src = user.profileIcon;
+            }
+
+            loadDashboard();
+
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboard, 30010);
+        });
+
+        async function loadDashboard() {
+            try {
+                const data = await apiFetch('/appointments/pedia-notifications');
+                if (!data.success) return;
+
+                const all      = data.notifications || [];
+                const pending  = all.filter(n => n.status === 'pending');
+                const approved = all.filter(n => n.status === 'approved');
+
+                // Update stats
+                document.getElementById('statTotal').textContent    = all.length;
+                document.getElementById('statPending').textContent  = pending.length;
+                document.getElementById('statReviewed').textContent = approved.length;
+                document.getElementById('notifCount').textContent   = pending.length;
+
+                if (pending.length > 0) {
+                    document.getElementById('statPendingNote').textContent = '⚠️ Needs attention';
+                } else {
+                    document.getElementById('statPendingNote').textContent = '✓ All clear';
+                    document.getElementById('statPendingNote').className = 'stat-sub green';
+                }
+
+                // Count upcoming (approved appointments in next 7 days)
+                const now = new Date();
+                const in7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                const upcoming = approved.filter(n => {
+                    const d = new Date(n.appointmentDate);
+                    return d >= now && d <= in7;
+                });
+                document.getElementById('statUpcoming').textContent = upcoming.length;
+
+                renderPendingList(pending);
+                renderActivityList(all);
+
+            } catch (e) {
+                console.error('Dashboard load error:', e);
+                document.getElementById('pendingList').innerHTML  = '<div class="empty-state">Could not load appointments.</div>';
+                document.getElementById('activityList').innerHTML = '<div class="empty-state">Could not load activity.</div>';
+            }
+        }
+
+        function renderPendingList(pending) {
+            const el = document.getElementById('pendingList');
+            if (pending.length === 0) {
+                el.innerHTML = '<div class="empty-state">✅ No pending appointment requests</div>';
+                return;
+            }
+            el.innerHTML = pending.map(n => `
+                <div class="apt-card" id="apt-${n.id}">
+                    <div class="apt-card-header">
+                        <div>
+                            <h4>${n.parentName || 'Parent'} — ${n.childName || 'Child'}</h4>
+                            <p>Age: ${n.childAge || calcAge(n.childDob) || '—'}</p>
+                            <p>Requested: ${formatDate(n.createdAt)}</p>
+                        </div>
+                        <span class="badge-pending">Pending</span>
+                    </div>
+                    <p class="apt-detail">📅 <strong>Date:</strong> ${n.appointmentDate || '—'} &nbsp; 🕐 <strong>Time:</strong> ${n.appointmentTime || '—'}</p>
+                    <p class="apt-detail">📋 <strong>Reason:</strong> ${n.reason || 'General checkup'}</p>
+                    ${n.overallScore != null ? `
+                    <div style="background:#f8f9fa;padding:0.8rem;border-radius:8px;margin-top:0.5rem;font-size:0.85rem;">
+                        <strong style="color:var(--primary);">📊 Assessment:</strong>
+                        Communication ${n.communicationScore||0}% &nbsp;|&nbsp;
+                        Social ${n.socialScore||0}% &nbsp;|&nbsp;
+                        Cognitive ${n.cognitiveScore||0}% &nbsp;|&nbsp;
+                        Motor ${n.motorScore||0}%
+                        &nbsp;&mdash;&nbsp; <strong>Overall: ${n.overallScore||0}%</strong>
+                    </div>` : '<p class="apt-detail" style="font-style:italic;">No assessment results yet.</p>'}
+                    <div class="apt-actions">
+                        <button class="btn-approve" onclick="respondAppointment(${n.id}, 'approved')">✅ Approve</button>
+                        <button class="btn-reject"  onclick="respondAppointment(${n.id}, 'declined')">❌ Decline</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderActivityList(all) {
+            const el = document.getElementById('activityList');
+            if (all.length === 0) {
+                el.innerHTML = '<div class="empty-state">No recent activity yet.</div>';
+                return;
+            }
+            // Show last 6 entries, newest first, as activity feed
+            const recent = [...all].reverse().slice(0, 6);
+            const iconMap = { pending: '📅', approved: '✅', declined: '❌' };
+            el.innerHTML = recent.map(n => `
+                <div class="activity-item">
+                    <div>
+                        <p class="activity-title">${iconMap[n.status] || '📋'} ${n.status === 'approved' ? 'Appointment Approved' : n.status === 'declined' ? 'Appointment Declined' : 'Appointment Request'}: ${n.childName || 'Child'}</p>
+                        <p class="activity-time">Parent: ${n.parentName || '—'} &nbsp;·&nbsp; ${formatDate(n.createdAt)}</p>
+                    </div>
+                    <span class="activity-icon">${iconMap[n.status] || '📋'}</span>
+                </div>
+            `).join('');
+        }
+
+        async function respondAppointment(notifId, status) {
+            const card = document.getElementById(`apt-${notifId}`);
+            if (card) card.style.opacity = '0.5';
+            try {
+                await apiFetch(`/appointments/pedia-notifications/${notifId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                loadDashboard();
+            } catch (e) {
+                alert('Error: ' + e.message);
+                if (card) card.style.opacity = '1';
+            }
+        }
+
+        function calcAge(dob) {
+            if (!dob) return null;
+            const d = new Date(dob), now = new Date();
+            let y = now.getFullYear() - d.getFullYear();
+            let m = now.getMonth() - d.getMonth();
+            if (m < 0) { y--; m += 12; }
+            return y > 0 ? `${y} yr${y>1?'s':''} ${m} mo` : `${m} month${m!==1?'s':''}`;
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '—';
+            const d = new Date(ts);
+            const diff = Date.now() - d.getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 60)  return `${mins} min${mins!==1?'s':''} ago`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24)   return `${hrs} hour${hrs!==1?'s':''} ago`;
+            const days = Math.floor(hrs / 24);
+            if (days < 7)   return `${days} day${days!==1?'s':''} ago`;
+            return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        }
+
+        function openNotifications() {
+            const modal = document.getElementById('notificationsModal');
+            if (modal) modal.style.display = 'flex';
+            // Populate modal with pending items
+            apiFetch('/appointments/pedia-notifications').then(data => {
+                const pending = (data.notifications || []).filter(n => n.status === 'pending');
+                const list = document.getElementById('notifModalList');
+                if (pending.length === 0) {
+                    list.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:1rem;">No new notifications</p>';
+                    return;
+                }
+                list.innerHTML = pending.map(n => `
+                    <div class="notification-item">
+                        <span class="notification-icon-small">📅</span>
+                        <div>
+                            <p class="notification-title">Appointment Request from ${n.parentName || 'Parent'} for ${n.childName || 'Child'}</p>
+                            <p class="notification-time">${formatDate(n.createdAt)}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }).catch(() => {});
+        }
+
+        function closeNotifications() {
+            const modal = document.getElementById('notificationsModal');
+            if (modal) modal.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

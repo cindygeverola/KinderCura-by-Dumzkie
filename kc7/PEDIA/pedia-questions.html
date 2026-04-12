@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Assessment Questions - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css" />
+
+    <style>
+        .card{
+            background:white;
+            border-radius:15px;
+            padding:2rem;
+            box-shadow:0 4px 15px rgba(0,0,0,.08);
+            margin-bottom:1.5rem;
+        }
+
+        .form-group{ margin-bottom:1.1rem; }
+        .form-label{
+            display:block;
+            font-weight:600;
+            margin-bottom:.4rem;
+            font-size:.9rem;
+        }
+        .form-input{
+            width:100%;
+            padding:.75rem;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-family:inherit;
+            font-size:.9rem;
+            box-sizing:border-box;
+        }
+        .form-input:focus{
+            outline:none;
+            border-color:var(--primary);
+        }
+
+        .btn-primary{
+            background:var(--primary);
+            color:white;
+            border:none;
+            padding:.7rem 1.4rem;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:600;
+            font-size:.9rem;
+            transition:.15s;
+        }
+        .btn-primary:hover{ background:var(--primary-dark); }
+
+        .btn-outline{
+            background:none;
+            color:var(--primary);
+            border:2px solid var(--primary);
+            padding:.5rem 1rem;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:600;
+            font-size:.85rem;
+            transition:.15s;
+        }
+        .btn-outline:hover{
+            background:var(--primary);
+            color:white;
+        }
+
+        .btn-danger{
+            background:none;
+            color:#e74c3c;
+            border:1.5px solid #e74c3c;
+            padding:.4rem .8rem;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:.8rem;
+            transition:.15s;
+        }
+        .btn-danger:hover{
+            background:#e74c3c;
+            color:white;
+        }
+
+        .q-card{
+            background:var(--bg-primary);
+            border-radius:10px;
+            padding:1.1rem 1.3rem;
+            margin-bottom:.8rem;
+            border:1px solid var(--border);
+            position:relative;
+        }
+        .q-card:hover{ border-color:var(--primary); }
+
+        .q-type-badge{
+            display:inline-block;
+            font-size:.7rem;
+            font-weight:700;
+            padding:.2rem .5rem;
+            border-radius:8px;
+            margin-bottom:.4rem;
+        }
+        .type-yes_no{ background:#d4edda; color:#155724; }
+        .type-multiple_choice{ background:#cce5ff; color:#004085; }
+        .type-short_answer{ background:#fff3cd; color:#856404; }
+
+        .domain-badge{
+            display:inline-block;
+            font-size:.68rem;
+            font-weight:600;
+            padding:.15rem .45rem;
+            border-radius:8px;
+            margin-left:.4rem;
+        }
+        .domain-gross{ background:#fff3cd; color:#856404; }
+        .domain-fine{ background:#d1ecf1; color:#0c5460; }
+        .domain-lang{ background:#d4edda; color:#155724; }
+        .domain-social{ background:#f8d7da; color:#721c24; }
+        .domain-other{ background:#e2e3e5; color:#383d41; }
+
+        .q-actions{
+            display:flex;
+            gap:.5rem;
+            margin-top:.8rem;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        .options-list{
+            margin-top:.4rem;
+            display:flex;
+            flex-wrap:wrap;
+            gap:.3rem;
+        }
+        .option-chip{
+            background:white;
+            border:1px solid var(--border);
+            border-radius:12px;
+            padding:.15rem .5rem;
+            font-size:.75rem;
+            color:var(--text-dark);
+        }
+
+        .question-stats{
+            display:flex;
+            gap:.45rem;
+            flex-wrap:wrap;
+            margin-top:.55rem;
+        }
+        .mini-chip{
+            display:inline-block;
+            padding:.18rem .55rem;
+            border-radius:999px;
+            font-size:.72rem;
+            font-weight:700;
+        }
+        .mini-chip.assigned{ background:#eef3ff; color:#3056d3; }
+        .mini-chip.pending{ background:#fff3cd; color:#856404; }
+        .mini-chip.answered{ background:#d4edda; color:#155724; }
+
+        .modal-overlay{
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.5);
+            z-index:1000;
+            align-items:center;
+            justify-content:center;
+        }
+        .modal-box{
+            background:white;
+            border-radius:15px;
+            padding:2rem;
+            width:90%;
+            max-width:520px;
+            box-shadow:0 10px 40px rgba(0,0,0,.2);
+            max-height:90vh;
+            overflow-y:auto;
+        }
+        .modal-title{
+            color:var(--primary);
+            font-size:1.15rem;
+            font-weight:700;
+            margin-bottom:.3rem;
+        }
+        .modal-sub{
+            color:var(--text-light);
+            font-size:.82rem;
+            margin-bottom:1.3rem;
+        }
+
+        .options-input-row{
+            display:flex;
+            gap:.5rem;
+            margin-bottom:.4rem;
+        }
+        .options-input-row input{
+            flex:1;
+            padding:.5rem .7rem;
+            border:1.5px solid var(--border);
+            border-radius:6px;
+            font-size:.85rem;
+        }
+        .option-remove-btn{
+            background:none;
+            border:none;
+            color:#e74c3c;
+            cursor:pointer;
+            font-size:1rem;
+            padding:0 .3rem;
+        }
+
+        .assign-modal-list{
+            max-height:260px;
+            overflow-y:auto;
+        }
+        .patient-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:.6rem .8rem;
+            border-radius:8px;
+            border:1px solid var(--border);
+            margin-bottom:.5rem;
+        }
+        .patient-row:hover{ background:var(--bg-primary); }
+
+        .success-flash{
+            background:#d4edda;
+            color:#155724;
+            padding:.6rem 1rem;
+            border-radius:8px;
+            margin-bottom:1rem;
+            font-size:.85rem;
+            display:none;
+        }
+        .error-flash{
+            background:#fde8e8;
+            color:#c0392b;
+            padding:.6rem 1rem;
+            border-radius:8px;
+            margin-bottom:1rem;
+            font-size:.85rem;
+            display:none;
+        }
+
+        .tracker-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:1rem;
+            margin-top:1rem;
+        }
+
+        .tracker-box{
+            background:var(--bg-primary);
+            border:1px solid var(--border);
+            border-radius:12px;
+            padding:1rem;
+            min-height:180px;
+        }
+
+        .tracker-item{
+            background:white;
+            border:1px solid var(--border);
+            border-radius:12px;
+            padding:1rem;
+            margin-bottom:.75rem;
+        }
+
+        .tracker-badges{
+            display:flex;
+            gap:.4rem;
+            flex-wrap:wrap;
+            margin-bottom:.5rem;
+        }
+
+        .tracker-badge{
+            display:inline-block;
+            padding:.2rem .55rem;
+            border-radius:999px;
+            font-size:.72rem;
+            font-weight:700;
+        }
+
+        .badge-child{ background:#f3e8ff; color:#6b21a8; }
+        .badge-parent{ background:#eef2ff; color:#3730a3; }
+        .badge-pending{ background:#fff3cd; color:#856404; }
+        .badge-answered{ background:#d4edda; color:#155724; }
+
+        .tracker-answer{
+            background:var(--bg-primary);
+            border-radius:10px;
+            padding:.75rem .9rem;
+            margin-top:.65rem;
+        }
+
+        .top-filter-row{
+            display:flex;
+            gap:1rem;
+            flex-wrap:wrap;
+            align-items:center;
+            margin-top:1rem;
+        }
+
+        .filter-input{
+            min-width:220px;
+            padding:.7rem .9rem;
+            border:2px solid var(--border);
+            border-radius:10px;
+            font-size:.88rem;
+            font-family:inherit;
+            background:white;
+        }
+        .filter-input:focus{
+            outline:none;
+            border-color:var(--primary);
+        }
+
+        .summary-strip{
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
+            gap:1rem;
+            margin-top:1rem;
+        }
+
+        .summary-card{
+            background:var(--bg-primary);
+            border-radius:12px;
+            padding:1rem;
+            text-align:center;
+            border:1px solid var(--border);
+        }
+
+        .summary-value{
+            font-size:1.7rem;
+            font-weight:700;
+            color:var(--primary);
+            margin:0;
+        }
+
+        .summary-label{
+            margin:.2rem 0 0;
+            color:var(--text-light);
+            font-size:.8rem;
+        }
+
+        .empty-small{
+            color:var(--text-light);
+            text-align:center;
+            padding:1.2rem;
+            font-size:.88rem;
+        }
+
+        @media(max-width: 1000px){
+            .tracker-grid,
+            .summary-strip,
+            .main-two-col{
+                grid-template-columns:1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="top-nav">
+    <div class="nav-container">
+        <a href="pediatrician-dashboard.html" class="logo">
+            <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+            <span class="logo-text">
+                <span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span>
+            </span>
+        </a>
+
+        <nav class="main-nav">
+            <a href="pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+            <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+            <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+            <a href="pedia-chat.html" class="nav-link">💬 Chat</a>
+            <a href="pedia-questions.html" class="nav-link active">📋 My Questions</a>
+        </nav>
+
+        <div class="nav-right">
+            <button class="icon-btn notification-btn" onclick="openNotifications()">
+                <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                <span class="notification-badge" id="notifBadge">0</span>
+            </button>
+
+            <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+            </button>
+
+            <div class="profile-menu" id="profileMenu" style="display:none;">
+                <div class="menu-header">
+                    <p id="navWelcome">Welcome, Dr.</p>
+                </div>
+                <a href="pediatrician-profile.html" class="menu-item">
+                    <img src="/icons/profile_icon.png" class="menu-icon">Profile
+                </a>
+                <a href="pediatrician-settings.html" class="menu-item">
+                    <img src="/icons/settings.png" class="menu-icon">Settings
+                </a>
+                <hr style="margin:.5rem 0;">
+                <a href="#" class="menu-item logout" onclick="doLogout(); return false;">
+                    <img src="/icons/logout.png" class="menu-icon">Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div>
+            <h1 style="margin-bottom:.3rem;">📋 My Assessment Questions</h1>
+            <p style="color:var(--text-light);">Create, assign, and track which parents already answered your custom questions.</p>
+        </div>
+        <button class="btn-primary" onclick="openCreateModal()">+ New Question</button>
+    </div>
+
+    <div class="main-two-col" style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;">
+        <div>
+            <div class="card">
+                <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;">📊 Question Library</h3>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--bg-primary);border-radius:8px;padding:1rem;text-align:center;">
+                        <p style="font-size:1.8rem;font-weight:700;color:var(--primary);margin:0;" id="totalCount">—</p>
+                        <p style="font-size:.78rem;color:var(--text-light);margin:0;">Total Questions</p>
+                    </div>
+                    <div style="background:var(--bg-primary);border-radius:8px;padding:1rem;text-align:center;">
+                        <p style="font-size:1.8rem;font-weight:700;color:var(--primary);margin:0;" id="activeCount">—</p>
+                        <p style="font-size:.78rem;color:var(--text-light);margin:0;">Active</p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fdf8;border:1px solid #c8e6c9;border-radius:8px;padding:1rem;">
+                    <p style="font-weight:600;font-size:.88rem;color:var(--primary);margin:0 0 .5rem;">💡 How to use</p>
+                    <p style="font-size:.8rem;color:var(--text-light);margin:0;line-height:1.5;">
+                        Create custom questions for screening. Use <strong>Assign</strong> to send them to a patient's parent. The tracker below will show if the parent already answered it.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;">📌 Answer Tracker Summary</h3>
+
+                <div class="summary-strip">
+                    <div class="summary-card">
+                        <p class="summary-value" id="assignedTotal">0</p>
+                        <p class="summary-label">Assigned</p>
+                    </div>
+                    <div class="summary-card">
+                        <p class="summary-value" id="pendingTotal">0</p>
+                        <p class="summary-label">Pending</p>
+                    </div>
+                    <div class="summary-card">
+                        <p class="summary-value" id="answeredTotal">0</p>
+                        <p class="summary-label">Answered</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;">📐 Age-Based Static Questions</h3>
+                <p style="font-size:.82rem;color:var(--text-light);margin-bottom:1rem;line-height:1.5;">
+                    The system auto-applies the standard developmental questionnaire (ages 3–8). These are shown to parents when booking and gradually expand as the child gets older.
+                </p>
+                <div style="display:flex;flex-direction:column;gap:.4rem;">
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 3</span><span style="color:var(--text-light);">8 questions</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 3.5–4</span><span style="color:var(--text-light);">+1 (9 total)</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 4</span><span style="color:var(--text-light);">+10 (19 total)</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 5</span><span style="color:var(--text-light);">+7 (26 total)</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border);"><span>Age 6</span><span style="color:var(--text-light);">+6 (32 total)</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;"><span>Age 7–8</span><span style="color:var(--text-light);">+2 (34 total)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="padding:1.5rem;">
+            <div id="successFlash" class="success-flash"></div>
+            <div id="errorFlash" class="error-flash"></div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                <h3 style="margin:0;color:var(--primary);">Your Custom Questions</h3>
+                <button class="btn-outline" onclick="refreshAll()">Refresh All</button>
+            </div>
+
+            <div id="questionsList">
+                <div style="text-align:center;padding:2rem;color:var(--text-light);">Loading your questions…</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <h2 style="margin:0 0 .3rem;">📝 Parent Answer Tracker</h2>
+                <p style="margin:0;color:var(--text-light);">This shows which assigned questions are still waiting and which were already answered.</p>
+            </div>
+            <button class="btn-primary" onclick="loadAssignmentTracker()">Refresh Tracker</button>
+        </div>
+
+        <div class="top-filter-row">
+            <!-- Filter tracker by child -->
+            <select id="trackerChildFilter" class="filter-input" onchange="renderAssignmentTracker()">
+                <option value="all">All patients</option>
+            </select>
+
+            <!-- Filter tracker by status -->
+            <select id="trackerStatusFilter" class="filter-input" onchange="renderAssignmentTracker()">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending only</option>
+                <option value="answered">Answered only</option>
+            </select>
+        </div>
+
+        <div class="tracker-grid">
+            <div class="tracker-box">
+                <h3 style="margin-top:0;color:#856404;">⏳ Pending Parent Answers</h3>
+                <div id="pendingAssignmentsList">
+                    <div class="empty-small">Loading pending assignments…</div>
+                </div>
+            </div>
+
+            <div class="tracker-box">
+                <h3 style="margin-top:0;color:#155724;">✅ Already Answered by Parent</h3>
+                <div id="answeredAssignmentsList">
+                    <div class="empty-small">Loading answered assignments…</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for create/edit -->
+<div class="modal-overlay" id="questionModal" style="display:none;">
+    <div class="modal-box">
+        <p class="modal-title" id="modalTitle">New Question</p>
+        <p class="modal-sub" id="modalSub">Create a custom assessment question for your patients</p>
+        <div id="modalError" class="error-flash" style="margin-bottom:.8rem;"></div>
+
+        <div class="form-group">
+            <label class="form-label">Question Text *</label>
+            <textarea id="qText" class="form-input" rows="3" placeholder="e.g. Does your child make eye contact during play?" style="resize:vertical;"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Question Type *</label>
+            <select id="qType" class="form-input" onchange="onTypeChange()">
+                <option value="yes_no">Yes / No</option>
+                <option value="multiple_choice">Multiple Choice</option>
+                <option value="short_answer">Short Answer</option>
+            </select>
+        </div>
+
+        <!-- Only appears when type is multiple choice -->
+        <div id="optionsSection" style="display:none;margin-bottom:1.1rem;">
+            <label class="form-label">Answer Options * (min 2)</label>
+            <div id="optionsContainer"></div>
+            <button type="button" onclick="addOption()" style="background:none;border:1px dashed var(--border);border-radius:6px;padding:.4rem 1rem;cursor:pointer;color:var(--text-light);font-size:.82rem;width:100%;margin-top:.3rem;">+ Add Option</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="form-group">
+                <label class="form-label">Domain</label>
+                <select id="qDomain" class="form-input">
+                    <option value="Gross Motor">Gross Motor</option>
+                    <option value="Fine Motor">Fine Motor</option>
+                    <option value="Language">Language</option>
+                    <option value="Personal-Social">Personal-Social</option>
+                    <option value="Other" selected>Other</option>
+                </select>
+            </div>
+
+            <!-- Age range used when assigning question relevance -->
+            <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;align-items:end;">
+                <div>
+                    <label class="form-label">Min Age</label>
+                    <input type="number" id="qAgeMin" class="form-input" value="0" min="0" max="18">
+                </div>
+                <div>
+                    <label class="form-label">Max Age</label>
+                    <input type="number" id="qAgeMax" class="form-input" value="18" min="0" max="18">
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1.2rem;">
+            <button class="btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" id="saveQBtn" onclick="saveQuestion()">Save Question</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for assigning question to patient -->
+<div class="modal-overlay" id="assignModal" style="display:none;">
+    <div class="modal-box">
+        <p class="modal-title">Assign Question to Patient</p>
+        <p class="modal-sub" id="assignModalSub">Select a patient to assign this question to</p>
+
+        <div class="assign-modal-list" id="assignPatientList">
+            <div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>
+        </div>
+
+        <div style="margin-top:1rem;text-align:right;">
+            <button class="btn-outline" onclick="closeAssignModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications modal -->
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+    <div class="notifications-content">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" onclick="closeNotifications()">✕</button>
+        </div>
+        <div class="notifications-list" id="notifModalList"></div>
+    </div>
+</div>
+
+<script>
+    // Main API base URL
+    const API = 'http://localhost:3001/api';
+
+    // Get saved token from localStorage
+    function getToken() {
+        return localStorage.getItem('kc_token');
+    }
+
+    // Get saved logged-in user object
+    function getUser() {
+        try {
+            return JSON.parse(localStorage.getItem('kc_user'));
+        } catch {
+            return null;
+        }
+    }
+
+    // Logout and return to main login page
+    function doLogout() {
+        // Clear every saved session key so logout always resets the page state
+        ['kc_token', 'kc_user', 'kc_childId', 'kc_assessmentId', 'kc_viewChildId'].forEach(k => localStorage.removeItem(k));
+
+        // Use the root login page path so logout works even inside /pedia/ pages
+        window.location.href = '/login.html';
+    }
+
+    const currentUser = getUser();
+
+    // Guard: only pediatrician can stay on this page
+    if (!getToken() || !currentUser) {
+        window.location.href = '/login.html';
+    } else if (currentUser.role !== 'pediatrician') {
+        if (currentUser.role === 'parent') window.location.href = '/parent/dashboard.html';
+        else if (currentUser.role === 'admin') window.location.href = '/admin/admin-dashboard.html';
+        else window.location.href = '/login.html';
+    }
+
+    // Show pedia name and profile picture in nav
+    if (currentUser) {
+        document.getElementById('navWelcome').textContent = `Welcome, Dr. ${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+        if (currentUser.profileIcon && currentUser.profileIcon.startsWith('/uploads/')) {
+            document.getElementById('navProfilePic').src = currentUser.profileIcon;
+        }
+    }
+
+    // Reusable fetch helper with token header
+    async function apiFetch(endpoint, options = {}) {
+        const res = await fetch(`${API}${endpoint}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
+                ...options.headers
+            }
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            throw new Error(data.error || `Error ${res.status}`);
+        }
+
+        return data;
+    }
+
+    let allQuestions = [];
+    let patientList = [];
+    let trackerAssignments = [];
+    let editingId = null;
+    let assigningQId = null;
+    let optionCount = 0;
+
+    // Small success/error message
+    function flash(message, type = 'success') {
+        const el = document.getElementById(type === 'success' ? 'successFlash' : 'errorFlash');
+        el.textContent = message;
+        el.style.display = 'block';
+        setTimeout(() => {
+            el.style.display = 'none';
+        }, 3500);
+    }
+
+    // Format dates for display in tracker/notifications
+    function formatDateTime(value) {
+        if (!value) return 'No date';
+        const d = new Date(value);
+        if (isNaN(d)) return String(value);
+
+        return d.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        });
+    }
+
+    // Check if assignment already has parent's answer
+    function hasAnswer(item) {
+        return item.answer !== null && item.answer !== undefined && String(item.answer).trim() !== '';
+    }
+
+    function normalizeQuestionTypeLabel(type) {
+        if (type === 'yes_no') return 'Yes / No';
+        if (type === 'multiple_choice') return 'Multiple Choice';
+        if (type === 'short_answer') return 'Short Answer';
+        return type || 'Question';
+    }
+
+    function getDomainClass(domain) {
+        return {
+            'Gross Motor': 'domain-gross',
+            'Fine Motor': 'domain-fine',
+            'Language': 'domain-lang',
+            'Personal-Social': 'domain-social',
+            'Other': 'domain-other'
+        }[domain] || 'domain-other';
+    }
+
+    function getTypeClass(type) {
+        return {
+            yes_no: 'type-yes_no',
+            multiple_choice: 'type-multiple_choice',
+            short_answer: 'type-short_answer'
+        }[type] || 'type-yes_no';
+    }
+
+    // Count assigned / pending / answered per question card
+    function getQuestionStats(questionId) {
+        const rows = trackerAssignments.filter(a => String(a.questionId) === String(questionId));
+        const answered = rows.filter(hasAnswer).length;
+        const pending = rows.length - answered;
+
+        return {
+            assigned: rows.length,
+            pending,
+            answered
+        };
+    }
+
+    // Load pediatrician's own custom questions
+    async function loadQuestionsOnly() {
+        const data = await apiFetch('/questions');
+        allQuestions = Array.isArray(data.questions) ? data.questions : [];
+
+        document.getElementById('totalCount').textContent = allQuestions.length;
+        document.getElementById('activeCount').textContent = allQuestions.filter(q => q.isActive).length;
+    }
+
+    // Load available patients from pedia appointments
+    async function loadPatientsOnly() {
+        const data = await apiFetch('/appointments/pedia');
+        const appointments = Array.isArray(data.appointments) ? data.appointments : [];
+
+        const seen = new Map();
+
+        appointments.forEach(a => {
+            const key = String(a.childId);
+            if (!seen.has(key)) {
+                seen.set(key, {
+                    childId: String(a.childId),
+                    childName: `${a.childFirstName || ''} ${a.childLastName || ''}`.trim() || 'Child',
+                    parentName: `${a.parentFirstName || ''} ${a.parentLastName || ''}`.trim() || 'Parent',
+                    appointmentId: a.id || null
+                });
+            }
+        });
+
+        patientList = Array.from(seen.values()).sort((a, b) => a.childName.localeCompare(b.childName));
+
+        renderTrackerChildOptions();
+    }
+
+    // Fill the child filter dropdown for tracker
+    function renderTrackerChildOptions() {
+        const select = document.getElementById('trackerChildFilter');
+        const currentValue = select.value || 'all';
+
+        select.innerHTML = `
+            <option value="all">All patients</option>
+            ${patientList.map(p => `<option value="${p.childId}">${p.childName}</option>`).join('')}
+        `;
+
+        if ([...select.options].some(opt => opt.value === currentValue)) {
+            select.value = currentValue;
+        }
+    }
+
+    // Load assigned questions per patient, then keep only questions created by this pedia
+    async function loadAssignmentTracker() {
+        try {
+            trackerAssignments = [];
+
+            if (!patientList.length || !allQuestions.length) {
+                updateTrackerSummary();
+                renderAssignmentTracker();
+                renderQuestions();
+                return;
+            }
+
+            const ownQuestionIds = new Set(allQuestions.map(q => String(q.id)));
+
+            const grouped = await Promise.all(
+                patientList.map(async (patient) => {
+                    try {
+                        const data = await apiFetch(`/questions/assigned/${patient.childId}`);
+                        const rows = Array.isArray(data.assignments) ? data.assignments : [];
+
+                        return rows
+                            .filter(row => ownQuestionIds.has(String(row.questionId)))
+                            .map(row => ({
+                                ...row,
+                                childId: patient.childId,
+                                childName: patient.childName,
+                                parentName: patient.parentName
+                            }));
+                    } catch {
+                        return [];
+                    }
+                })
+            );
+
+            trackerAssignments = grouped.flat();
+
+            // Newest answered items first
+            trackerAssignments.sort((a, b) => {
+                const aTime = a.answeredAt ? new Date(a.answeredAt).getTime() : 0;
+                const bTime = b.answeredAt ? new Date(b.answeredAt).getTime() : 0;
+                return bTime - aTime;
+            });
+
+            updateTrackerSummary();
+            renderAssignmentTracker();
+            renderQuestions();
+        } catch (err) {
+            document.getElementById('pendingAssignmentsList').innerHTML = `<div class="empty-small" style="color:#c0392b;">${err.message}</div>`;
+            document.getElementById('answeredAssignmentsList').innerHTML = `<div class="empty-small" style="color:#c0392b;">${err.message}</div>`;
+        }
+    }
+
+    // Update summary counters above the tracker
+    function updateTrackerSummary() {
+        const assigned = trackerAssignments.length;
+        const answered = trackerAssignments.filter(hasAnswer).length;
+        const pending = assigned - answered;
+
+        document.getElementById('assignedTotal').textContent = assigned;
+        document.getElementById('pendingTotal').textContent = pending;
+        document.getElementById('answeredTotal').textContent = answered;
+    }
+
+    // Render question cards on the right side
+    function renderQuestions() {
+        const container = document.getElementById('questionsList');
+
+        if (!allQuestions.length) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:2rem;color:var(--text-light);">
+                    <div style="font-size:2.5rem;margin-bottom:1rem;">📋</div>
+                    <p style="font-weight:600;">No questions yet</p>
+                    <p style="font-size:.85rem;">Click "New Question" to create your first assessment question.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = allQuestions.map(q => {
+            const stats = getQuestionStats(q.id);
+
+            return `
+                <div class="q-card" id="qcard_${q.id}" style="${!q.isActive ? 'opacity:.55;' : ''}">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+                        <div style="flex:1;">
+                            <span class="q-type-badge ${getTypeClass(q.questionType)}">${normalizeQuestionTypeLabel(q.questionType)}</span>
+                            <span class="domain-badge ${getDomainClass(q.domain)}">${q.domain || 'Other'}</span>
+                            ${(q.ageMin > 0 || q.ageMax < 18) ? `<span style="font-size:.68rem;color:var(--text-light);margin-left:.3rem;">Age ${q.ageMin}–${q.ageMax}</span>` : ''}
+
+                            <p style="font-size:.9rem;font-weight:600;color:var(--text-dark);margin:.4rem 0;">${q.questionText}</p>
+
+                            ${q.questionType === 'multiple_choice' && Array.isArray(q.options) && q.options.length ? `
+                                <div class="options-list">
+                                    ${q.options.map(o => `<span class="option-chip">${o}</span>`).join('')}
+                                </div>
+                            ` : ''}
+
+                            <!-- Quick progress chips for each question -->
+                            <div class="question-stats">
+                                <span class="mini-chip assigned">Assigned: ${stats.assigned}</span>
+                                <span class="mini-chip pending">Pending: ${stats.pending}</span>
+                                <span class="mini-chip answered">Answered: ${stats.answered}</span>
+                            </div>
+                        </div>
+
+                        ${!q.isActive ? `<span style="font-size:.7rem;color:#888;background:#eee;border-radius:8px;padding:.2rem .5rem;">Inactive</span>` : ''}
+                    </div>
+
+                    <div class="q-actions">
+                        <button class="btn-outline" onclick="openEditModal(${q.id})" style="font-size:.78rem;padding:.3rem .7rem;">✏️ Edit</button>
+                        <button class="btn-outline" onclick="openAssignModal(${q.id})" style="font-size:.78rem;padding:.3rem .7rem;">👶 Assign</button>
+                        <button class="btn-outline" onclick="toggleActive(${q.id}, ${!q.isActive})" style="font-size:.78rem;padding:.3rem .7rem;">${q.isActive ? 'Deactivate' : 'Activate'}</button>
+                        <button class="btn-danger" onclick="deleteQuestion(${q.id})">🗑 Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render pending / answered tracker lists
+    function renderAssignmentTracker() {
+        const childFilter = document.getElementById('trackerChildFilter').value || 'all';
+        const stateFilter = document.getElementById('trackerStatusFilter').value || 'all';
+
+        let filtered = trackerAssignments.slice();
+
+        if (childFilter !== 'all') {
+            filtered = filtered.filter(a => String(a.childId) === String(childFilter));
+        }
+
+        if (stateFilter === 'pending') {
+            filtered = filtered.filter(a => !hasAnswer(a));
+        } else if (stateFilter === 'answered') {
+            filtered = filtered.filter(a => hasAnswer(a));
+        }
+
+        const pending = filtered.filter(a => !hasAnswer(a));
+        const answered = filtered.filter(a => hasAnswer(a));
+
+        document.getElementById('pendingAssignmentsList').innerHTML = pending.length
+            ? pending.map(a => renderTrackerItem(a, false)).join('')
+            : `<div class="empty-small">No pending parent answers.</div>`;
+
+        document.getElementById('answeredAssignmentsList').innerHTML = answered.length
+            ? answered.map(a => renderTrackerItem(a, true)).join('')
+            : `<div class="empty-small">No answered questions yet.</div>`;
+    }
+
+    // Render one tracker card
+    function renderTrackerItem(item, answeredView) {
+        return `
+            <div class="tracker-item">
+                <div class="tracker-badges">
+                    <span class="tracker-badge badge-child">${item.childName || 'Child'}</span>
+                    <span class="tracker-badge badge-parent">${item.parentName || 'Parent'}</span>
+                    <span class="tracker-badge ${answeredView ? 'badge-answered' : 'badge-pending'}">${answeredView ? 'Answered' : 'Pending'}</span>
+                </div>
+
+                <p style="margin:.2rem 0 .35rem;font-size:.92rem;font-weight:700;color:var(--text-dark);">${item.questionText || 'Question'}</p>
+
+                <p style="margin:0 0 .35rem;color:var(--text-light);font-size:.82rem;">
+                    ${item.domain || 'Other'} • ${normalizeQuestionTypeLabel(item.questionType)}
+                </p>
+
+                ${answeredView ? `
+                    <div class="tracker-answer">
+                        <p style="margin:0 0 .3rem;font-size:.78rem;color:var(--text-light);">Parent's answer</p>
+                        <p style="margin:0;font-weight:600;color:var(--text-dark);">${item.answer || 'No answer text'}</p>
+                    </div>
+                    <p style="margin:.6rem 0 0;font-size:.78rem;color:var(--text-light);">Answered at: ${formatDateTime(item.answeredAt)}</p>
+                ` : `
+                    <p style="margin:.6rem 0 0;font-size:.8rem;color:#856404;">Waiting for the parent to submit an answer.</p>
+                `}
+            </div>
+        `;
+    }
+
+    // Open create modal and reset fields
+    function openCreateModal() {
+        editingId = null;
+        document.getElementById('modalTitle').textContent = 'New Question';
+        document.getElementById('modalSub').textContent = 'Create a custom assessment question';
+        document.getElementById('qText').value = '';
+        document.getElementById('qType').value = 'yes_no';
+        document.getElementById('qDomain').value = 'Other';
+        document.getElementById('qAgeMin').value = '0';
+        document.getElementById('qAgeMax').value = '18';
+        document.getElementById('modalError').style.display = 'none';
+        clearOptions();
+        onTypeChange();
+        document.getElementById('questionModal').style.display = 'flex';
+    }
+
+    // Open edit modal and fill current question values
+    function openEditModal(id) {
+        const q = allQuestions.find(x => String(x.id) === String(id));
+        if (!q) return;
+
+        editingId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Question';
+        document.getElementById('modalSub').textContent = 'Update your assessment question';
+        document.getElementById('qText').value = q.questionText || '';
+        document.getElementById('qType').value = q.questionType || 'yes_no';
+        document.getElementById('qDomain').value = q.domain || 'Other';
+        document.getElementById('qAgeMin').value = q.ageMin ?? 0;
+        document.getElementById('qAgeMax').value = q.ageMax ?? 18;
+        document.getElementById('modalError').style.display = 'none';
+
+        clearOptions();
+        onTypeChange();
+
+        if (q.questionType === 'multiple_choice' && Array.isArray(q.options) && q.options.length) {
+            q.options.forEach(o => addOption(o));
+        }
+
+        document.getElementById('questionModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('questionModal').style.display = 'none';
+    }
+
+    // Show / hide option fields depending on question type
+    function onTypeChange() {
+        const type = document.getElementById('qType').value;
+        const section = document.getElementById('optionsSection');
+
+        section.style.display = type === 'multiple_choice' ? 'block' : 'none';
+
+        if (type === 'multiple_choice' && document.getElementById('optionsContainer').children.length === 0) {
+            addOption();
+            addOption();
+        }
+    }
+
+    function clearOptions() {
+        document.getElementById('optionsContainer').innerHTML = '';
+        optionCount = 0;
+    }
+
+    // Add one option input row
+    function addOption(value = '') {
+        optionCount++;
+        const inputId = `opt_${optionCount}`;
+
+        const div = document.createElement('div');
+        div.className = 'options-input-row';
+        div.innerHTML = `
+            <input type="text" id="${inputId}" value="${value}" placeholder="Option ${optionCount}">
+            <button type="button" class="option-remove-btn" onclick="this.parentElement.remove()">✕</button>
+        `;
+
+        document.getElementById('optionsContainer').appendChild(div);
+    }
+
+    // Collect option values from UI
+    function getOptions() {
+        return Array.from(document.querySelectorAll('#optionsContainer input'))
+            .map(i => i.value.trim())
+            .filter(Boolean);
+    }
+
+    // Save new question or update existing one
+    async function saveQuestion() {
+        const btn = document.getElementById('saveQBtn');
+        const errEl = document.getElementById('modalError');
+
+        errEl.style.display = 'none';
+
+        const questionText = document.getElementById('qText').value.trim();
+        const questionType = document.getElementById('qType').value;
+        const domain = document.getElementById('qDomain').value;
+        const ageMin = parseInt(document.getElementById('qAgeMin').value) || 0;
+        const ageMax = parseInt(document.getElementById('qAgeMax').value) || 18;
+        const options = questionType === 'multiple_choice' ? getOptions() : [];
+
+        if (!questionText) {
+            errEl.textContent = 'Question text is required.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        if (questionType === 'multiple_choice' && options.length < 2) {
+            errEl.textContent = 'Add at least 2 options.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        btn.textContent = 'Saving...';
+        btn.disabled = true;
+
+        try {
+            const payload = { questionText, questionType, options, domain, ageMin, ageMax };
+
+            if (editingId) {
+                await apiFetch(`/questions/${editingId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                flash('Question updated successfully.');
+            } else {
+                await apiFetch('/questions', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                flash('Question created successfully.');
+            }
+
+            closeModal();
+            await refreshAll();
+        } catch (e) {
+            errEl.textContent = e.message;
+            errEl.style.display = 'block';
+        } finally {
+            btn.textContent = 'Save Question';
+            btn.disabled = false;
+        }
+    }
+
+    // Activate or deactivate a question
+    async function toggleActive(id, active) {
+        try {
+            await apiFetch(`/questions/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ isActive: active })
+            });
+
+            flash(`Question ${active ? 'activated' : 'deactivated'} successfully.`);
+            await refreshAll();
+        } catch (e) {
+            flash(e.message, 'error');
+        }
+    }
+
+    // Delete a question permanently
+    async function deleteQuestion(id) {
+        if (!confirm('Delete this question? This cannot be undone.')) return;
+
+        try {
+            await apiFetch(`/questions/${id}`, { method: 'DELETE' });
+            flash('Question deleted.');
+            await refreshAll();
+        } catch (e) {
+            flash(e.message, 'error');
+        }
+    }
+
+    // Open assign modal for a specific question
+    async function openAssignModal(qId) {
+        assigningQId = qId;
+
+        const q = allQuestions.find(x => String(x.id) === String(qId));
+        document.getElementById('assignModalSub').textContent = `"${q ? q.questionText.substring(0, 60) + (q.questionText.length > 60 ? '…' : '') : 'Question'}"`;
+
+        document.getElementById('assignModal').style.display = 'flex';
+        document.getElementById('assignPatientList').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>';
+
+        if (!patientList.length) {
+            await loadPatientsOnly();
+        }
+
+        renderAssignList();
+    }
+
+    // Render patient list inside assign modal
+    function renderAssignList() {
+        const list = document.getElementById('assignPatientList');
+
+        if (!patientList.length) {
+            list.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No patients yet. Approve some appointments first.</p>';
+            return;
+        }
+
+        list.innerHTML = patientList.map(p => `
+            <div class="patient-row">
+                <div>
+                    <p style="font-weight:600;font-size:.88rem;margin:0;">👶 ${p.childName}</p>
+                    <p style="font-size:.78rem;color:var(--text-light);margin:.1rem 0 0;">👤 ${p.parentName}</p>
+                </div>
+                <button class="btn-outline" style="font-size:.78rem;padding:.3rem .7rem;" onclick="assignToPatient('${p.childId}', ${p.appointmentId || 'null'})">Assign</button>
+            </div>
+        `).join('');
+    }
+
+    // Assign selected question to one child
+    async function assignToPatient(childId, appointmentId) {
+        try {
+            await apiFetch(`/questions/${assigningQId}/assign`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    childId,
+                    appointmentId: appointmentId || undefined
+                })
+            });
+
+            flash('Question assigned! Parent has been notified.');
+            closeAssignModal();
+            await loadAssignmentTracker();
+        } catch (e) {
+            flash(e.message, 'error');
+        }
+    }
+
+    function closeAssignModal() {
+        document.getElementById('assignModal').style.display = 'none';
+        assigningQId = null;
+    }
+
+    // Refresh everything on the page
+    async function refreshAll() {
+        try {
+            document.getElementById('questionsList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-light);">Refreshing questions…</div>';
+            document.getElementById('pendingAssignmentsList').innerHTML = '<div class="empty-small">Refreshing tracker…</div>';
+            document.getElementById('answeredAssignmentsList').innerHTML = '<div class="empty-small">Refreshing tracker…</div>';
+
+            await loadQuestionsOnly();
+            await loadPatientsOnly();
+            await loadAssignmentTracker();
+            renderQuestions();
+        } catch (err) {
+            flash(err.message, 'error');
+        }
+    }
+
+    
+
+    // Open / close profile dropdown
+    
+// Format notification timestamps in one consistent style
+function formatDateTime(ts) {
+    if (!ts) return '—';
+    return new Date(ts).toLocaleString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+}
+
+// Small escape helper so notification text is safe to render in HTML
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch]));
+}
+
+// Decide where a notification should open based on the current user role
+function notificationDestination(n) {
+    let role = '';
+    try {
+        role = String((JSON.parse(localStorage.getItem('kc_user')) || {}).role || '').toLowerCase();
+    } catch {}
+
+    const title = String(n?.title || '').toLowerCase();
+    const type  = String(n?.type  || '').toLowerCase();
+    const msg   = String(n?.message || '').toLowerCase();
+
+    if (role === 'pediatrician') {
+        if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/pedia/pedia-chat.html';
+        if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/pedia/pediatrician-appointments.html';
+        if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question answered')) return '/pedia/pedia-questions.html';
+        if (title.includes('diagnosis') || msg.includes('diagnosis') || title.includes('recommendation') || msg.includes('recommendation')) return '/pedia/pediatrician-patients.html';
+        return '/pedia/pediatrician-dashboard.html';
+    }
+
+    if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/parent/chat.html';
+    if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/parent/appointments.html';
+    if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question assigned') || title.includes('question answered')) return '/parent/custom-questions.html';
+    if (title.includes('recommendation') || msg.includes('recommendation')) return '/parent/recommendations.html';
+    if (title.includes('result') || title.includes('diagnosis') || msg.includes('diagnosis')) return '/parent/results.html';
+    return '/parent/dashboard.html';
+}
+
+// Keep the bell badge in sync on every page that uses the shared modal
+async function loadNotificationCount() {
+    try {
+        const data = await apiFetch('/notifications/count');
+        const badge = document.querySelector('.notification-badge');
+        if (!badge) return;
+        const unread = data.unread || 0;
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    } catch {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Mark only one notification as read when the user opens or clicks it
+async function markNotificationRead(id) {
+    try {
+        await apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
+        await loadNotificationCount();
+    } catch {}
+}
+
+// Remove one notification from the user's list
+async function deleteNotification(id) {
+    if (!confirm('Remove this notification?')) return;
+    try {
+        await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not remove notification: ' + err.message);
+    }
+}
+
+// Delete every notification so old items do not stay in the modal forever
+async function clearAllNotifications() {
+    if (!confirm('Clear all notifications?')) return;
+    try {
+        await apiFetch('/notifications/clear-all', { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not clear notifications: ' + err.message);
+    }
+}
+
+// Optional helper so users can mark everything as seen without deleting them
+async function markAllNotificationsRead() {
+    try {
+        await apiFetch('/notifications/read-all', { method: 'PUT' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not mark notifications as read: ' + err.message);
+    }
+}
+
+// Mark read first, then send the user to the related page
+async function goToNotificationTarget(id, target) {
+    await markNotificationRead(id);
+    window.location.href = target;
+}
+
+// Shared notification modal renderer used by both parent and pediatrician pages
+async function openNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    const listEl = modal ? modal.querySelector('.notifications-list') : null;
+    if (!modal || !listEl) return;
+
+    modal.style.display = 'flex';
+    listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading...</p>';
+
+    try {
+        const data = await apiFetch('/notifications');
+        const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+        if (!notifications.length) {
+            listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1.5rem;">No notifications yet.</p>';
+            return;
+        }
+
+        const hasUnread = notifications.some(n => !n.isRead);
+        const tools = `
+            <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);background:white;position:sticky;top:0;z-index:1;">
+                ${hasUnread ? '<button onclick="markAllNotificationsRead()" style="border:1px solid var(--border);background:white;color:var(--primary);padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Mark all read</button>' : ''}
+                <button onclick="clearAllNotifications()" style="border:1px solid #e6b0b0;background:white;color:#c0392b;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Clear all</button>
+            </div>`;
+
+        const items = notifications.map((n) => {
+            const dest = notificationDestination(n);
+            const unreadStyle = n.isRead ? '' : 'background:#f0f7f0;border-left:3px solid var(--primary);';
+            const click = dest
+                ? `goToNotificationTarget(${n.id}, '${dest}')`
+                : `markNotificationRead(${n.id})`;
+
+            return `
+                <div class="notification-item" style="display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border);${unreadStyle}">
+                    <div onclick="${click}" style="flex:1;cursor:pointer;min-width:0;">
+                        <p style="font-weight:${n.isRead ? '400' : '700'};font-size:.9rem;margin:0 0 .2rem;color:var(--text-dark);">${escapeHtml(n.title || '')}</p>
+                        <p style="font-size:.82rem;color:#555;margin:0 0 .25rem;line-height:1.45;">${escapeHtml(n.message || '')}</p>
+                        <p style="font-size:.75rem;color:#aaa;margin:0;">${formatDateTime(n.createdAt)}</p>
+                        ${dest ? '<p style="font-size:.72rem;color:var(--primary);margin:.35rem 0 0;">Open related page →</p>' : ''}
+                    </div>
+                    <button onclick="event.stopPropagation();deleteNotification(${n.id})" title="Remove notification" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:.15rem .25rem;">✕</button>
+                </div>`;
+        }).join('');
+
+        listEl.innerHTML = tools + items;
+    } catch {
+        listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Could not load notifications.</p>';
+    }
+}
+
+function closeNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+
+function toggleProfileMenu() {
+        const menu = document.getElementById('profileMenu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Close profile dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        // Keep the dropdown open when clicking inside the menu itself
+        if (!e.target.closest('.profile-btn') && !e.target.closest('#profileMenu')) {
+            const menu = document.getElementById('profileMenu');
+            if (menu) menu.style.display = 'none';
+        }
+    });
+
+    // Initial page load
+    document.addEventListener('DOMContentLoaded', async () => {
+    await refreshAll();
+    await loadNotificationCount();
+    });
+</script>
+</body>
+</html>

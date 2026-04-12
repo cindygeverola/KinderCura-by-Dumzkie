@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - KinderCura Admin</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/admin/admin-dashboard.html" class="logo">
+                <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            
+            <nav class="main-nav">
+                <a href="/admin/admin-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/admin/admin-users.html" class="nav-link">Users</a>
+                <a href="/admin/admin-analytics.html" class="nav-link">Analytics</a>
+                <a href="/admin/admin-training.html" class="nav-link">Training</a>
+                <a href="/admin/admin-settings.html" class="nav-link" style="border-bottom: 3px solid var(--accent-red);">Settings</a>
+            </nav>
+
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon">
+                    <span class="notification-badge">1</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="menu-header">
+                        <p>Welcome, Admin</p>
+                    </div>
+                    <a href="/parent/profile.html" class="menu-item">
+                        <img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/admin/admin-settings.html" class="menu-item">
+                        <img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item">
+                        <img src="/icons/help.png" class="menu-icon">Help & Support</a>
+                    <a href="#" class="menu-item">
+                        <img src="/icons/logs.png" class="menu-icon">Logs</a>
+                    <hr style="margin: 0.5rem 0;">
+                    <a href="/login.html" class="menu-item logout">
+                        <img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Page Header -->
+        <div style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom: 0.5rem;">System Settings</h1>
+            <p style="color: var(--text-light);">Configure platform-wide settings and preferences</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+            <!-- Settings Sidebar -->
+            <div style="background: white; border-radius: 15px; padding: 1.5rem; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 100px;">
+                <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Settings Menu</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="#general" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; background: var(--primary); color: white;" onclick="switchTab('general')">
+                        General Settings
+                    </a>
+                    <a href="#email" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); transition: all 0.3s ease;" onclick="switchTab('email')">
+                        Email Configuration
+                    </a>
+                    <a href="#assessment" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); transition: all 0.3s ease;" onclick="switchTab('assessment')">
+                        Assessment Settings
+                    </a>
+                    <a href="#security" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); transition: all 0.3s ease;" onclick="switchTab('security')">
+                        Security & Privacy
+                    </a>
+                    <a href="#backup" class="settings-tab" style="padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--primary); transition: all 0.3s ease;" onclick="switchTab('backup')">
+                        Backup & Maintenance
+                    </a>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div>
+                <!-- General Settings -->
+                <div id="general-tab" class="settings-content">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">General Settings</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Platform Name</label>
+                            <input type="text" value="KinderCura" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Support Email</label>
+                            <input type="email" value="support@kindercura.ph" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Support Phone</label>
+                            <input type="tel" value="+63 2 8000-KINDERCURA" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Time Zone</label>
+                            <select style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                                <option selected>UTC+8 (Philippine Standard Time)</option>
+                                <option>UTC-5 (Eastern)</option>
+                                <option>UTC+9 (Japan Standard Time)</option>
+                                <option>UTC+7 (Bangkok Standard Time)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Enable Platform Notifications</span>
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Email Configuration -->
+                <div id="email-tab" class="settings-content" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Email Configuration</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">SMTP Server</label>
+                            <input type="text" value="smtp.mail.com" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">SMTP Port</label>
+                                <input type="number" value="587" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Encryption</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                                    <option>TLS</option>
+                                    <option>SSL</option>
+                                    <option>None</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Email Address</label>
+                            <input type="email" value="noreply@kindercura.ph" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Password</label>
+                            <input type="password" value="••••••••••••" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" onclick="alert('Email configuration saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                            <button class="btn btn-secondary" onclick="alert('Testing email configuration...')" style="padding: 0.8rem 1.5rem;">Test Email</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Settings -->
+                <div id="assessment-tab" class="settings-content" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Assessment Settings</h2>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Questions per Session</label>
+                            <input type="number" value="20" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Assessment Timeout (minutes)</label>
+                            <input type="number" value="60" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Minimum Completion Score (%)</label>
+                            <input type="number" value="50" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Enable Adaptive Questioning</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Allow Assessment Retakes</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Send Completion Notifications</span>
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Assessment settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Security & Privacy -->
+                <div id="security-tab" class="settings-content" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Security & Privacy</h2>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">Password Policy</h3>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Require Minimum 8 Characters</span>
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Require Uppercase and Lowercase</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Require Numbers and Special Characters</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">Login Security</h3>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Enable Two-Factor Authentication (2FA)</span>
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Session Timeout (minutes)</label>
+                                <input type="number" value="30" style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">Data Privacy</h3>
+                            <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                <input type="checkbox" checked>
+                                <span>Enable Data Encryption</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">🇵🇭 Philippines Compliance</h3>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Data Privacy Act (DPA) Compliance</span>
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Follow Department of Health (DOH) Guidelines</span>
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Follow National Curriculum (DepEd) Standards</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-weight: 600;">
+                                    <input type="checkbox" checked>
+                                    <span>Enable Telehealth Services (DOH Approved)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="alert('Security settings saved!')" style="padding: 0.8rem 1.5rem;">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Backup & Maintenance -->
+                <div id="backup-tab" class="settings-content" style="display: none;">
+                    <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Backup & Maintenance</h2>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">Backup Settings</h3>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Backup Frequency</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Every 6 Hours</option>
+                                    <option>Every 12 Hours</option>
+                                    <option>Daily</option>
+                                    <option>Weekly</option>
+                                </select>
+                            </div>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 1rem;">Last backup: Yesterday at 2:30 PM</p>
+                            <button class="btn btn-secondary" onclick="alert('Creating backup...')" style="padding: 0.8rem 1.5rem;">Create Backup Now</button>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1rem;">Database Maintenance</h3>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="alert('Optimizing database...')" style="padding: 0.8rem 1.5rem;">Optimize Database</button>
+                                <button class="btn btn-secondary" onclick="alert('Clearing cache...')" style="padding: 0.8rem 1.5rem;">Clear Cache</button>
+                                <button class="btn btn-secondary" onclick="alert('Running maintenance...')" style="padding: 0.8rem 1.5rem;">Run Maintenance</button>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; border-left: 4px solid var(--primary);">
+                            <h3 style="color: var(--text-dark); margin-bottom: 0.5rem; font-size: 1rem;">🇵🇭 System Status (Philippines Region)</h3>
+                            <div style="display: flex; gap: 2rem; margin-top: 1rem;">
+                                <div>
+                                    <p style="color: var(--text-light); font-size: 0.85rem;">Disk Usage</p>
+                                    <p style="font-weight: 600; color: var(--text-dark);">127.5 GB / 500 GB</p>
+                                </div>
+                                <div>
+                                    <p style="color: var(--text-light); font-size: 0.85rem;">Database Size</p>
+                                    <p style="font-weight: 600; color: var(--text-dark);">45.3 GB</p>
+                                </div>
+                                <div>
+                                    <p style="color: var(--text-light); font-size: 0.85rem;">Uptime (PH)</p>
+                                    <p style="font-weight: 600; color: var(--text-dark);">99.8%</p>
+                                </div>
+                                <div>
+                                    <p style="color: var(--text-light); font-size: 0.85rem;">Servers</p>
+                                    <p style="font-weight: 600; color: var(--text-dark);">3 (Manila)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display: none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list">
+                <div class="notification-item">
+                    <span class="notification-icon-small">⚙️</span>
+                    <div>
+                        <p class="notification-title">System Maintenance Scheduled</p>
+                        <p class="notification-time">Tomorrow at 2:00 AM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.settings-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').style.display = 'block';
+
+            // Update sidebar active state
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.style.background = 'transparent';
+                tab.style.color = 'var(--primary)';
+            });
+            event.target.style.background = 'var(--primary)';
+            event.target.style.color = 'white';
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openNotifications() {
+            document.getElementById('notificationsModal').style.display = 'flex';
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-btn')) {
+                document.getElementById('profileMenu').style.display = 'none';
+            }
+        });
+    </script>
+<script src="/api.js"></script>
+</body>
+</html>

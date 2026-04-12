@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Patients - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="pediatrician-dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            
+            <nav class="main-nav">
+                <a href="pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="pediatrician-patients.html" class="nav-link" style="border-bottom: 3px solid var(--accent-red);">My Patients</a>
+                <a href="pediatrician-appointments.html" class="nav-link">Appointments</a>
+            </nav>
+
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon">
+                    <span class="notification-badge">1</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon">
+                </button>
+
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="menu-header">
+                        <p>Welcome, Dr. Patricia</p>
+                    </div>
+                    <a href="pediatrician-profile.html" class="menu-item">
+                        <img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="pediatrician-settings.html" class="menu-item">
+                        <img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item">
+                        <img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin: 0.5rem 0;">
+                    <a href="login.html" class="menu-item logout">
+                        <img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Page Header -->
+        <div style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom: 0.5rem;">My Patients</h1>
+            <p style="color: var(--text-light);">View patient assessments and provide diagnosis</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div style="background: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Search Patient</label>
+                    <input type="text" placeholder="Name, parent email..." onkeyup="filterPatients()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Status</label>
+                    <select onchange="filterPatients()">
+                        <option value="">All Patients</option>
+                        <option value="pending">Pending Diagnosis</option>
+                        <option value="diagnosed">Diagnosed</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Age Group</label>
+                    <select onchange="filterPatients()">
+                        <option value="">All Ages</option>
+                        <option value="preschool">Preschool (3-5)</option>
+                        <option value="school">Early School (6-8)</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="alert('Exporting patient list...')" style="padding: 0.8rem 1.5rem;">Export</button>
+            </div>
+        </div>
+
+        <!-- Patients List -->
+        <div style="display: grid; gap: 1.5rem;">
+            <!-- Patient 1 -->
+            <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; align-items: start; flex: 1;">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">👧</div>
+                        <div>
+                            <p style="font-weight: 600; font-size: 1rem; color: var(--text-dark);">Jane Doe</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem;">Age: 2 years 1 month • Parent: Sarah Johnson</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem;">Last Assessment: 2 hours ago</p>
+                        </div>
+                    </div>
+                    <span style="background: var(--accent-red); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">Pending Diagnosis</span>
+                </div>
+
+                <!-- Assessment Results Summary -->
+                <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; color: var(--primary); margin-bottom: 1rem;">Assessment Results</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Communication</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">92%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Social Skills</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">88%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Cognitive</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">85%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Motor Skills</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">90%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="viewFullAssessment('1')" style="padding: 0.7rem 1.5rem; flex: 1;">View Full Assessment</button>
+                    <button class="btn btn-secondary" onclick="provideDiagnosis('1')" style="padding: 0.7rem 1.5rem; flex: 1;">Provide Diagnosis</button>
+                </div>
+            </div>
+
+            <!-- Patient 2 -->
+            <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; align-items: start; flex: 1;">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">👦</div>
+                        <div>
+                            <p style="font-weight: 600; font-size: 1rem; color: var(--text-dark);">Lucas Chen</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem;">Age: 4 years 6 months • Parent: Michael Chen</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem;">Last Assessment: 1 day ago</p>
+                        </div>
+                    </div>
+                    <span style="background: var(--success); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">Diagnosed</span>
+                </div>
+
+                <!-- Assessment Results Summary -->
+                <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; color: var(--primary); margin-bottom: 1rem;">Assessment Results</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Communication</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">95%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Social Skills</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">91%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Cognitive</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">89%</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.5rem;">Motor Skills</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">93%</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">Your Diagnosis:</p>
+                        <p style="color: var(--text-dark);">Normal development for age. Child shows advanced skills in communication and motor development. Recommend continued monitoring.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="viewFullAssessment('2')" style="padding: 0.7rem 1.5rem; flex: 1;">View Full Assessment</button>
+                    <button class="btn btn-secondary" onclick="editDiagnosis('2')" style="padding: 0.7rem 1.5rem; flex: 1;">Edit Diagnosis</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnosis Modal -->
+    <div class="notifications-modal" id="diagnosisModal" style="display: none;">
+        <div class="notifications-content" style="max-width: 600px;">
+            <div class="notifications-header">
+                <h3>Provide Diagnosis</h3>
+                <button class="close-btn" onclick="closeDiagnosisModal()">✕</button>
+            </div>
+            <div style="padding: 2rem;">
+                <div class="form-group">
+                    <label style="font-weight: 600; margin-bottom: 0.5rem;">Diagnosis</label>
+                    <textarea id="diagnosis-text" placeholder="Enter your professional diagnosis based on the assessment results..." style="width: 100%; height: 150px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 600; margin-bottom: 0.5rem;">Recommendations</label>
+                    <textarea id="recommendations-text" placeholder="Enter recommendations for parents/caregivers..." style="width: 100%; height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="submitDiagnosis()" style="padding: 0.8rem 1.5rem; flex: 1;">Submit Diagnosis</button>
+                    <button class="btn btn-secondary" onclick="closeDiagnosisModal()" style="padding: 0.8rem 1.5rem; flex: 1;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display: none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list">
+                <div class="notification-item">
+                    <span class="notification-icon-small">✓</span>
+                    <div>
+                        <p class="notification-title">Assessment Completed: Jane Doe</p>
+                        <p class="notification-time">2 hours ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function viewFullAssessment(patientId) {
+            alert('Opening full assessment details for patient ' + patientId);
+        }
+
+        function provideDiagnosis(patientId) {
+            document.getElementById('diagnosisModal').style.display = 'flex';
+            window.currentPatientId = patientId;
+        }
+
+        function editDiagnosis(patientId) {
+            document.getElementById('diagnosisModal').style.display = 'flex';
+            window.currentPatientId = patientId;
+            // Populate with existing diagnosis
+            document.getElementById('diagnosis-text').value = 'Normal development for age. Child shows advanced skills in communication and motor development. Recommend continued monitoring.';
+        }
+
+        function submitDiagnosis() {
+            const diagnosis = document.getElementById('diagnosis-text').value;
+            const recommendations = document.getElementById('recommendations-text').value;
+
+            if (!diagnosis.trim()) {
+                alert('Please enter a diagnosis');
+                return;
+            }
+
+            alert('Diagnosis submitted! Parent will be notified.');
+            closeDiagnosisModal();
+        }
+
+        function closeDiagnosisModal() {
+            document.getElementById('diagnosisModal').style.display = 'none';
+            document.getElementById('diagnosis-text').value = '';
+            document.getElementById('recommendations-text').value = '';
+        }
+
+        function filterPatients() {
+            // Implement filtering logic
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openNotifications() {
+            document.getElementById('notificationsModal').style.display = 'flex';
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-btn')) {
+                document.getElementById('profileMenu').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

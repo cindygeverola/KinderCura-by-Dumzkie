@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .child-select { min-width: 240px; padding: .85rem 1rem; border: 2px solid var(--border); border-radius: 10px; font-size: .95rem; }
+        .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; margin-top:2rem; }
+        .summary-card { background:white; border-radius:15px; padding:1.7rem; box-shadow:0 4px 15px rgba(0,0,0,.08); }
+        .pill { display:inline-block; padding:.45rem .9rem; border-radius:999px; font-size:.78rem; font-weight:700; }
+        .pill-review { background:#e8f5e9; color:#2e7d32; }
+        .pill-warn { background:#fff5d8; color:#9a6700; }
+        .notif-preview-item { cursor:pointer; padding:1rem; background:var(--bg-primary); border-radius:8px; border-left:4px solid var(--primary); }
+    </style>
+</head>
+<body>
+<header class="top-nav">
+    <div class="nav-container">
+        <a href="/parent/dashboard.html" class="logo">
+            <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+            <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+        </a>
+        <nav class="main-nav">
+            <a href="/parent/dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="/parent/results.html" class="nav-link">Results</a>
+            <a href="/parent/recommendations.html" class="nav-link">Recommendations</a>
+            <a href="/parent/appointments.html" class="nav-link">Appointments</a>
+            <a href="/parent/chat.html" class="nav-link">💬 Chat</a>
+            <a href="/parent/custom-questions.html" class="nav-link">Questions</a>
+        </nav>
+        <div class="nav-right">
+            <button class="icon-btn notification-btn" onclick="openNotifications()">
+                <img src="/icons/notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                <span class="notification-badge">0</span>
+            </button>
+            <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                <img src="/icons/profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+            </button>
+            <div class="profile-menu" id="profileMenu" style="display:none;">
+                <div class="menu-header"><p id="navWelcome">Welcome</p></div>
+                <a href="/parent/profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                <a href="/parent/settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                <hr style="margin:0.5rem 0;">
+                <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <div class="child-card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div class="child-info">
+            <h1 id="childName">Loading…</h1>
+            <p id="childMeta"></p>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;">
+            <div id="childSwitchWrap"></div>
+            <button class="btn btn-primary" onclick="window.location.href='/parent/profile.html'">Edit Profile</button>
+        </div>
+    </div>
+
+    <div class="overview-grid">
+        <div class="overview-card">
+            <h3>📊 Skill Overview</h3>
+            <div class="skill-list" id="skillList">
+                <p style="color:var(--text-light);text-align:center;">No assessment yet</p>
+            </div>
+        </div>
+        <div class="overview-card">
+            <h3>📋 Latest Assessment</h3>
+            <div class="assessment-box" id="assessmentBox">
+                <p style="color:var(--text-light);text-align:center;padding:1rem;">No assessment yet</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card" id="reviewSummaryCard">
+            <h3>🩺 Pediatrician Review</h3>
+            <p style="color:var(--text-light);margin-top:.5rem;">No pediatrician review yet.</p>
+        </div>
+
+        <div class="summary-card">
+            <h3>💡 Recommendations Preview</h3>
+            <div id="recList" style="margin-top:1rem;">
+                <p style="color:var(--text-light);text-align:center;">No recommendations yet</p>
+            </div>
+            <button class="btn btn-accent" style="width:100%;margin-top:1.5rem;padding:0.9rem;background:white;color:var(--primary);border:2px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;" onclick="openRecommendationsPage()">View Full Recommendations</button>
+        </div>
+    </div>
+
+    <div class="actions-card">
+        <h3>⚡ Quick Actions</h3>
+        <div class="actions-buttons">
+            <button class="btn btn-primary" onclick="startScreening()">New Screening</button>
+            <button class="btn btn-secondary" onclick="openResultsPage()">View Results</button>
+            <button class="btn btn-primary" onclick="window.location.href='/parent/appointments.html'">Book Appointment</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/parent/custom-questions.html'">Questions</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🔔 Latest Notifications</h3>
+        <div id="notifPreview" style="display:flex;flex-direction:column;gap:1rem;">
+            <p style="color:var(--text-light);text-align:center;">Loading…</p>
+        </div>
+    </div>
+</div>
+
+<div class="notifications-modal" id="notificationsModal" style="display:none;">
+    <div class="notifications-content">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" onclick="closeNotifications()">✕</button>
+        </div>
+        <div class="notifications-list">
+            <p style="text-align:center;color:var(--text-light);">Loading…</p>
+        </div>
+    </div>
+</div>
+
+<script src="/api.js"></script>
+<script>
+requireAuth();
+const _user = KC.user();
+if (_user?.role === 'pediatrician') window.location.href = '/pedia/pediatrician-dashboard.html';
+else if (_user?.role === 'admin') window.location.href = '/admin/admin-dashboard.html';
+
+let allChildren = [];
+let activeChild = null;
+let activeAssessment = null;
+
+// This keeps the selected child the same across Dashboard, Results, and Recommendations.
+function switchChild(childId) {
+    setParentContext(childId, null);
+    window.location.href = `/parent/dashboard.html?childId=${encodeURIComponent(childId)}`;
+}
+
+function openResultsPage() {
+    const childId = activeChild?.id;
+    const assessmentId = activeAssessment?.id;
+    if (childId) setParentContext(childId, assessmentId || null);
+    const q = new URLSearchParams();
+    if (childId) q.set('childId', childId);
+    if (assessmentId) q.set('assessmentId', assessmentId);
+    window.location.href = `/parent/results.html?${q.toString()}`;
+}
+
+function openRecommendationsPage() {
+    const childId = activeChild?.id;
+    const assessmentId = activeAssessment?.id;
+    if (childId) setParentContext(childId, assessmentId || null);
+    const q = new URLSearchParams();
+    if (childId) q.set('childId', childId);
+    if (assessmentId) q.set('assessmentId', assessmentId);
+    window.location.href = `/parent/recommendations.html?${q.toString()}`;
+}
+
+function startScreening() {
+    if (activeChild?.id) setParentContext(activeChild.id, null);
+    window.location.href = '/parent/screening.html';
+}
+
+function renderChildSwitcher() {
+    const wrap = document.getElementById('childSwitchWrap');
+    if (!wrap) return;
+    if (allChildren.length <= 1) {
+        wrap.innerHTML = '';
+        return;
+    }
+
+    wrap.innerHTML = `
+        <select id="childSwitch" class="child-select" onchange="switchChild(this.value)">
+            ${allChildren.map((c) => `<option value="${c.id}" ${c.id === activeChild?.id ? 'selected' : ''}>${c.firstName} ${c.lastName}</option>`).join('')}
+        </select>`;
+}
+
+function renderHeader() {
+    if (!activeChild) {
+        document.getElementById('childName').textContent = 'No child registered';
+        document.getElementById('childMeta').textContent = 'Go to Profile to add a child.';
+        return;
+    }
+    document.getElementById('childName').textContent = `${activeChild.firstName} ${activeChild.lastName}`;
+    document.getElementById('childMeta').textContent = `Age: ${calcAgeDisplay(activeChild.dateOfBirth)} | Birthdate: ${fmtDate(activeChild.dateOfBirth)}`;
+}
+
+function renderSkills(a) {
+    if (!a) {
+        document.getElementById('skillList').innerHTML = '<p style="color:var(--text-light);text-align:center;">No assessment yet</p>';
+        return;
+    }
+    const scores = [
+        { label:'Communication', val: a.communicationScore || 0 },
+        { label:'Social Skills',  val: a.socialScore || 0 },
+        { label:'Cognitive',      val: a.cognitiveScore || 0 },
+        { label:'Motor Skills',   val: a.motorScore || 0 }
+    ];
+    document.getElementById('skillList').innerHTML = scores.map((s) => `
+        <div class="skill-item">
+            <div class="skill-name"><span>${s.label}</span><span class="skill-percent">${Math.round(s.val)}%</span></div>
+            <div class="skill-bar"><div class="skill-fill" style="width:${Math.round(s.val)}%"></div></div>
+        </div>`).join('');
+}
+
+function renderAssessment(a) {
+    if (!a) {
+        document.getElementById('assessmentBox').innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No assessment yet</p>';
+        return;
+    }
+    const date = a.completedAt ? fmtDate(a.completedAt) : 'Recent';
+    document.getElementById('assessmentBox').innerHTML = `
+        <p class="assessment-date">${date}</p>
+        <div class="assessment-scores">
+            <div class="score-item"><div class="score-num">${Math.round(a.communicationScore || 0)}%</div><div class="score-label">Communication</div></div>
+            <div class="score-item"><div class="score-num">${Math.round(a.socialScore || 0)}%</div><div class="score-label">Social</div></div>
+            <div class="score-item"><div class="score-num">${Math.round(a.cognitiveScore || 0)}%</div><div class="score-label">Cognitive</div></div>
+            <div class="score-item"><div class="score-num">${Math.round(a.motorScore || 0)}%</div><div class="score-label">Motor</div></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openResultsPage()">View Detailed Results</button>`;
+}
+
+function renderReviewSummary(a) {
+    const el = document.getElementById('reviewSummaryCard');
+    if (!el) return;
+    if (!a?.diagnosis) {
+        el.innerHTML = `
+            <h3>🩺 Pediatrician Review</h3>
+            <p style="color:var(--text-light);margin:.8rem 0 1.2rem;">No pediatrician review yet for this child.</p>
+            <span class="pill pill-warn">Awaiting Review</span>`;
+        return;
+    }
+
+    el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+            <h3>🩺 Pediatrician Review</h3>
+            <span class="pill pill-review">Reviewed by Pediatrician</span>
+        </div>
+        <p style="color:var(--text-light);margin:0 0 1rem;">Reviewed on ${fmtDate(a.reviewedAt || a.completedAt || a.startedAt)}</p>
+        <div style="background:var(--bg-primary);padding:1rem 1.1rem;border-radius:10px;margin-bottom:1rem;">
+            <p style="font-weight:700;color:var(--text-dark);margin:0 0 .35rem;">Diagnosis</p>
+            <p style="margin:0;color:var(--text-light);line-height:1.6;">${escapeHtml(a.diagnosis)}</p>
+        </div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="openResultsPage()">View Full Results</button>
+            <button class="btn btn-primary" onclick="openRecommendationsPage()">View Recommendations</button>
+        </div>`;
+}
+
+function renderRecs(recs) {
+    const box = document.getElementById('recList');
+    if (!box) return;
+    if (!recs?.length) {
+        box.innerHTML = '<p style="color:var(--text-light);text-align:center;">No recommendations yet</p>';
+        return;
+    }
+    const icons = { communication:'🗣️', social:'🤝', cognitive:'🧠', motor:'🤸' };
+    box.innerHTML = recs.slice(0, 3).map((r, i, arr) => `
+        <div style="margin-bottom:${i < arr.length - 1 ? '1.2rem' : '0'};padding-bottom:${i < arr.length - 1 ? '1.2rem' : '0'};border-bottom:${i < arr.length - 1 ? '1px solid var(--border)' : 'none'};">
+            <p style="font-weight:700;margin:0 0 .3rem;">${icons[r.skill] || '💡'} ${r.skill.charAt(0).toUpperCase() + r.skill.slice(1)}</p>
+            <p style="color:var(--text-light);font-size:.9rem;margin:0;line-height:1.6;">${escapeHtml(r.suggestion)}</p>
+        </div>`).join('');
+}
+
+async function loadNotifPreview() {
+    try {
+        const data = await apiFetch('/notifications');
+        const notifications = data.notifications || [];
+        const preview = document.getElementById('notifPreview');
+        cacheNotifications(notifications);
+
+        if (!notifications.length) {
+            preview.innerHTML = `<div class="notif-preview-item"><div style="font-weight:600;margin-bottom:.3rem;">Welcome to KinderCura!</div><div style="font-size:.85rem;color:var(--text-light);">Your account is ready.</div></div>`;
+            return;
+        }
+
+        preview.innerHTML = notifications.slice(0, 3).map((n) => `
+            <div onclick="goToNotificationTargetById(${n.id})" class="notif-preview-item" style="border-left-color:${n.isRead ? 'var(--border)' : 'var(--primary)'};">
+                <div style="font-weight:700;margin-bottom:.3rem;">${escapeHtml(n.title || '')}</div>
+                <div style="font-size:.85rem;color:var(--text-light);line-height:1.5;">${escapeHtml(n.message || '')}</div>
+            </div>`).join('');
+    } catch {
+        document.getElementById('notifPreview').innerHTML = '<p style="color:var(--text-light);text-align:center;">Could not load notifications.</p>';
+    }
+}
+
+async function loadDashboard() {
+    try {
+        allChildren = await fetchParentChildren();
+        if (!allChildren.length) {
+            renderHeader();
+            renderChildSwitcher();
+            renderSkills(null);
+            renderAssessment(null);
+            renderReviewSummary(null);
+            renderRecs([]);
+            await loadNotifPreview();
+            return;
+        }
+
+        const requestedChildId = getRequestedChildId();
+        activeChild = allChildren.find((c) => c.id === requestedChildId) || allChildren[0];
+        setParentContext(activeChild.id, null);
+
+        renderChildSwitcher();
+        renderHeader();
+
+        activeAssessment = await getLatestCompletedAssessment(activeChild.id);
+        if (activeAssessment?.id) setParentContext(activeChild.id, activeAssessment.id);
+
+        renderSkills(activeAssessment);
+        renderAssessment(activeAssessment);
+        renderReviewSummary(activeAssessment);
+
+        if (activeAssessment?.id) {
+            try {
+                const recs = await apiFetch(`/recommendations/${activeAssessment.id}`);
+                renderRecs(recs.recommendations || []);
+            } catch {
+                renderRecs([]);
+            }
+        } else {
+            renderRecs([]);
+        }
+
+        await loadNotifPreview();
+    } catch (err) {
+        document.getElementById('childName').textContent = 'Could not load dashboard';
+        document.getElementById('childMeta').textContent = err.message || 'Please try again.';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

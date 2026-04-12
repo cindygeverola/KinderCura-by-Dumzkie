@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - KinderCura Admin</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/admin/admin-dashboard.html" class="logo"><img src="/icons/logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="/admin/admin-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/admin/admin-users.html" class="nav-link active">Users</a>
+                <a href="/admin/admin-analytics.html" class="nav-link">Analytics</a>
+                <a href="/admin/admin-training.html" class="nav-link">Training</a>
+                <a href="/admin/admin-settings.html" class="nav-link">Settings</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="/icons/notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, Admin</p></div>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-header"><h1>User Management</h1><p>Manage system users and permissions</p></div>
+
+        <div class="card">
+            <h3>🔍 Search & Filter</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;align-items:end;">
+                <div class="form-group" style="margin-bottom:0;"><label>Search</label><input type="text" id="searchInput" placeholder="Name, email, username…" oninput="debounceFilter()"></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Role</label><select id="roleFilter" onchange="loadUsers()"><option value="">All Roles</option><option value="parent">Parent</option><option value="pediatrician">Pediatrician</option><option value="admin">Admin</option></select></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Status</label><select id="statusFilter" onchange="loadUsers()"><option value="">All Status</option><option value="active">Active</option><option value="pending">Pending</option><option value="suspended">Suspended</option></select></div>
+                <button class="btn btn-primary" onclick="exportUsers()">Export</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>👥 All Users <span id="userCount" style="font-size:0.9rem;font-weight:400;color:var(--text-light);"></span></h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:var(--bg-primary);border-bottom:2px solid var(--border);">
+                            <th style="padding:1rem;text-align:left;font-weight:600;">User</th>
+                            <th style="padding:1rem;text-align:left;font-weight:600;">Email</th>
+                            <th style="padding:1rem;text-align:left;font-weight:600;">Role</th>
+                            <th style="padding:1rem;text-align:left;font-weight:600;">Status</th>
+                            <th style="padding:1rem;text-align:left;font-weight:600;">Joined</th>
+                            <th style="padding:1rem;text-align:center;font-weight:600;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList"><tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--text-light);">Loading users…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>⏳ Pending Approvals <span id="pendingCount" style="background:var(--accent-red);color:white;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.8rem;margin-left:0.5rem;"></span></h3>
+            <div id="pendingList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;"><p style="color:var(--text-light);grid-column:1/-1;text-align:center;">Loading…</p></div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Admin Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- Shared helpers: auth, notifications, logout, API fetch -->
+    <script src="/api.js"></script>
+    <script>
+        // Require login before this page can load
+        requireAuth();
+        // Admin-only page guard
+        const _u = KC.user();
+        if (_u && _u.role !== 'admin') window.location.href = '/parent/dashboard.html';
+
+        // Small debounce so search does not fire every keystroke instantly
+        let searchTimer;
+        function debounceFilter() { clearTimeout(searchTimer); searchTimer = setTimeout(loadUsers, 400); }
+
+        // Load users using current search and filter values
+        async function loadUsers() {
+            const search = document.getElementById('searchInput').value.trim();
+            const role   = document.getElementById('roleFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (role)   params.append('role', role);
+            if (status) params.append('status', status);
+
+            try {
+                const data = await apiFetch(`/admin/users?${params}`);
+                renderUsers(data.users || []);
+                renderPending((data.users || []).filter(u => u.status === 'pending'));
+                document.getElementById('userCount').textContent = `(${(data.users || []).length})`;
+            } catch (e) {
+                document.getElementById('usersList').innerHTML = `<tr><td colspan="6" style="padding:2rem;color:red;text-align:center;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        // Render the main user table
+        function renderUsers(users) {
+            const statusColor = { active:'var(--success)', pending:'#f39c12', suspended:'var(--accent-red)' };
+            document.getElementById('usersList').innerHTML = users.length
+                ? users.map(u => `
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:1rem;font-weight:600;">${u.firstName} ${u.lastName}</td>
+                        <td style="padding:1rem;color:var(--text-light);">${u.email}</td>
+                        <td style="padding:1rem;"><span style="background:var(--bg-primary);padding:0.3rem 0.8rem;border-radius:4px;font-size:0.85rem;text-transform:capitalize;">${u.role}</span></td>
+                        <td style="padding:1rem;"><span style="background:${statusColor[u.status]||'gray'};color:white;padding:0.3rem 0.8rem;border-radius:4px;font-size:0.85rem;text-transform:capitalize;">${u.status}</span></td>
+                        <td style="padding:1rem;color:var(--text-light);">${u.createdAt}</td>
+                        <td style="padding:1rem;text-align:center;">
+                            ${u.status === 'pending' ? `
+                                <button onclick="approveUser('${u.id}')" style="padding:0.4rem 0.8rem;background:var(--success);color:white;border:none;border-radius:4px;cursor:pointer;margin-right:0.3rem;">Approve</button>
+                                <button onclick="rejectUser('${u.id}')" style="padding:0.4rem 0.8rem;background:var(--accent-red);color:white;border:none;border-radius:4px;cursor:pointer;">Reject</button>
+                            ` : u.status === 'active' ? `
+                                <button onclick="suspendUser('${u.id}')" style="padding:0.4rem 0.8rem;background:var(--accent-red);color:white;border:none;border-radius:4px;cursor:pointer;">Suspend</button>
+                            ` : `
+                                <button onclick="approveUser('${u.id}')" style="padding:0.4rem 0.8rem;background:var(--success);color:white;border:none;border-radius:4px;cursor:pointer;">Re-activate</button>
+                            `}
+                        </td>
+                    </tr>`).join('')
+                : '<tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--text-light);">No users found</td></tr>';
+        }
+
+        // Render pending approval cards
+        function renderPending(pending) {
+            const badge = document.getElementById('pendingCount');
+            badge.textContent = pending.length > 0 ? pending.length : '';
+            document.getElementById('pendingList').innerHTML = pending.length
+                ? pending.map(u => `
+                    <div style="background:var(--bg-primary);padding:1.5rem;border-radius:10px;border-left:4px solid #f39c12;">
+                        <p style="font-weight:600;">${u.firstName} ${u.lastName}</p>
+                        <p style="color:var(--text-light);font-size:0.85rem;margin:0.3rem 0;">${u.email}</p>
+                        <p style="font-size:0.8rem;color:var(--text-light);margin-bottom:1rem;text-transform:capitalize;">Role: ${u.role}</p>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button onclick="approveUser('${u.id}')" style="flex:1;padding:0.5rem;background:var(--success);color:white;border:none;border-radius:4px;cursor:pointer;">Approve</button>
+                            <button onclick="rejectUser('${u.id}')" style="flex:1;padding:0.5rem;background:var(--accent-red);color:white;border:none;border-radius:4px;cursor:pointer;">Reject</button>
+                        </div>
+                    </div>`).join('')
+                : '<p style="color:var(--text-light);text-align:center;grid-column:1/-1;">No pending approvals</p>';
+        }
+
+        async function approveUser(userId) {
+            try { await apiFetch('/admin/users/approve', { method:'POST', body: JSON.stringify({ userId }) }); loadUsers(); }
+            catch (e) { alert(e.message); }
+        }
+        async function suspendUser(userId) {
+            if (!confirm('Suspend this user?')) return;
+            try { await apiFetch('/admin/users/suspend', { method:'POST', body: JSON.stringify({ userId, reason:'Suspended by admin' }) }); loadUsers(); }
+            catch (e) { alert(e.message); }
+        }
+        async function rejectUser(userId) {
+            if (!confirm('Permanently delete this user?')) return;
+            try { await apiFetch(`/admin/users/${userId}`, { method:'DELETE' }); loadUsers(); }
+            catch (e) { alert(e.message); }
+        }
+
+        // Export current admin data using authenticated download helper
+        async function exportUsers() {
+            try {
+                await downloadWithAuth('/admin/export-data', 'users-export.json');
+            } catch (e) {
+                alert('Export failed: ' + e.message);
+            }
+        }
+
+        // First load of table data
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>

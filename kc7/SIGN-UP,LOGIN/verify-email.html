@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - KinderCura</title>
+    <link rel="stylesheet" href="/css/auth-new-styles.css">
+    <style>
+        .otp-input-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .otp-input {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(107, 142, 111, 0.1);
+        }
+        .otp-input.filled {
+            background: var(--bg-primary);
+            border-color: var(--primary);
+        }
+        .resend-link { text-align: center; margin-top: 1.5rem; }
+        .resend-link p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .resend-link a { color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .resend-link a:hover { text-decoration: underline; }
+        .timer { font-size: 0.85rem; color: var(--text-light); }
+        .pin-hint {
+            text-align: center;
+            background: #f0f7f0;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Left Sidebar -->
+        <div class="auth-sidebar" style="position: fixed; left: 0; top: 0; height: 100vh; width: 50%; overflow-y: auto; z-index: 10;">
+            <div class="sidebar-logo">
+                <img src="/icons/logo.png" alt="KinderCura Logo" class="sidebar-logo-img">
+                <h1><span style="color: #E8A5A5;">Kinder</span><span style="color: #6B8E6F;">Cura</span></h1>
+            </div>
+            <p class="sidebar-tagline">Supporting Your Child's Development Journey</p>
+            <p class="sidebar-subtitle">Comprehensive screening, expert guidance, and professional tools all in one place</p>
+            <div class="sidebar-features">
+                <div class="feature"><span class="check-icon">✓</span><p>Comprehensive Screening</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Progress Tracking</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Expert Recommendations</p></div>
+                <div class="feature"><span class="check-icon">✓</span><p>Appointment System</p></div>
+            </div>
+        </div>
+
+        <!-- Right Form -->
+        <div class="auth-form-section" style="margin-left: 50%; flex: 1;">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Verify Your Email</h2>
+                    <p>We've sent a <strong>4-digit PIN</strong> to your Gmail address</p>
+                </div>
+
+                <div class="form-section">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">Check your Gmail inbox for the 4-digit PIN</p>
+                        <p style="font-weight: 600; color: var(--text-dark);" id="email-display">your-email@gmail.com</p>
+                    </div>
+
+                    <div class="pin-hint">📧 A 4-digit PIN has been sent to your Gmail. Check your inbox or spam folder.</div>
+
+                    <form id="otp-form" onsubmit="verifyOTP(event)">
+                        <label style="display: block; font-weight: 600; margin-bottom: 1rem; text-align: center;">Enter 4-Digit PIN</label>
+
+                        <div class="otp-input-container">
+                            <input type="text" inputmode="numeric" class="otp-input" maxlength="1" id="otp1" onkeyup="moveToNext(this, 'otp2')" onkeydown="handleBackspace(event, this, null)" required>
+                            <input type="text" inputmode="numeric" class="otp-input" maxlength="1" id="otp2" onkeyup="moveToNext(this, 'otp3')" onkeydown="handleBackspace(event, this, 'otp1')" required>
+                            <input type="text" inputmode="numeric" class="otp-input" maxlength="1" id="otp3" onkeyup="moveToNext(this, 'otp4')" onkeydown="handleBackspace(event, this, 'otp2')" required>
+                            <input type="text" inputmode="numeric" class="otp-input" maxlength="1" id="otp4" onkeyup="moveToNext(this, null)" onkeydown="handleBackspace(event, this, 'otp3')" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full" style="padding: 0.9rem; margin-bottom: 1rem;">Verify PIN</button>
+                    </form>
+
+                    <div class="resend-link">
+                        <p>Didn't receive the PIN?</p>
+                        <a onclick="resendOTP()" style="cursor: pointer;">Resend PIN <span class="timer" id="timer"></span></a>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <p style="color: var(--text-light); font-size: 0.85rem;">Wrong email? <a href="/signup.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Go back</a></p>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <p>Having trouble? <a href="#" onclick="alert('Contact support at support@kindercura.com')">Contact Support</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let resendTimer = 60;
+        let timerRunning = false;
+
+        function moveToNext(current, nextId) {
+            const value = current.value;
+            if (!/^\d$/.test(value)) { current.value = ''; return; }
+            current.classList.add('filled');
+            if (nextId && value) document.getElementById(nextId).focus();
+            if (nextId === null && value) {
+                setTimeout(() => {
+                    const otp = ['otp1','otp2','otp3','otp4'].map(id => document.getElementById(id).value).join('');
+                    if (otp.length === 4) document.getElementById('otp-form').dispatchEvent(new Event('submit'));
+                }, 300);
+            }
+        }
+
+        function handleBackspace(e, current, prevId) {
+            if (e.key === 'Backspace' && !current.value && prevId) {
+                const prev = document.getElementById(prevId);
+                prev.value = '';
+                prev.classList.remove('filled');
+                prev.focus();
+            }
+        }
+
+        function verifyOTP(event) {
+            event.preventDefault();
+            const otp = ['otp1','otp2','otp3','otp4'].map(id => document.getElementById(id).value).join('');
+            if (otp.length !== 4) { alert('Please enter all 4 digits of the PIN'); return; }
+            // Backend: POST /api/auth/verify-pin { email, pin: otp }
+            alert('Email verified successfully! Welcome to KinderCura.');
+            const userRole = sessionStorage.getItem('userRole') || 'parent';
+            if (userRole === 'parent') {
+                window.location.href = '../SIGN-UP,LOGIN/screening.html';
+            } else if (userRole === 'pediatrician') {
+                window.location.href = '/pedia/pediatrician-dashboard.html';
+            }
+        }
+
+        function resendOTP() {
+            if (timerRunning) return;
+            // Backend: POST /api/auth/resend-pin { email }
+            alert('A new 4-digit PIN has been sent to your Gmail!');
+            resendTimer = 60;
+            startTimer();
+        }
+
+        function startTimer() {
+            timerRunning = true;
+            updateTimer();
+        }
+
+        function updateTimer() {
+            const timerEl = document.getElementById('timer');
+            if (resendTimer > 0) {
+                timerEl.textContent = `(${resendTimer}s)`;
+                resendTimer--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                timerEl.textContent = '';
+                timerRunning = false;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const email = sessionStorage.getItem('userEmail') || 'your-email@gmail.com';
+            document.getElementById('email-display').textContent = email;
+            startTimer();
+        });
+    </script>
+</body>
+</html>

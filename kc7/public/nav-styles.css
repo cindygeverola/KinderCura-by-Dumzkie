@@ -1,0 +1,118 @@
+/* Link Styling - Make all clickable elements look interactive */
+a {
+    transition: all 0.3s ease;
+}
+
+/* Button as Link */
+.btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Navigation Links */
+nav a {
+    position: relative;
+    display: inline-block;
+}
+
+/* Feature Cards as Clickable */
+.feature-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    cursor: pointer;
+}
+
+/* Activity Cards as Clickable */
+.activity-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+    cursor: pointer;
+}
+
+/* Button Links */
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Login/Signup Links */
+.signup-link,
+.login-link,
+.forgot-link {
+    cursor: pointer;
+}
+
+/* Appointment Booking Links */
+.doctor-card .btn,
+.followup-card .btn {
+    cursor: pointer;
+}
+
+/* Activity Buttons */
+.activity-recommendation .btn,
+.consultation-card .btn {
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Notification Action Buttons */
+.notification-actions .btn {
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Disable text selection on interactive elements */
+.btn,
+.feature-card,
+.activity-card,
+a {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Make sure all interactive elements have pointer cursor */
+button,
+a,
+[onclick] {
+    cursor: pointer;
+}
+
+/* Prevent default button styling */
+button {
+    font-family: inherit;
+}
+
+/* Link hover effects */
+a:hover {
+    opacity: 0.8;
+}
+
+/* Focus states for accessibility */
+.btn:focus,
+a:focus {
+    outline: 2px solid rgba(107, 142, 111, 0.5);
+    outline-offset: 2px;
+}
+
+/* Active state for current page */
+nav a.active {
+    color: #E8A5A5;
+    font-weight: 700;
+}

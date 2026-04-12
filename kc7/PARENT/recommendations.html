@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <link rel="stylesheet" href="/css/recommendations-styles.css">
+    <style>
+        .child-select { min-width:240px; padding:.85rem 1rem; border:2px solid var(--border); border-radius:10px; font-size:.95rem; }
+        .review-pill { background:#e8f5e9; color:#2e7d32; padding:.5rem 1rem; border-radius:999px; font-size:.8rem; font-weight:700; }
+        .clinic-card { background:white; border-radius:15px; padding:1.2rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border-left:4px solid var(--primary); margin-bottom:1rem; }
+        .clinic-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .mini { font-size:.86rem; color:var(--text-light); line-height:1.6; }
+        @media (max-width: 980px){ .clinic-grid{ grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/parent/dashboard.html" class="logo"><img src="/icons/logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="/parent/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/parent/results.html" class="nav-link">Results</a>
+                <a href="/parent/recommendations.html" class="nav-link active">Recommendations</a>
+                <a href="/parent/appointments.html" class="nav-link">Appointments</a>
+                <a href="/parent/chat.html" class="nav-link">💬 Chat</a>
+                <a href="/parent/custom-questions.html" class="nav-link">Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="/icons/notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome</p></div>
+                    <a href="/parent/profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/parent/settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <h1 style="margin-bottom:0.5rem;">Personalized Recommendations</h1>
+                <p style="color:var(--text-light);" id="recMeta">Based on your child's latest assessment</p>
+            </div>
+            <div id="childSwitchWrap"></div>
+        </div>
+        <div id="recsContent">
+            <div style="text-align:center;padding:3rem;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                <p style="color:var(--text-light);">Loading recommendations…</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+    <script>
+        requireAuth();
+
+        const ICONS = { communication:'🗣️', social:'🤝', cognitive:'🧠', motor:'🤸' };
+        const PRIORITY_COLORS = { high:'var(--accent-red)', medium:'var(--primary)', low:'var(--primary)' };
+        const PRIORITY_LABELS = { high:'Needs Attention', medium:'Monitor Progress', low:'Keep Up Great Work' };
+
+        let allChildren = [];
+        let activeChild = null;
+        let activeAssessment = null;
+
+        function switchChild(childId) {
+            setParentContext(childId, null);
+            window.location.href = `/parent/recommendations.html?childId=${encodeURIComponent(childId)}`;
+        }
+
+        function renderChildSwitcher() {
+            const wrap = document.getElementById('childSwitchWrap');
+            if (!wrap) return;
+            if (allChildren.length <= 1) {
+                wrap.innerHTML = '';
+                return;
+            }
+            wrap.innerHTML = `
+                <select id="childSwitch" class="child-select" onchange="switchChild(this.value)">
+                    ${allChildren.map((c) => `<option value="${c.id}" ${c.id === activeChild?.id ? 'selected' : ''}>${c.firstName} ${c.lastName}</option>`).join('')}
+                </select>`;
+        }
+
+        async function resolveContext() {
+            allChildren = await fetchParentChildren();
+            if (!allChildren.length) return null;
+
+            activeChild = allChildren.find((c) => c.id === getRequestedChildId()) || allChildren[0];
+            renderChildSwitcher();
+
+            const latest = await getLatestCompletedAssessment(activeChild.id);
+            activeAssessment = latest;
+            setParentContext(activeChild.id, latest?.id || null);
+            return latest?.id || null;
+        }
+
+        function goBookWithPediatrician(pediatricianId, assessmentId) {
+            localStorage.setItem('kc_prefPediaId', pediatricianId);
+            setParentContext(activeChild?.id || null, assessmentId || null);
+            window.location.href = `/parent/appointments.html?childId=${encodeURIComponent(activeChild?.id || '')}`;
+        }
+
+        function renderSuggestedClinics(suggestedPediatricians, assessmentId, bookedConsultation, suggestionSummary) {
+            if (!Array.isArray(suggestedPediatricians) || !suggestedPediatricians.length) return '';
+
+            const top = suggestedPediatricians.slice(0, 3);
+            return `
+                <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h2 style="color:var(--primary);margin:0 0 .35rem;">Suggested Pediatricians / Clinics</h2>
+                            <p style="color:var(--text-light);margin:0;">${escapeHtml(suggestionSummary || 'KinderCura matched these clinics based on the latest assessment.')}</p>
+                        </div>
+                        ${bookedConsultation ? '<span class="review-pill">Consultation Already Booked</span>' : '<span class="review-pill">Top Clinic Matches</span>'}
+                    </div>
+                    ${top.map((p) => `
+                        <div class="clinic-card">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+                                <div>
+                                    <h3 style="margin:0 0 .3rem;">Dr. ${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}</h3>
+                                    <p class="mini" style="margin:0 0 .2rem;">${escapeHtml(p.specialization || 'Pediatrician')}</p>
+                                    <p class="mini" style="margin:0 0 .2rem;">🏥 ${escapeHtml(p.clinicName || p.institution || 'Clinic not set')}</p>
+                                    <p class="mini" style="margin:0 0 .2rem;">📍 ${escapeHtml(p.clinicAddress || 'Clinic address not available')}</p>
+                                    ${p.phoneNumber ? `<p class="mini" style="margin:0 0 .2rem;">📞 ${escapeHtml(p.phoneNumber)}</p>` : ''}
+                                    ${p.consultationFee != null ? `<p class="mini" style="margin:0 0 .2rem;">💳 Consultation Fee: ₱${Number(p.consultationFee).toLocaleString()}</p>` : ''}
+                                    <p class="mini" style="margin:0;">Why suggested: ${escapeHtml(p.suggestedReason || 'Good clinic match')}</p>
+                                </div>
+                                <div style="display:flex;flex-direction:column;gap:.6rem;align-items:flex-end;">
+                                    <span class="review-pill">${p.isSuggested ? 'Suggested Match' : 'Available Clinic'}</span>
+                                    ${bookedConsultation
+                                        ? `<button class="btn btn-secondary" onclick="window.location.href='/parent/appointments.html?childId=${encodeURIComponent(activeChild.id)}'">View Appointment</button>`
+                                        : `<button class="btn btn-primary" onclick="goBookWithPediatrician('${p.id}', '${assessmentId}')">Book With This Clinic</button>`}
+                                </div>
+                            </div>
+                            <div class="clinic-grid" style="margin-top:.9rem;">
+                                <div class="mini">🗓 Available Days: ${Array.isArray(p.availability?.days) && p.availability.days.length ? escapeHtml(p.availability.days.join(', ')) : 'Not set'}</div>
+                                <div class="mini">⏰ Hours: ${fmtTime(p.availability?.startTime)} - ${fmtTime(p.availability?.endTime)}</div>
+                            </div>
+                        </div>`).join('')}
+                </div>`;
+        }
+
+        async function loadRecommendations() {
+            const assessmentId = await resolveContext();
+            if (!assessmentId || !activeChild) {
+                document.getElementById('recsContent').innerHTML = `
+                    <div style="text-align:center;padding:3rem;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                        <p style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">No recommendations yet</p>
+                        <p style="color:var(--text-light);margin-bottom:1.5rem;">Complete a screening first to receive personalized recommendations for this child.</p>
+                        <button class="btn btn-primary" onclick="window.location.href='/parent/screening.html'">Start Screening</button>
+                    </div>`;
+                return;
+            }
+
+            try {
+                const [data, resultData] = await Promise.all([
+                    apiFetch(`/recommendations/${assessmentId}`),
+                    apiFetch(`/assessments/${assessmentId}/results`)
+                ]);
+
+                const recs = data.recommendations || [];
+                const result = resultData.results || {};
+                const suggested = data.suggestedPediatricians || [];
+                const booked = Boolean(data.bookedConsultation);
+                document.getElementById('recMeta').textContent = `${activeChild.firstName} ${activeChild.lastName} • Based on the latest assessment`;
+
+                let html = '';
+
+                // Only the pediatrician recommendation stays on this page, per your earlier request.
+                if (result.reviewedByPediatrician && result.recommendations) {
+                    html += `
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;border-left:4px solid var(--primary);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem;">
+                            <h2 style="color:var(--primary);margin:0;">Pediatrician Recommendation</h2>
+                            <span class="review-pill">Reviewed by Pediatrician</span>
+                        </div>
+                        <p style="color:var(--text-light);margin:0 0 1rem;">${result.reviewedAt ? `Reviewed on ${fmtDate(result.reviewedAt)}` : 'Professional review available'}</p>
+                        <div style="background:var(--bg-primary);padding:1rem 1.2rem;border-radius:10px;color:var(--text-light);line-height:1.6;">${escapeHtml(result.recommendations)}</div>
+                    </div>`;
+                }
+
+                if (data.consultationNeeded && !booked) {
+                    html += `
+                    <div style="background:linear-gradient(135deg,var(--accent) 0%,#F8E5B5 100%);border-radius:15px;padding:2rem;margin-bottom:2rem;color:#6B7967;box-shadow:0 4px 15px rgba(0,0,0,0.12);">
+                        <div style="display:flex;align-items:flex-start;gap:1.5rem;">
+                            <span style="font-size:2.5rem;">⚠️</span>
+                            <div style="flex:1;">
+                                <h2 style="margin-bottom:0.5rem;">Schedule Professional Consultation</h2>
+                                <p style="margin-bottom:0.9rem;opacity:0.95;">${escapeHtml(data.suggestionSummary || 'Based on the assessment results, we recommend scheduling a consultation with a pediatrician.')}</p>
+                                ${Array.isArray(data.focusAreas) && data.focusAreas.length ? `<p style="margin:0 0 1.1rem;font-weight:600;">Focus areas: ${escapeHtml(data.focusAreas.join(', '))}</p>` : ''}
+                                <button class="btn btn-primary" onclick="window.location.href='/parent/appointments.html?childId=${encodeURIComponent(activeChild.id)}'" style="background:white;color:var(--accent-red);font-weight:700;">Book Appointment Now</button>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                if (booked) {
+                    html += `
+                    <div style="background:#f0f7f0;border-left:4px solid var(--primary);border-radius:15px;padding:1.3rem 1.4rem;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.06);">
+                        <h3 style="margin:0 0 .35rem;color:var(--primary);">Consultation already scheduled</h3>
+                        <p style="margin:0;color:var(--text-light);">This child already has a consultation request or appointment. The urgent consultation banner has been hidden to avoid confusion.</p>
+                    </div>`;
+                }
+
+                html += renderSuggestedClinics(suggested, assessmentId, booked, data.suggestionSummary || 'KinderCura matched these clinics based on the latest assessment.');
+
+                recs.forEach((r) => {
+                    const color = PRIORITY_COLORS[r.priority] || 'var(--primary)';
+                    const label = PRIORITY_LABELS[r.priority] || '';
+                    const icon = ICONS[r.skill] || '💡';
+                    const activities = Array.isArray(r.activities) ? r.activities : [];
+                    html += `
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid ${color};margin-bottom:1.5rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;">
+                            <h3>${icon} ${r.skill.charAt(0).toUpperCase() + r.skill.slice(1)} Development</h3>
+                            <span style="background:${color};color:white;padding:0.5rem 1rem;border-radius:20px;font-size:0.8rem;font-weight:600;">${label}</span>
+                        </div>
+                        <p style="color:var(--text-light);margin-bottom:1rem;line-height:1.6;">${escapeHtml(r.suggestion)}</p>
+                        ${activities.length ? `
+                        <h4 style="font-weight:600;margin-bottom:0.5rem;">Recommended Activities:</h4>
+                        <ul style="color:var(--text-light);padding-left:1.5rem;line-height:1.8;">
+                            ${activities.map((a) => `<li>${escapeHtml(a)}</li>`).join('')}
+                        </ul>` : ''}
+                    </div>`;
+                });
+
+                html += `
+                <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-top:1rem;">
+                    <h3 style="margin-bottom:1.5rem;color:var(--primary);">Next Steps</h3>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="window.location.href='/parent/results.html?childId=${activeChild.id}&assessmentId=${assessmentId}'">Back to Results</button>
+                        <button class="btn btn-primary" onclick="window.location.href='/parent/appointments.html?childId=${activeChild.id}'">Appointments</button>
+                        <button class="btn btn-secondary" onclick="window.location.href='/parent/screening.html'">New Screening</button>
+                    </div>
+                </div>`;
+
+                document.getElementById('recsContent').innerHTML = html;
+            } catch (e) {
+                document.getElementById('recsContent').innerHTML = `
+                    <div style="text-align:center;padding:2rem;background:white;border-radius:15px;">
+                        <p style="color:red;">Failed to load recommendations: ${escapeHtml(e.message)}</p>
+                        <button class="btn btn-secondary" onclick="loadRecommendations()" style="margin-top:1rem;">Retry</button>
+                    </div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initNav();
+            document.querySelectorAll('a.logout').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); logout(); }));
+            loadRecommendations();
+        });
+    </script>
+</body>
+</html>

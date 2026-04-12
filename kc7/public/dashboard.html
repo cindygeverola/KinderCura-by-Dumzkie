@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinderCura</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="results.html" class="nav-link">Results</a>
+                <a href="recommendations.html" class="nav-link">Recommendations</a>
+                <a href="appointments.html" class="nav-link">Appointments</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    <span class="notification-badge" id="notifBadge">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon" id="navProfilePic" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, User</p></div>
+                    <a href="profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <a href="help.html" class="menu-item"><img src="help.png" class="menu-icon">Help & Support</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Child Profile Card -->
+        <div class="child-card">
+            <div class="child-info">
+                <h1 id="childName">Loading…</h1>
+                <p id="childMeta"></p>
+            </div>
+            <button class="btn btn-primary" onclick="window.location.href='profile.html'">Edit Profile</button>
+        </div>
+
+        <!-- Skill Overview & Latest Assessment -->
+        <div class="overview-grid">
+            <div class="overview-card">
+                <h3>📊 Skill Overview</h3>
+                <div class="skill-list" id="skillList">
+                    <p style="color:var(--text-light);text-align:center;">No assessment yet</p>
+                </div>
+            </div>
+            <div class="overview-card">
+                <h3>📋 Latest Assessment</h3>
+                <div class="assessment-box" id="assessmentBox">
+                    <p style="color:var(--text-light);text-align:center;padding:1rem;">No assessment yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card">
+            <h3>💡 Recommendations</h3>
+            <div id="recList">
+                <p style="color:var(--text-light);text-align:center;">No recommendations yet</p>
+            </div>
+            <button class="btn btn-accent" style="width:100%;margin-top:1.5rem;padding:0.9rem;background:white;color:var(--primary);border:2px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;" onclick="window.location.href='recommendations.html'">View Full Recommendations</button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-card">
+            <h3>⚡ Quick Actions</h3>
+            <div class="actions-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='screening.html'">New Screening</button>
+                <button class="btn btn-secondary" onclick="window.location.href='results.html'">View Results</button>
+                <button class="btn btn-primary" onclick="window.location.href='appointments.html'">Book Appointment</button>
+            </div>
+        </div>
+
+        <!-- Latest Notifications -->
+        <div class="card">
+            <h3>🔔 Latest Notifications</h3>
+            <div id="notifPreview" style="display:flex;flex-direction:column;gap:1rem;">
+                <p style="color:var(--text-light);text-align:center;">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifModalList">
+                <p style="text-align:center;color:var(--text-light);">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3001/api';
+
+        function getToken() { return localStorage.getItem('kc_token'); }
+        function getUser()  { try { return JSON.parse(localStorage.getItem('kc_user')); } catch { return null; } }
+        function doLogout() {
+            ['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k => localStorage.removeItem(k));
+            window.location.href = 'login.html';
+        }
+
+        // Auth + role guard
+        const _user = getUser();
+        if (!getToken() || !_user) {
+            window.location.href = 'login.html';
+        } else if (_user.role === 'pediatrician') {
+            window.location.href = 'pediatrician-dashboard.html';
+        } else if (_user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        // Set nav immediately
+        if (_user) {
+            document.getElementById('navWelcome').textContent = `Welcome, ${_user.firstName}`;
+            if (_user.profileIcon && _user.profileIcon.startsWith('/uploads/'))
+                document.getElementById('navProfilePic').src = _user.profileIcon;
+        }
+
+        async function apiFetch(endpoint, options = {}) {
+            const res = await fetch(`${API}${endpoint}`, {
+                ...options,
+                headers: { 'Content-Type':'application/json', Authorization:`Bearer ${getToken()}`, ...options.headers }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+            return data;
+        }
+
+        function calcAge(dob) {
+            const d = new Date(dob), now = new Date();
+            let y = now.getFullYear() - d.getFullYear(), m = now.getMonth() - d.getMonth();
+            if (m < 0) { y--; m += 12; }
+            return y > 0 ? `${y} year${y>1?'s':''} ${m} month${m!==1?'s':''}` : `${m} month${m!==1?'s':''}`;
+        }
+
+        async function loadDashboard() {
+            // ── Child info ──────────────────────────────────────────
+            try {
+                const data = await apiFetch('/children');
+                const children = data.children || [];
+                if (children.length > 0) {
+                    const c = children[0];
+                    localStorage.setItem('kc_childId', c.id);
+                    document.getElementById('childName').textContent = `${c.firstName} ${c.lastName}`;
+                    const dob = new Date(c.dateOfBirth);
+                    document.getElementById('childMeta').textContent =
+                        `Age: ${calcAge(c.dateOfBirth)} | Birthdate: ${dob.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+                } else {
+                    document.getElementById('childName').textContent = 'No child registered';
+                    document.getElementById('childMeta').textContent = 'Go to Profile to add a child';
+                }
+            } catch (e) {
+                document.getElementById('childName').textContent = 'Unable to load child data';
+            }
+
+            // ── Assessment & skills ─────────────────────────────────
+            const childId = localStorage.getItem('kc_childId');
+            if (childId) {
+                try {
+                    const hist = await apiFetch(`/assessments/${childId}/history`);
+                    const assessments = (hist.assessments || []).filter(a => a.overallScore !== null);
+                    if (assessments.length > 0) {
+                        const latest = assessments[0];
+                        localStorage.setItem('kc_assessmentId', latest.id);
+                        renderSkills(latest);
+                        renderAssessment(latest);
+                        // Load recommendations
+                        try {
+                            const recs = await apiFetch(`/recommendations/${latest.id}`);
+                            renderRecs(recs.recommendations || []);
+                        } catch {}
+                    }
+                } catch (e) { console.error('Assessment error:', e); }
+            }
+
+            // ── Appointment notifications ───────────────────────────
+            loadNotifPreview();
+        }
+
+        function renderSkills(a) {
+            const scores = [
+                { label:'Communication', val: a.communicationScore },
+                { label:'Social Skills',  val: a.socialScore },
+                { label:'Cognitive',      val: a.cognitiveScore },
+                { label:'Motor Skills',   val: a.motorScore }
+            ];
+            document.getElementById('skillList').innerHTML = scores.map(s => `
+                <div class="skill-item">
+                    <div class="skill-name"><span>${s.label}</span><span class="skill-percent">${s.val}%</span></div>
+                    <div class="skill-bar"><div class="skill-fill" style="width:${s.val}%"></div></div>
+                </div>`).join('');
+        }
+
+        function renderAssessment(a) {
+            const date = a.completedAt ? new Date(a.completedAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : 'Recent';
+            document.getElementById('assessmentBox').innerHTML = `
+                <p class="assessment-date">${date}</p>
+                <div class="assessment-scores">
+                    <div class="score-item"><div class="score-num">${a.communicationScore}%</div><div class="score-label">Communication</div></div>
+                    <div class="score-item"><div class="score-num">${a.socialScore}%</div><div class="score-label">Social</div></div>
+                    <div class="score-item"><div class="score-num">${a.cognitiveScore}%</div><div class="score-label">Cognitive</div></div>
+                    <div class="score-item"><div class="score-num">${a.motorScore}%</div><div class="score-label">Motor</div></div>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="window.location.href='results.html'">View Detailed Results</button>`;
+        }
+
+        function renderRecs(recs) {
+            if (!recs || recs.length === 0) return;
+            const icons = { communication:'🗣️', social:'🤝', cognitive:'🧠', motor:'🤸' };
+            document.getElementById('recList').innerHTML = recs.slice(0,3).map((r, i, arr) => `
+                <div style="margin-bottom:${i<arr.length-1?'1.5rem':'0'};padding-bottom:${i<arr.length-1?'1.5rem':'0'};border-bottom:${i<arr.length-1?'1px solid var(--border)':'none'}">
+                    <p style="font-weight:600;margin-bottom:0.3rem;">${icons[r.skill]||'💡'} ${r.skill.charAt(0).toUpperCase()+r.skill.slice(1)}</p>
+                    <p style="color:var(--text-light);font-size:0.9rem;">${r.suggestion}</p>
+                </div>`).join('');
+        }
+
+        async function loadNotifPreview() {
+            const user = getUser();
+            // Show appointment status notifications
+            try {
+                const userId = user?.id || '';
+                const data = await apiFetch(`/appointments/${userId}`);
+                const appts = data.appointments || [];
+                const preview = document.getElementById('notifPreview');
+                if (appts.length === 0) {
+                    preview.innerHTML = `<div style="padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid var(--primary);">
+                        <div style="font-weight:600;margin-bottom:0.3rem;">Welcome to KinderCura!</div>
+                        <div style="font-size:0.85rem;color:var(--text-light);">Hi ${user?.firstName||'there'}, your account is set up and ready.</div>
+                    </div>`;
+                    return;
+                }
+                const colorMap = { pending:'#f39c12', approved:'var(--primary)', declined:'#e74c3c' };
+                preview.innerHTML = appts.slice(0,3).map(a => `
+                    <div style="padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid ${colorMap[a.status]||'var(--primary)'};">
+                        <div style="font-weight:600;margin-bottom:0.3rem;">
+                            ${a.status==='approved'?'✅ Appointment Approved':a.status==='declined'?'❌ Appointment Declined':'⏳ Appointment Pending'}
+                        </div>
+                        <div style="font-size:0.85rem;color:var(--text-light);">
+                            ${a.pediatricianName ? `Dr. ${a.pediatricianName}` : 'Pediatrician'} · ${a.appointmentDate||'—'}
+                        </div>
+                    </div>`).join('');
+                document.getElementById('notifBadge').textContent = appts.filter(a=>a.status==='pending').length;
+            } catch {
+                const user2 = getUser();
+                document.getElementById('notifPreview').innerHTML = `<div style="padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid var(--primary);">
+                    <div style="font-weight:600;margin-bottom:0.3rem;">Welcome to KinderCura!</div>
+                    <div style="font-size:0.85rem;color:var(--text-light);">Hi ${user2?.firstName||'there'}, your account is ready.</div>
+                </div>`;
+            }
+        }
+
+        function openNotifications() { document.getElementById('notificationsModal').style.display = 'flex'; }
+        function closeNotifications() { document.getElementById('notificationsModal').style.display = 'none'; }
+        function toggleProfileMenu() {
+            const m = document.getElementById('profileMenu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.profile-btn')) document.getElementById('profileMenu').style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

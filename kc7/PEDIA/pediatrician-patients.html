@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Patients - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+    <style>
+        .patient-card { background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: box-shadow 0.2s; }
+        .patient-card:hover { box-shadow: 0 6px 25px rgba(0,0,0,0.13); }
+        .badge { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; white-space: nowrap; }
+        .badge-pending   { background: #f59e0b; }
+        .badge-approved  { background: var(--success, #4a7c59); }
+        .badge-completed { background: #3b82f6; }
+        .badge-cancelled { background: #9ca3af; }
+        .badge-rejected  { background: #ef4444; }
+        .badge-diagnosed { background: var(--success, #4a7c59); }
+        .badge-no-diag   { background: #f59e0b; }
+        .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .score-item { text-align: center; }
+        .score-val  { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .score-lbl  { font-size: 0.78rem; color: var(--text-light); margin-top: 0.2rem; }
+        .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; flex-shrink: 0; }
+        .avatar-girl { background: linear-gradient(135deg,#f9a8d4,#fbcfe8); }
+        .avatar-boy  { background: linear-gradient(135deg,#93c5fd,#bfdbfe); }
+        .avatar-other{ background: linear-gradient(135deg,#a5b4fc,#c7d2fe); }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 2rem; margin: 0.8rem 0; }
+        .info-row  { font-size: 0.85rem; color: var(--text-light); }
+        .info-row strong { color: var(--text-dark); }
+        .empty-state { background: white; border-radius: 15px; padding: 5rem 2rem; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .filter-bar { background: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .filter-bar .form-group { margin-bottom: 0; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
+        @media(max-width:768px){ .filter-grid { grid-template-columns: 1fr; } .score-grid { grid-template-columns: repeat(2,1fr); } }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/pedia/pediatrician-dashboard.html" class="logo">
+                <img src="/icons/logo.png" alt="KinderCura" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="/pedia/pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/pedia/pediatrician-patients.html" class="nav-link active">My Patients</a>
+                <a href="/pedia/pediatrician-appointments.html" class="nav-link">Appointments</a>
+                <a href="/pedia/pedia-chat.html" class="nav-link">💬 Chat</a>
+                <a href="/pedia/pedia-questions.html" class="nav-link">📋 My Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon">
+                    <span class="notification-badge" id="notifCount" style="display:none;">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" id="navProfilePic">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="navWelcome">Welcome, Dr.</p></div>
+                    <a href="/pedia/pediatrician-profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/pedia/pediatrician-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout" onclick="doLogout()"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h1 style="margin-bottom:0.3rem;">My Patients</h1>
+                    <p style="color:var(--text-light);">View assessments and provide diagnosis for your patients</p>
+                </div>
+                <span style="font-size:0.9rem;color:var(--text-light);" id="patientCount"></span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>Search Patient</label>
+                    <input type="text" id="searchInput" placeholder="Name or parent email..." oninput="filterPatients()">
+                </div>
+                <div class="form-group">
+                    <label>Appointment Status</label>
+                    <select id="statusFilter" onchange="filterPatients()">
+                        <option value="">All Patients</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled / Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Age Group</label>
+                    <select id="ageFilter" onchange="filterPatients()">
+                        <option value="">All Ages</option>
+                        <option value="infant">Infant (0–2)</option>
+                        <option value="toddler">Toddler (2–3)</option>
+                        <option value="preschool">Preschool (3–5)</option>
+                        <option value="school">Early School (6–8)</option>
+                        <option value="older">Older (8+)</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="exportPatients()" style="padding:0.8rem 1.5rem;">Export</button>
+            </div>
+        </div>
+
+        <!-- Patient List -->
+        <div id="patientsList" style="display:grid;gap:1.5rem;">
+            <div class="empty-state">
+                <p style="font-size:2rem;margin-bottom:1rem;">⏳</p>
+                <p style="font-weight:600;color:var(--text-dark);">Loading patients...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnosis Modal -->
+    <div class="notifications-modal" id="diagnosisModal" style="display:none;">
+        <div class="notifications-content" style="max-width:620px;">
+            <div class="notifications-header">
+                <h3 id="diagModalTitle">Provide Diagnosis</h3>
+                <button class="close-btn" onclick="closeDiagnosisModal()">✕</button>
+            </div>
+            <div style="padding:2rem;">
+                <p id="diagPatientName" style="color:var(--text-light);margin-bottom:1.5rem;font-size:0.9rem;"></p>
+                <div class="form-group">
+                    <label style="font-weight:600;">Diagnosis</label>
+                    <textarea id="diagnosis-text" placeholder="Enter your professional diagnosis..." style="width:100%;height:140px;padding:1rem;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.95rem;resize:vertical;margin-top:0.4rem;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:600;">Recommendations for Parent</label>
+                    <textarea id="recommendations-text" placeholder="Enter recommendations for parents/caregivers..." style="width:100%;height:110px;padding:1rem;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.95rem;resize:vertical;margin-top:0.4rem;"></textarea>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:1rem;">
+                    <button class="btn btn-primary" onclick="submitDiagnosis()" style="flex:1;padding:0.9rem;">Submit Diagnosis</button>
+                    <button class="btn btn-secondary" onclick="closeDiagnosisModal()" style="flex:1;padding:0.9rem;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Progress History Modal -->
+    <div class="notifications-modal" id="progressModal" style="display:none;">
+        <div class="notifications-content" style="max-width:900px;">
+            <div class="notifications-header">
+                <h3 id="progressModalTitle">Patient Progress History</h3>
+                <button class="close-btn" onclick="closeProgressModal()">✕</button>
+            </div>
+            <div style="padding:1.5rem 2rem 2rem;max-height:75vh;overflow-y:auto;">
+                <p id="progressPatientName" style="color:var(--text-light);margin-bottom:1rem;font-size:0.9rem;"></p>
+
+                <!-- Small form so pediatrician can add a new follow-up note quickly -->
+                <div style="background:var(--bg-primary);border-radius:12px;padding:1.2rem 1.2rem 1rem;margin-bottom:1.5rem;">
+                    <h4 style="margin-bottom:0.8rem;color:var(--primary);">Add Progress Note</h4>
+                    <div style="display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:start;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;">Progress Status</label>
+                            <select id="progress-status" style="width:100%;padding:0.85rem;border:2px solid var(--border);border-radius:8px;">
+                                <option value="initial_review">Initial Review</option>
+                                <option value="monitoring" selected>Monitoring</option>
+                                <option value="follow_up">Follow-up Needed</option>
+                                <option value="improving">Improving</option>
+                                <option value="stable">Stable</option>
+                                <option value="needs_attention">Needs Attention</option>
+                                <option value="referred">Referred</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;">Clinical Note</label>
+                            <textarea id="progress-note" placeholder="Write the patient's current status, observations, and next action..." style="width:100%;height:110px;padding:1rem;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.95rem;resize:vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:0.8rem;margin-top:1rem;">
+                        <button class="btn btn-secondary" onclick="closeProgressModal()" style="padding:0.75rem 1.2rem;">Close</button>
+                        <button class="btn btn-primary" onclick="submitProgressNote()" style="padding:0.75rem 1.2rem;">Save Note</button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+                    <div style="background:white;">
+                        <h4 style="margin-bottom:0.8rem;color:var(--primary);">Progress Timeline</h4>
+                        <div id="progressTimeline" style="display:grid;gap:0.8rem;">
+                            <p style="text-align:center;color:var(--text-light);padding:1rem;">Loading progress notes...</p>
+                        </div>
+                    </div>
+                    <div style="background:white;">
+                        <h4 style="margin-bottom:0.8rem;color:var(--primary);">Assessment History</h4>
+                        <div id="assessmentHistoryList" style="display:grid;gap:0.8rem;">
+                            <p style="text-align:center;color:var(--text-light);padding:1rem;">Loading assessment history...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notifList">
+                <p style="padding:1rem;color:var(--text-light);text-align:center;">No notifications</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API = 'http://localhost:3001/api';
+    const getToken = () => localStorage.getItem('kc_token');
+    const getUser  = () => { try { return JSON.parse(localStorage.getItem('kc_user')); } catch { return null; } };
+
+    function doLogout() {
+        ['kc_token','kc_user','kc_childId','kc_assessmentId'].forEach(k => localStorage.removeItem(k));
+        window.location.href = '/login.html';
+    }
+
+    // Auth guard
+    const _u = getUser();
+    if (!getToken() || !_u) { window.location.href = '/login.html'; }
+    else if ((_u.role||'').trim().toLowerCase() !== 'pediatrician') {
+        window.location.href = _u.role === 'admin' ? '/admin/admin-dashboard.html' : '/parent/dashboard.html';
+    }
+    if (_u) {
+        document.getElementById('navWelcome').textContent = `Welcome, Dr. ${_u.firstName}`;
+        if (_u.profileIcon && _u.profileIcon.startsWith('/uploads/'))
+            document.getElementById('navProfilePic').src = _u.profileIcon;
+    }
+
+    async function apiFetch(ep, opts = {}) {
+        const res = await fetch(`${API}${ep}`, {
+            ...opts,
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, ...opts.headers }
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+        return d;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function fmtTime(t){
+        if(!t)return'—';
+        const s=String(t);
+        if(s.includes('T')||s.includes('Z')||s.length>8){
+            const d=new Date(s);
+            if(!isNaN(d)){const h=d.getUTCHours(),m=String(d.getUTCMinutes()).padStart(2,'0');return`${h%12||12}:${m} ${h>=12?'PM':'AM'}`;}
+        }
+        const parts=s.split(':');
+        const h=parseInt(parts[0],10),m=String(parts[1]||'00').padStart(2,'0');
+        if(isNaN(h))return s;
+        return`${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+    }
+        function calcAge(dob) {
+        if (!dob) return '—';
+        const b = new Date(dob), now = new Date();
+        let y = now.getFullYear() - b.getFullYear();
+        let m = now.getMonth() - b.getMonth();
+        if (m < 0) { y--; m += 12; }
+        if (y === 0) return `${m}mo`;
+        return `${y}y ${m > 0 ? m + 'mo' : ''}`.trim();
+    }
+
+    function getAgeGroup(dob) {
+        if (!dob) return 'unknown';
+        const yrs = (Date.now() - new Date(dob)) / (365.25 * 864e5);
+        if (yrs < 2)  return 'infant';
+        if (yrs < 3)  return 'toddler';
+        if (yrs < 6)  return 'preschool';
+        if (yrs < 9)  return 'school';
+        return 'older';
+    }
+
+    function aptStatusBadge(status) {
+        const map = {
+            pending:   ['badge-pending',   'Pending'],
+            approved:  ['badge-approved',  'Approved'],
+            confirmed: ['badge-approved',  'Confirmed'],
+            completed: ['badge-completed', 'Completed'],
+            cancelled: ['badge-cancelled', 'Cancelled'],
+            rejected:  ['badge-rejected',  'Declined'],
+        };
+        const [cls, label] = map[status] || ['badge-pending', status || 'Unknown'];
+        return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function normaliseStatus(s) {
+        if (!s) return 'pending';
+        if (s === 'confirmed') return 'approved';
+        if (s === 'rejected')  return 'cancelled';
+        return s;
+    }
+
+    // Small helper so progress notes are easier to scan in the card and modal.
+    function progressStatusMeta(status) {
+        const map = {
+            initial_review: { label: 'Initial Review', color: '#3b82f6', bg: '#dbeafe' },
+            monitoring:      { label: 'Monitoring',     color: '#7c3aed', bg: '#ede9fe' },
+            follow_up:       { label: 'Follow-up',      color: '#d97706', bg: '#fef3c7' },
+            improving:       { label: 'Improving',      color: '#15803d', bg: '#dcfce7' },
+            stable:          { label: 'Stable',         color: '#0f766e', bg: '#ccfbf1' },
+            needs_attention: { label: 'Needs Attention',color: '#b91c1c', bg: '#fee2e2' },
+            referred:        { label: 'Referred',       color: '#1d4ed8', bg: '#dbeafe' },
+            completed:       { label: 'Completed',      color: '#166534', bg: '#dcfce7' },
+        };
+        return map[status] || { label: status || 'Monitoring', color: '#7c3aed', bg: '#ede9fe' };
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    let _allPatients = [];
+
+    function renderPatients(patients) {
+        _allPatients = patients;
+        document.getElementById('patientCount').textContent =
+            patients.length ? `${patients.length} patient${patients.length !== 1 ? 's' : ''}` : '';
+
+        const list = document.getElementById('patientsList');
+
+        if (!patients.length) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <p style="font-size:3rem;margin-bottom:1rem;">👨‍⚕️</p>
+                    <p style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;color:var(--text-dark);">No patients yet</p>
+                    <p style="font-size:0.9rem;color:var(--text-light);">Patients will appear here once parents book appointments with you.</p>
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = patients.map(p => {
+            const age        = calcAge(p.childDateOfBirth || p.dateOfBirth);
+            const ageGroup   = getAgeGroup(p.childDateOfBirth || p.dateOfBirth);
+            const parentName = `${p.parentFirstName||''} ${p.parentLastName||''}`.trim() || p.parentEmail || '—';
+            const aptStatus  = normaliseStatus(p.appointmentStatus);
+            const hasDiag    = p.diagnosis && p.diagnosis.trim();
+            const scores     = p.scores || {};
+            const hasScores  = Object.keys(scores).length > 0;
+            const genderLabel = p.childGender === 'female' ? 'Female' : p.childGender === 'male' ? 'Male' : 'Other';
+            const avatarCls  = p.childGender === 'female' ? 'avatar-girl' : p.childGender === 'male' ? 'avatar-boy' : 'avatar-other';
+            const hasPhoto   = p.childProfileIcon && p.childProfileIcon.startsWith('/uploads/');
+            const avatarHTML = hasPhoto
+                ? `<img src="${p.childProfileIcon}" alt="${p.childFirstName}" class="avatar ${avatarCls}" style="object-fit:cover;border:2px solid var(--primary);" onerror="this.onerror=null;this.src='/icons/profile_icon.png';">`
+                : `<div class="avatar ${avatarCls}" style="font-size:0.65rem;font-weight:700;flex-direction:column;gap:0.1rem;color:white;text-align:center;line-height:1.2;">
+                    <span style="font-size:0.9rem;">${p.childGender==='female'?'♀':'♂'}</span>
+                    <span>${genderLabel}</span>
+                   </div>`;
+            const lastApt    = (function(d) {
+                if (!d) return '—';
+                const s = String(d).split('T')[0];
+                const [y,mo,dy] = s.split('-').map(Number);
+                if (!y||!mo||!dy) return s;
+                return new Date(y,mo-1,dy).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+            })(p.appointmentDate);
+            const lastAssess = p.lastAssessmentDate ? new Date(p.lastAssessmentDate).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : 'None yet';
+            // Prepare the latest progress preview before rendering the card so refresh does not crash.
+            const progressMeta = progressStatusMeta(p.latestProgressStatus);
+            const latestProgressDate = p.latestProgressAt
+                ? new Date(p.latestProgressAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})
+                : 'recently';
+            const diagEsc    = (p.diagnosis||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            const recEsc     = (p.recommendations||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            const childNameEsc = `${p.childFirstName} ${p.childLastName}`.replace(/'/g,"\\'");
+
+            return `
+            <div class="patient-card"
+                data-status="${aptStatus}"
+                data-age-group="${ageGroup}"
+                data-name="${(p.childFirstName+' '+p.childLastName).toLowerCase()}"
+                data-email="${(p.parentEmail||'').toLowerCase()}">
+
+                <!-- Patient Header -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;">
+                    <div style="display:flex;gap:1rem;align-items:center;flex:1;">
+                        ${avatarHTML}
+                        <div>
+                            <p style="font-size:0.7rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.15rem;">👶 Child</p>
+                            <p style="font-weight:700;font-size:1.1rem;color:var(--text-dark);margin-bottom:0.3rem;">
+                                ${p.childFirstName} ${p.childLastName}
+                            </p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.3rem;">
+                                <span style="background:#e8f5e9;color:#2e7d32;padding:0.2rem 0.6rem;border-radius:8px;font-size:0.78rem;font-weight:600;">Age: ${age}</span>
+                                <span style="background:#e3f2fd;color:#1565c0;padding:0.2rem 0.6rem;border-radius:8px;font-size:0.78rem;font-weight:600;">${genderLabel}</span>
+                            </div>
+                            <p style="color:var(--text-light);font-size:0.82rem;margin-bottom:0.15rem;">
+                                👤 Parent: <strong style="color:var(--text-dark);">${parentName}</strong>
+                            </p>
+                            <p style="color:var(--text-light);font-size:0.82rem;">
+                                📅 Last Appt: <strong style="color:var(--text-dark);">${lastApt}</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-end;">
+                        ${aptStatusBadge(p.appointmentStatus)}
+                        <span class="badge ${hasDiag ? 'badge-diagnosed' : 'badge-no-diag'}">${hasDiag ? '✓ Diagnosed' : '⏳ Awaiting Diagnosis'}</span>
+                    </div>
+                </div>
+
+                <!-- Assessment Scores -->
+                ${hasScores ? `
+                <div style="background:var(--bg-primary);padding:1.2rem 1.5rem;border-radius:10px;margin-bottom:1.2rem;">
+                    <p style="font-weight:600;color:var(--primary);margin-bottom:0.8rem;font-size:0.9rem;">📊 Assessment Results
+                        <span style="float:right;font-size:0.78rem;color:var(--text-light);font-weight:400;">Last: ${lastAssess}</span>
+                    </p>
+                    <div class="score-grid">
+                        ${Object.entries(scores).map(([k,v]) => {
+                            const color = v >= 70 ? 'var(--success,#4a7c59)' : v >= 40 ? '#f59e0b' : '#ef4444';
+                            return `<div class="score-item">
+                                <div class="score-val" style="color:${color};">${v}%</div>
+                                <div class="score-lbl">${k}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    ${hasDiag ? `
+                    <div style="margin-top:1rem;padding:0.8rem 1rem;background:white;border-radius:8px;border-left:3px solid var(--primary);">
+                        <p style="font-size:0.8rem;font-weight:600;color:var(--primary);margin-bottom:0.3rem;">Your Diagnosis:</p>
+                        <p style="font-size:0.85rem;color:var(--text-dark);">${p.diagnosis}</p>
+                    </div>` : ''}
+                    ${p.progressNotesCount ? `
+                    <div style="margin-top:1rem;padding:0.9rem 1rem;background:white;border-radius:8px;border-left:3px solid ${progressMeta.color};">
+                        <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap;">
+                            <p style="font-size:0.8rem;font-weight:700;color:var(--text-dark);margin:0;">Latest Progress Update</p>
+                            <span style="background:${progressMeta.bg};color:${progressMeta.color};padding:0.2rem 0.6rem;border-radius:999px;font-size:0.74rem;font-weight:700;">${progressMeta.label}</span>
+                        </div>
+                        <p style="font-size:0.83rem;color:var(--text-dark);margin:0.45rem 0 0;line-height:1.45;">${p.latestProgressNote || "No note text."}</p>
+                        <p style="font-size:0.75rem;color:var(--text-light);margin:0.45rem 0 0;">${p.progressNotesCount} note${p.progressNotesCount !== 1 ? "s" : ""} • Last update ${latestProgressDate}</p>
+                    </div>` : ''}
+                </div>` : `
+                <div style="background:var(--bg-primary);padding:1rem 1.5rem;border-radius:10px;margin-bottom:1.2rem;text-align:center;color:var(--text-light);font-size:0.85rem;">
+                    <p>📋 No assessment results on file yet. <span style="color:var(--text-light);">Last checked: ${lastAssess}</span></p>
+                </div>`}
+
+                <!-- Actions -->
+                <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="viewAssessment('${p.assessmentId||''}','${p.childId}')"
+                        style="flex:1;min-width:130px;padding:0.7rem;">
+                        🔍 View Assessment
+                    </button>
+                    <button class="btn btn-secondary" onclick="openDiagnosis('${p.childId}','${childNameEsc}','${diagEsc}','${recEsc}')"
+                        style="flex:1;min-width:130px;padding:0.7rem;">
+                        ${hasDiag ? '✏️ Edit Diagnosis' : '📝 Provide Diagnosis'}
+                    </button>
+                    <button class="btn btn-secondary" onclick="openProgressModal('${p.childId}','${childNameEsc}')"
+                        style="flex:1;min-width:130px;padding:0.7rem;border-color:#7c3aed;color:#7c3aed;">
+                        📈 Progress History
+                    </button>
+                    ${p.appointmentId ? `<button class="btn btn-secondary" onclick="window.location.href='/pedia/pedia-chat.html?appointmentId=${p.appointmentId}'" style="flex:1;min-width:130px;padding:0.7rem;border-color:var(--primary);color:var(--primary);">💬 Chat with Parent</button>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Filtering ─────────────────────────────────────────────────────────────
+    function filterPatients() {
+        const search   = document.getElementById('searchInput').value.toLowerCase().trim();
+        const status   = document.getElementById('statusFilter').value;
+        const ageGroup = document.getElementById('ageFilter').value;
+
+        let visible = 0;
+        document.querySelectorAll('.patient-card').forEach(card => {
+            const matchSearch = !search ||
+                card.dataset.name.includes(search) ||
+                (card.dataset.email && card.dataset.email.includes(search));
+            const matchStatus = !status ||
+                card.dataset.status === status ||
+                (status === 'cancelled' && (card.dataset.status === 'cancelled' || card.dataset.status === 'rejected'));
+            const matchAge = !ageGroup || card.dataset.ageGroup === ageGroup;
+            const show = matchSearch && matchStatus && matchAge;
+            card.style.display = show ? 'block' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('patientCount').textContent =
+            `${visible} of ${_allPatients.length} patient${_allPatients.length !== 1 ? 's' : ''}`;
+    }
+
+    // ── Load Data ─────────────────────────────────────────────────────────────
+    async function loadPatients() {
+        try {
+            const data = await apiFetch('/assessments/pedia-patients');
+            renderPatients(data.patients || []);
+        } catch (err) {
+            console.error('loadPatients error:', err);
+            document.getElementById('patientsList').innerHTML = `
+                <div class="empty-state">
+                    <p style="font-size:2rem;margin-bottom:1rem;">⚠️</p>
+                    <p style="font-weight:600;color:var(--text-dark);">Could not load patients</p>
+                    <p style="font-size:0.85rem;color:var(--text-light);">${err.message}</p>
+                    <button class="btn btn-primary" onclick="loadPatients()" style="margin-top:1rem;padding:0.7rem 1.5rem;">Retry</button>
+                </div>`;
+        }
+    }
+
+
+
+
+    // ── Actions ───────────────────────────────────────────────────────────────
+    function viewAssessment(assessmentId, childId) {
+        if (!assessmentId || assessmentId === 'undefined' || assessmentId === 'null') {
+            alert('No completed assessment on file for this patient yet.');
+            return;
+        }
+        // Store assessment context and navigate to results page
+        localStorage.setItem('kc_assessmentId', assessmentId);
+        localStorage.setItem('kc_viewChildId', childId);
+        window.open(`/parent/results.html?assessmentId=${assessmentId}&childId=${childId}`, '_blank');
+    }
+
+    function openDiagnosis(childId, childName, existingDiag, existingRec) {
+        window.currentChildId = childId;
+        document.getElementById('diagModalTitle').textContent =
+            existingDiag ? `Edit Diagnosis — ${childName}` : `Provide Diagnosis — ${childName}`;
+        document.getElementById('diagPatientName').textContent = `Patient: ${childName}`;
+        document.getElementById('diagnosis-text').value = existingDiag || '';
+        document.getElementById('recommendations-text').value = existingRec || '';
+        document.getElementById('diagnosisModal').style.display = 'flex';
+    }
+
+    async function submitDiagnosis() {
+        const diagnosis = document.getElementById('diagnosis-text').value.trim();
+        const recommendations = document.getElementById('recommendations-text').value.trim();
+        if (!diagnosis) { alert('Please enter a diagnosis.'); return; }
+        try {
+            await apiFetch(`/assessments/diagnose/${window.currentChildId}`, {
+                method: 'POST',
+                body: JSON.stringify({ diagnosis, recommendations })
+            });
+            alert('✅ Diagnosis submitted! The parent will be notified.');
+            closeDiagnosisModal();
+            loadPatients();
+        } catch (err) {
+            alert('Failed to submit: ' + err.message);
+        }
+    }
+
+    function closeDiagnosisModal() {
+        document.getElementById('diagnosisModal').style.display = 'none';
+        document.getElementById('diagnosis-text').value = '';
+        document.getElementById('recommendations-text').value = '';
+    }
+
+    function exportPatients() {
+        if (!_allPatients.length) { alert('No patients to export.'); return; }
+        const rows = [['Name','Parent','Age','Apt Status','Has Diagnosis','Overall Score']];
+        _allPatients.forEach(p => {
+            rows.push([
+                `${p.childFirstName} ${p.childLastName}`,
+                `${p.parentFirstName||''} ${p.parentLastName||''}`.trim(),
+                calcAge(p.childDateOfBirth),
+                p.appointmentStatus || '—',
+                p.diagnosis ? 'Yes' : 'No',
+                p.scores?.['Communication'] !== undefined ? Object.values(p.scores).reduce((a,b)=>a+b,0)/4+'%' : '—'
+            ]);
+        });
+        const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'my-patients.csv';
+        a.click();
+    }
+
+
+    function renderAssessmentHistory(items) {
+        const wrap = document.getElementById('assessmentHistoryList');
+        if (!wrap) return;
+        if (!items.length) {
+            wrap.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:1rem;">No previous assessments yet.</p>';
+            return;
+        }
+        wrap.innerHTML = items.map(a => {
+            const when = a.completedAt || a.startedAt;
+            const dateText = when ? new Date(when).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—';
+            const score = a.overallScore != null ? `${a.overallScore}% overall` : 'Assessment started';
+            return `
+                <div style="background:var(--bg-primary);border-radius:10px;padding:0.9rem 1rem;">
+                    <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap;">
+                        <p style="font-weight:700;color:var(--text-dark);margin:0;">${dateText}</p>
+                        <span style="font-size:0.75rem;color:var(--text-light);">${a.status || '—'}</span>
+                    </div>
+                    <p style="font-size:0.85rem;color:var(--primary);margin:0.35rem 0 0;">${score}</p>
+                    ${a.diagnosis ? `<p style="font-size:0.82rem;color:var(--text-dark);margin:0.5rem 0 0;line-height:1.45;"><strong>Diagnosis:</strong> ${a.diagnosis}</p>` : ''}
+                </div>`;
+        }).join('');
+    }
+
+    function renderProgressNotes(items) {
+        const wrap = document.getElementById('progressTimeline');
+        if (!wrap) return;
+        if (!items.length) {
+            wrap.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:1rem;">No progress notes yet. Add the first clinical update above.</p>';
+            return;
+        }
+        wrap.innerHTML = items.map(n => {
+            const meta = progressStatusMeta(n.progressStatus);
+            const dateText = n.createdAt ? new Date(n.createdAt).toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+            return `
+                <div style="background:var(--bg-primary);border-radius:10px;padding:0.95rem 1rem;border-left:4px solid ${meta.color};">
+                    <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap;">
+                        <span style="background:${meta.bg};color:${meta.color};padding:0.2rem 0.65rem;border-radius:999px;font-size:0.74rem;font-weight:700;">${meta.label}</span>
+                        <span style="font-size:0.74rem;color:var(--text-light);">${dateText}</span>
+                    </div>
+                    <p style="font-size:0.85rem;color:var(--text-dark);margin:0.6rem 0 0;line-height:1.5;">${n.note || '—'}</p>
+                </div>`;
+        }).join('');
+    }
+
+    async function loadProgressData(childId) {
+        const [historyData, notesData] = await Promise.all([
+            apiFetch(`/assessments/${childId}/history`),
+            apiFetch(`/assessments/child/${childId}/progress-notes`)
+        ]);
+        renderAssessmentHistory(historyData.assessments || []);
+        renderProgressNotes(notesData.notes || []);
+    }
+
+    function openProgressModal(childId, childName) {
+        window.currentProgressChildId = childId;
+        document.getElementById('progressModalTitle').textContent = `Patient Progress History — ${childName}`;
+        document.getElementById('progressPatientName').textContent = `Patient: ${childName}`;
+        document.getElementById('progress-note').value = '';
+        document.getElementById('progress-status').value = 'monitoring';
+        document.getElementById('progressModal').style.display = 'flex';
+        document.getElementById('progressTimeline').innerHTML = '<p style="text-align:center;color:var(--text-light);padding:1rem;">Loading progress notes...</p>';
+        document.getElementById('assessmentHistoryList').innerHTML = '<p style="text-align:center;color:var(--text-light);padding:1rem;">Loading assessment history...</p>';
+        loadProgressData(childId).catch((err) => {
+            document.getElementById('progressTimeline').innerHTML = `<p style="text-align:center;color:#c0392b;padding:1rem;">${err.message}</p>`;
+            document.getElementById('assessmentHistoryList').innerHTML = `<p style="text-align:center;color:#c0392b;padding:1rem;">${err.message}</p>`;
+        });
+    }
+
+    async function submitProgressNote() {
+        const childId = window.currentProgressChildId;
+        const progressStatus = document.getElementById('progress-status').value;
+        const note = document.getElementById('progress-note').value.trim();
+        if (!childId) { alert('Child is missing. Please reopen the progress history modal.'); return; }
+        if (!note) { alert('Please write a progress note first.'); return; }
+
+        try {
+            await apiFetch(`/assessments/child/${childId}/progress-notes`, {
+                method: 'POST',
+                body: JSON.stringify({ progressStatus, note })
+            });
+
+            document.getElementById('progress-note').value = '';
+            document.getElementById('progress-status').value = 'monitoring';
+            await loadProgressData(childId);
+            await loadPatients();
+            alert('✅ Progress note saved.');
+        } catch (err) {
+            alert('Failed to save progress note: ' + err.message);
+        }
+    }
+
+    function closeProgressModal() {
+        document.getElementById('progressModal').style.display = 'none';
+        document.getElementById('progress-note').value = '';
+        window.currentProgressChildId = null;
+    }
+
+
+    
+// Format notification timestamps in one consistent style
+function formatDateTime(ts) {
+    if (!ts) return '—';
+    return new Date(ts).toLocaleString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+}
+
+// Small escape helper so notification text is safe to render in HTML
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch]));
+}
+
+// Decide where a notification should open based on the current user role
+function notificationDestination(n) {
+    let role = '';
+    try {
+        role = String((JSON.parse(localStorage.getItem('kc_user')) || {}).role || '').toLowerCase();
+    } catch {}
+
+    const title = String(n?.title || '').toLowerCase();
+    const type  = String(n?.type  || '').toLowerCase();
+    const msg   = String(n?.message || '').toLowerCase();
+
+    if (role === 'pediatrician') {
+        if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/pedia/pedia-chat.html';
+        if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/pedia/pediatrician-appointments.html';
+        if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question answered')) return '/pedia/pedia-questions.html';
+        if (title.includes('diagnosis') || msg.includes('diagnosis') || title.includes('recommendation') || msg.includes('recommendation')) return '/pedia/pediatrician-patients.html';
+        return '/pedia/pediatrician-dashboard.html';
+    }
+
+    if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/parent/chat.html';
+    if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/parent/appointments.html';
+    if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question assigned') || title.includes('question answered')) return '/parent/custom-questions.html';
+    if (title.includes('recommendation') || msg.includes('recommendation')) return '/parent/recommendations.html';
+    if (title.includes('result') || title.includes('diagnosis') || msg.includes('diagnosis')) return '/parent/results.html';
+    return '/parent/dashboard.html';
+}
+
+// Keep the bell badge in sync on every page that uses the shared modal
+async function loadNotificationCount() {
+    try {
+        const data = await apiFetch('/notifications/count');
+        const badge = document.querySelector('.notification-badge');
+        if (!badge) return;
+        const unread = data.unread || 0;
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    } catch {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Mark only one notification as read when the user opens or clicks it
+async function markNotificationRead(id) {
+    try {
+        await apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
+        await loadNotificationCount();
+    } catch {}
+}
+
+// Remove one notification from the user's list
+async function deleteNotification(id) {
+    if (!confirm('Remove this notification?')) return;
+    try {
+        await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not remove notification: ' + err.message);
+    }
+}
+
+// Delete every notification so old items do not stay in the modal forever
+async function clearAllNotifications() {
+    if (!confirm('Clear all notifications?')) return;
+    try {
+        await apiFetch('/notifications/clear-all', { method: 'DELETE' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not clear notifications: ' + err.message);
+    }
+}
+
+// Optional helper so users can mark everything as seen without deleting them
+async function markAllNotificationsRead() {
+    try {
+        await apiFetch('/notifications/read-all', { method: 'PUT' });
+        await openNotifications();
+        await loadNotificationCount();
+    } catch (err) {
+        alert('Could not mark notifications as read: ' + err.message);
+    }
+}
+
+// Mark read first, then send the user to the related page
+async function goToNotificationTarget(id, target) {
+    await markNotificationRead(id);
+    window.location.href = target;
+}
+
+// Shared notification modal renderer used by both parent and pediatrician pages
+async function openNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    const listEl = modal ? modal.querySelector('.notifications-list') : null;
+    if (!modal || !listEl) return;
+
+    modal.style.display = 'flex';
+    listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading...</p>';
+
+    try {
+        const data = await apiFetch('/notifications');
+        const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+        if (!notifications.length) {
+            listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1.5rem;">No notifications yet.</p>';
+            return;
+        }
+
+        const hasUnread = notifications.some(n => !n.isRead);
+        const tools = `
+            <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);background:white;position:sticky;top:0;z-index:1;">
+                ${hasUnread ? '<button onclick="markAllNotificationsRead()" style="border:1px solid var(--border);background:white;color:var(--primary);padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Mark all read</button>' : ''}
+                <button onclick="clearAllNotifications()" style="border:1px solid #e6b0b0;background:white;color:#c0392b;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Clear all</button>
+            </div>`;
+
+        const items = notifications.map((n) => {
+            const dest = notificationDestination(n);
+            const unreadStyle = n.isRead ? '' : 'background:#f0f7f0;border-left:3px solid var(--primary);';
+            const click = dest
+                ? `goToNotificationTarget(${n.id}, '${dest}')`
+                : `markNotificationRead(${n.id})`;
+
+            return `
+                <div class="notification-item" style="display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border);${unreadStyle}">
+                    <div onclick="${click}" style="flex:1;cursor:pointer;min-width:0;">
+                        <p style="font-weight:${n.isRead ? '400' : '700'};font-size:.9rem;margin:0 0 .2rem;color:var(--text-dark);">${escapeHtml(n.title || '')}</p>
+                        <p style="font-size:.82rem;color:#555;margin:0 0 .25rem;line-height:1.45;">${escapeHtml(n.message || '')}</p>
+                        <p style="font-size:.75rem;color:#aaa;margin:0;">${formatDateTime(n.createdAt)}</p>
+                        ${dest ? '<p style="font-size:.72rem;color:var(--primary);margin:.35rem 0 0;">Open related page →</p>' : ''}
+                    </div>
+                    <button onclick="event.stopPropagation();deleteNotification(${n.id})" title="Remove notification" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:.15rem .25rem;">✕</button>
+                </div>`;
+        }).join('');
+
+        listEl.innerHTML = tools + items;
+    } catch {
+        listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Could not load notifications.</p>';
+    }
+}
+
+function closeNotifications() {
+    const modal = document.getElementById('notificationsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+
+function toggleProfileMenu() {
+        const m = document.getElementById('profileMenu');
+        m.style.display = m.style.display === 'none' ? 'block' : 'none';
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.profile-btn')) document.getElementById('profileMenu').style.display = 'none';
+    });
+
+    // Close modals when the user clicks the dark overlay instead of the white content box.
+    window.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('diagnosisModal')) closeDiagnosisModal();
+        if (e.target === document.getElementById('progressModal')) closeProgressModal();
+        if (e.target === document.getElementById('notificationsModal')) closeNotifications();
+    });
+
+    // Init
+    loadPatients();
+    loadNotificationCount();
+    </script>
+</body>
+</html>

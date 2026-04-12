@@ -1,0 +1,336 @@
+{
+  "assessments": {
+    "preschool": {
+      "ageGroup": "Preschool (3-5 years)",
+      "totalQuestions": 20,
+      "domains": {
+        "Communication": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 1,
+              "text": "Does your child use 2-3 word phrases or short sentences?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, consistently", "Sometimes", "Not yet"]
+            },
+            {
+              "id": 2,
+              "text": "Does your child follow 2-step directions (e.g., 'Get the ball and put it in the box')?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, consistently", "Sometimes", "Not yet"]
+            },
+            {
+              "id": 3,
+              "text": "Can your child name common objects (dog, cat, cup, shoe)?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, most of them", "Some of them", "Not yet"]
+            },
+            {
+              "id": 4,
+              "text": "Does your child ask questions (why, what, where)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, frequently", "Sometimes", "Rarely"]
+            },
+            {
+              "id": 5,
+              "text": "Does your child use pronouns (I, me, you, he, she)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, correctly", "Sometimes", "Not yet"]
+            }
+          ]
+        },
+        "SocialSkills": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 6,
+              "text": "Does your child play alongside other children?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, frequently", "Sometimes", "Rarely"]
+            },
+            {
+              "id": 7,
+              "text": "Does your child engage in simple imaginative play (pretend cooking, playing house)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, often", "Sometimes", "Not yet"]
+            },
+            {
+              "id": 8,
+              "text": "Does your child show concern when another child is upset?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, always", "Sometimes", "Not yet"]
+            },
+            {
+              "id": 9,
+              "text": "Can your child follow simple social rules (taking turns, sharing)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, usually", "Sometimes", "Rarely"]
+            },
+            {
+              "id": 10,
+              "text": "Does your child greet familiar people (waves, says hello)?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, consistently", "Sometimes", "Rarely"]
+            }
+          ]
+        },
+        "Cognitive": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 11,
+              "text": "Can your child match colors or simple shapes?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, easily", "With help", "Not yet"]
+            },
+            {
+              "id": 12,
+              "text": "Does your child count to 10 or recognize numbers 1-5?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, reliably", "Sometimes", "Not yet"]
+            },
+            {
+              "id": 13,
+              "text": "Can your child sort objects by color, size, or type?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, correctly", "With some errors", "Needs help"]
+            },
+            {
+              "id": 14,
+              "text": "Does your child remember 2-3 things you ask them to do (even if not immediate)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, usually", "Sometimes", "Rarely"]
+            },
+            {
+              "id": 15,
+              "text": "Can your child solve simple puzzles (3-4 pieces)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, independently", "With help", "Not yet"]
+            }
+          ]
+        },
+        "MotorSkills": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 16,
+              "text": "Can your child run, jump, and play without falling excessively?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, easily", "Usually", "Often has difficulty"]
+            },
+            {
+              "id": 17,
+              "text": "Can your child kick a ball and throw it overhand?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, well", "Somewhat", "Not yet"]
+            },
+            {
+              "id": 18,
+              "text": "Can your child draw a circle or simple shapes?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, recognizable", "Attempts made", "Not yet"]
+            },
+            {
+              "id": 19,
+              "text": "Can your child hold a crayon or pencil with developing control?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, with good control", "With some control", "Difficulty holding"]
+            },
+            {
+              "id": 20,
+              "text": "Can your child balance on one foot for a few seconds?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, 5+ seconds", "2-4 seconds", "Cannot"]
+            }
+          ]
+        }
+      }
+    },
+    "earlySchoolAge": {
+      "ageGroup": "Early School Age (6-8 years)",
+      "totalQuestions": 20,
+      "domains": {
+        "Communication": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 1,
+              "text": "Does your child speak in complete, coherent sentences?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, consistently", "Usually", "Sometimes"]
+            },
+            {
+              "id": 2,
+              "text": "Can your child explain a simple story or event they experienced?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, with detail", "Basic explanation", "Difficulty explaining"]
+            },
+            {
+              "id": 3,
+              "text": "Does your child recognize and name most letters of the alphabet?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, most letters", "About half", "Very few"]
+            },
+            {
+              "id": 4,
+              "text": "Can your child read simple words or beginning readers?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, several", "A few words", "Not yet"]
+            },
+            {
+              "id": 5,
+              "text": "Does your child understand jokes or simple riddles?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, often laughs", "Sometimes", "Rarely"]
+            }
+          ]
+        },
+        "SocialSkills": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 6,
+              "text": "Does your child make friends and interact cooperatively with peers?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, easily", "Usually", "Has difficulty"]
+            },
+            {
+              "id": 7,
+              "text": "Does your child understand and follow classroom/social rules?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, consistently", "Usually", "Often forgets"]
+            },
+            {
+              "id": 8,
+              "text": "Can your child take turns and wait for their turn in a group?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, patiently", "Usually", "Difficulty waiting"]
+            },
+            {
+              "id": 9,
+              "text": "Does your child show empathy and understand others' feelings?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, demonstrates empathy", "Sometimes", "Rarely"]
+            },
+            {
+              "id": 10,
+              "text": "Can your child accept losing in games/activities without major upset?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, handles well", "Sometimes upset", "Very upset"]
+            }
+          ]
+        },
+        "Cognitive": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 11,
+              "text": "Can your child count to 100 and count by 2s or 5s?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, accurately", "To about 50", "Below 50"]
+            },
+            {
+              "id": 12,
+              "text": "Does your child understand basic math concepts (more, less, equal)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, demonstrates understanding", "Partial understanding", "Not yet"]
+            },
+            {
+              "id": 13,
+              "text": "Can your child solve simple word problems with guidance?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, often", "Sometimes", "Needs significant help"]
+            },
+            {
+              "id": 14,
+              "text": "Does your child show organized thinking and planning in activities?",
+              "difficulty": "Advanced",
+              "difficulty_code": "advanced",
+              "options": ["Yes, demonstrates planning", "Somewhat", "Impulsive, no planning"]
+            },
+            {
+              "id": 15,
+              "text": "Can your child follow multi-step instructions without reminders?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, reliably", "Usually", "Needs reminders"]
+            }
+          ]
+        },
+        "MotorSkills": {
+          "count": 5,
+          "questions": [
+            {
+              "id": 16,
+              "text": "Does your child demonstrate good coordination in sports/physical activities?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, good coordination", "Average coordination", "Appears clumsy"]
+            },
+            {
+              "id": 17,
+              "text": "Can your child write letters and numbers with increasing neatness?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, legible writing", "Developing", "Still struggling"]
+            },
+            {
+              "id": 18,
+              "text": "Can your child tie shoelaces or manage buttons/zippers?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, independently", "With some help", "Needs assistance"]
+            },
+            {
+              "id": 19,
+              "text": "Does your child have good pencil grip and hand strength?",
+              "difficulty": "Easy",
+              "difficulty_code": "easy",
+              "options": ["Yes, well-developed", "Developing", "Weak grip"]
+            },
+            {
+              "id": 20,
+              "text": "Can your child ride a bicycle (with or without training wheels)?",
+              "difficulty": "Moderate",
+              "difficulty_code": "moderate",
+              "options": ["Yes, confidently", "With some wobbiness", "Cannot yet"]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

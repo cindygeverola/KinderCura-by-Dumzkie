@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/pedia/pediatrician-dashboard.html" class="logo">
+                <img src="/icons/logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="/pedia/pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/pedia/pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="/pedia/pediatrician-appointments.html" class="nav-link">Appointments</a>
+                <a href="/pedia/pedia-chat.html" class="nav-link">💬 Chat</a>
+                <a href="/pedia/pedia-questions.html" class="nav-link">📋 My Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="/icons/notif_bell.png" class="notification-icon">
+                    <span class="notification-badge" id="notifCount" style="display:none;">0</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="/icons/profile.png" class="profile-icon" id="navProfilePic">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p id="menuWelcome">Welcome</p></div>
+                    <a href="/pedia/pediatrician-profile.html" class="menu-item"><img src="/icons/profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="/pedia/pediatrician-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" onclick="logout(); return false;" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div style="background:white;padding:2rem;border-radius:15px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom:0.5rem;">Settings</h1>
+            <p style="color:var(--text-light);">Manage your account, clinic details, and appointment availability.</p>
+        </div>
+
+        <div id="settingsErr" style="display:none;background:#fde8e8;color:#c0392b;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+        <div id="settingsSuc" style="display:none;background:#d4edda;color:#155724;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+
+        <div style="display:grid;grid-template-columns:250px 1fr;gap:2rem;">
+            <div style="background:white;border-radius:15px;padding:1.5rem;height:fit-content;box-shadow:0 4px 15px rgba(0,0,0,0.08);position:sticky;top:100px;">
+                <h3 style="color:var(--primary);margin-bottom:1rem;font-size:1rem;">Settings Menu</h3>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <a href="#account" class="settings-tab active-tab" data-tab="account" style="padding:0.8rem;border-radius:8px;cursor:pointer;background:var(--primary);color:white;text-decoration:none;" onclick="switchTab(event,'account')">Account</a>
+                    <a href="#notifications" class="settings-tab" data-tab="notifications" style="padding:0.8rem;border-radius:8px;cursor:pointer;color:var(--primary);text-decoration:none;transition:all 0.3s ease;" onclick="switchTab(event,'notifications')">Notifications</a>
+                    <a href="#availability" class="settings-tab" data-tab="availability" style="padding:0.8rem;border-radius:8px;cursor:pointer;color:var(--primary);text-decoration:none;transition:all 0.3s ease;" onclick="switchTab(event,'availability')">Availability</a>
+                    <a href="#privacy" class="settings-tab" data-tab="privacy" style="padding:0.8rem;border-radius:8px;cursor:pointer;color:var(--primary);text-decoration:none;transition:all 0.3s ease;" onclick="switchTab(event,'privacy')">Privacy</a>
+                </div>
+            </div>
+
+            <div>
+                <div id="account-tab">
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;">
+                        <h2 style="color:var(--primary);margin-bottom:1.5rem;">Account Settings</h2>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Email Address</label>
+                                <input type="email" id="emailInput" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Phone Number</label>
+                                <input type="tel" id="phoneInput" placeholder="+63 917 123 4567" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Clinic Name</label>
+                                <input type="text" id="clinicNameInput" placeholder="KinderCura Development Clinic" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Hospital / Institution</label>
+                                <input type="text" id="institutionInput" placeholder="General Hospital" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;grid-column:1 / -1;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Clinic Address</label>
+                                <input type="text" id="clinicAddressInput" placeholder="Street, Barangay, City" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Specialization</label>
+                                <input type="text" id="specializationInput" placeholder="Pediatric Development" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                            <div style="margin-bottom:1rem;">
+                                <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Consultation Fee (PHP)</label>
+                                <input type="number" id="feeInput" min="0" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;font-weight:600;margin-bottom:0.5rem;">Bio / Description</label>
+                            <textarea id="bioInput" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.95rem;height:100px;resize:vertical;"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAccountSettings()" style="padding:0.8rem 1.5rem;">Save Account Settings</button>
+                    </div>
+                </div>
+
+                <div id="notifications-tab" style="display:none;">
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;">
+                        <h2 style="color:var(--primary);margin-bottom:1.5rem;">Notification Preferences</h2>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="notifEmailAppointments"><span>Email Notifications for New Appointment Requests</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="notifInApp"><span>In-App Notifications</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="notifSms"><span>SMS Notifications</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="notifAssessmentDone"><span>Notify When Assessment is Completed by Patient</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="notifDailySummary"><span>Daily Summary of Activities</span></label></div>
+                        <button class="btn btn-primary" onclick="saveNotificationSettings()" style="padding:0.8rem 1.5rem;">Save Notification Settings</button>
+                    </div>
+                </div>
+
+                <div id="availability-tab" style="display:none;">
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;">
+                        <h2 style="color:var(--primary);margin-bottom:1.5rem;">Availability</h2>
+                        <div style="margin-bottom:2rem;">
+                            <label style="display:block;font-weight:600;margin-bottom:1rem;">Set Your Available Hours</label>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                                <div>
+                                    <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.5rem;">Start Time</label>
+                                    <input type="time" id="startTimeInput" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;">
+                                </div>
+                                <div>
+                                    <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.5rem;">End Time</label>
+                                    <input type="time" id="endTimeInput" style="width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;font-weight:600;margin-bottom:1rem;">Days Available</label>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:0.8rem;">
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Monday"> Monday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Tuesday"> Tuesday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Wednesday"> Wednesday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Thursday"> Thursday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Friday"> Friday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Saturday"> Saturday</label>
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" class="day-box" value="Sunday"> Sunday</label>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:2rem;padding:1.5rem;background:var(--bg-primary);border-radius:10px;border-left:4px solid var(--primary);">
+                            <label style="display:block;font-weight:700;margin-bottom:0.5rem;">Maximum Patients Per Day</label>
+                            <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:1rem;">This daily cap is enforced during appointment booking.</p>
+                            <div style="display:flex;align-items:center;gap:1rem;">
+                                <input type="number" id="max-patients-input" min="1" max="50" value="10" style="width:90px;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-size:1.1rem;font-weight:600;text-align:center;">
+                                <span style="color:var(--text-light);font-size:0.9rem;">patients per day</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAvailability()" style="padding:0.8rem 1.5rem;">Save Availability</button>
+                    </div>
+                </div>
+
+                <div id="privacy-tab" style="display:none;">
+                    <div style="background:white;border-radius:15px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.08);margin-bottom:2rem;">
+                        <h2 style="color:var(--primary);margin-bottom:1.5rem;">Privacy Settings</h2>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="privacyShowProfile"><span>Show My Profile to Parents</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="privacyShowAvailability"><span>Allow Parents to See My Availability</span></label></div>
+                        <div style="margin-bottom:1.5rem;"><label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="privacyShareRecs"><span>Share Assessment Recommendations with Parents</span></label></div>
+                        <div style="background:var(--bg-primary);padding:1.5rem;border-radius:10px;margin-bottom:1.5rem;border-left:4px solid var(--primary);">
+                            <p style="font-weight:600;color:var(--primary);margin-bottom:0.5rem;">🔒 Data Privacy</p>
+                            <p style="color:var(--text-light);font-size:0.85rem;">Your patient data is encrypted and protected according to DPA (Data Privacy Act) of the Philippines and DOH guidelines.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="savePrivacySettings()" style="padding:0.8rem 1.5rem;">Save Privacy Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+                <p style="text-align:center;padding:1rem;color:var(--text-light);">No new notifications</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+    <script>
+        requireAuth();
+        if ((KC.user() || {}).role !== 'pediatrician') {
+            window.location.href = '/login.html';
+        }
+
+        let currentSettings = null;
+
+        function showNotice(type, message) {
+            const err = document.getElementById('settingsErr');
+            const suc = document.getElementById('settingsSuc');
+            err.style.display = 'none';
+            suc.style.display = 'none';
+            if (type === 'error') {
+                err.textContent = message;
+                err.style.display = 'block';
+            } else {
+                suc.textContent = message;
+                suc.style.display = 'block';
+            }
+        }
+
+        function switchTab(event, tabName) {
+            ['account','notifications','availability','privacy'].forEach((name) => {
+                document.getElementById(name + '-tab').style.display = name === tabName ? 'block' : 'none';
+            });
+            document.querySelectorAll('.settings-tab').forEach((tab) => {
+                tab.style.background = 'transparent';
+                tab.style.color = 'var(--primary)';
+            });
+            event.currentTarget.style.background = 'var(--primary)';
+            event.currentTarget.style.color = 'white';
+        }
+
+        // Load saved settings so the page shows real database values instead of placeholders.
+        async function loadSettings() {
+            try {
+                const data = await apiFetch('/auth/pediatrician/settings');
+                const u = data.user || {};
+                currentSettings = u;
+                localStorage.setItem('kc_user', JSON.stringify(u));
+                document.getElementById('menuWelcome').textContent = `Welcome, Dr. ${u.firstName || ''}`;
+                if (u.profileIcon) document.getElementById('navProfilePic').src = u.profileIcon;
+
+                document.getElementById('emailInput').value = u.email || '';
+                document.getElementById('phoneInput').value = u.phoneNumber || '';
+                document.getElementById('clinicNameInput').value = u.clinicName || '';
+                document.getElementById('clinicAddressInput').value = u.clinicAddress || '';
+                document.getElementById('institutionInput').value = u.institution || '';
+                document.getElementById('specializationInput').value = u.specialization || '';
+                document.getElementById('feeInput').value = u.consultationFee ?? '';
+                document.getElementById('bioInput').value = u.bio || '';
+
+                document.getElementById('startTimeInput').value = u.availability?.startTime || '09:00';
+                document.getElementById('endTimeInput').value = u.availability?.endTime || '17:00';
+                document.getElementById('max-patients-input').value = u.availability?.maxPatientsPerDay ?? 10;
+                document.querySelectorAll('.day-box').forEach((box) => {
+                    box.checked = (u.availability?.days || []).includes(box.value);
+                });
+
+                document.getElementById('notifEmailAppointments').checked = Boolean(u.notificationSettings?.emailAppointments ?? true);
+                document.getElementById('notifInApp').checked = Boolean(u.notificationSettings?.inApp ?? true);
+                document.getElementById('notifSms').checked = Boolean(u.notificationSettings?.sms ?? false);
+                document.getElementById('notifAssessmentDone').checked = Boolean(u.notificationSettings?.assessmentCompleted ?? true);
+                document.getElementById('notifDailySummary').checked = Boolean(u.notificationSettings?.dailySummary ?? false);
+
+                document.getElementById('privacyShowProfile').checked = Boolean(u.privacySettings?.showProfile ?? true);
+                document.getElementById('privacyShowAvailability').checked = Boolean(u.privacySettings?.showAvailability ?? true);
+                document.getElementById('privacyShareRecs').checked = Boolean(u.privacySettings?.shareRecommendations ?? true);
+            } catch (err) {
+                showNotice('error', err.message);
+            }
+        }
+
+        async function saveAccountSettings() {
+            try {
+                const data = await apiFetch('/auth/pediatrician/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        email: document.getElementById('emailInput').value.trim(),
+                        phoneNumber: document.getElementById('phoneInput').value.trim(),
+                        clinicName: document.getElementById('clinicNameInput').value.trim(),
+                        clinicAddress: document.getElementById('clinicAddressInput').value.trim(),
+                        institution: document.getElementById('institutionInput').value.trim(),
+                        specialization: document.getElementById('specializationInput').value.trim(),
+                        consultationFee: document.getElementById('feeInput').value,
+                        bio: document.getElementById('bioInput').value.trim(),
+                    }),
+                });
+                localStorage.setItem('kc_user', JSON.stringify(data.user));
+                showNotice('success', 'Account settings saved successfully.');
+                await loadSettings();
+            } catch (err) {
+                showNotice('error', err.message);
+            }
+        }
+
+        async function saveNotificationSettings() {
+            try {
+                const data = await apiFetch('/auth/pediatrician/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        notificationSettings: {
+                            emailAppointments: document.getElementById('notifEmailAppointments').checked,
+                            inApp: document.getElementById('notifInApp').checked,
+                            sms: document.getElementById('notifSms').checked,
+                            assessmentCompleted: document.getElementById('notifAssessmentDone').checked,
+                            dailySummary: document.getElementById('notifDailySummary').checked,
+                        },
+                    }),
+                });
+                localStorage.setItem('kc_user', JSON.stringify(data.user));
+                showNotice('success', 'Notification settings saved successfully.');
+            } catch (err) {
+                showNotice('error', err.message);
+            }
+        }
+
+        async function saveAvailability() {
+            try {
+                const days = Array.from(document.querySelectorAll('.day-box:checked')).map((box) => box.value);
+                const data = await apiFetch('/auth/pediatrician/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        availability: {
+                            startTime: document.getElementById('startTimeInput').value,
+                            endTime: document.getElementById('endTimeInput').value,
+                            days,
+                            maxPatientsPerDay: document.getElementById('max-patients-input').value,
+                        },
+                    }),
+                });
+                localStorage.setItem('kc_user', JSON.stringify(data.user));
+                showNotice('success', 'Availability saved successfully.');
+            } catch (err) {
+                showNotice('error', err.message);
+            }
+        }
+
+        async function savePrivacySettings() {
+            try {
+                const data = await apiFetch('/auth/pediatrician/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        privacySettings: {
+                            showProfile: document.getElementById('privacyShowProfile').checked,
+                            showAvailability: document.getElementById('privacyShowAvailability').checked,
+                            shareRecommendations: document.getElementById('privacyShareRecs').checked,
+                        },
+                    }),
+                });
+                localStorage.setItem('kc_user', JSON.stringify(data.user));
+                showNotice('success', 'Privacy settings saved successfully.');
+            } catch (err) {
+                showNotice('error', err.message);
+            }
+        }
+
+        function formatDateTime(ts) {
+            if (!ts) return '—';
+            return new Date(ts).toLocaleString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[ch]));
+        }
+
+        function notificationDestination(n) {
+            const title = String(n?.title || '').toLowerCase();
+            const type  = String(n?.type  || '').toLowerCase();
+            const msg   = String(n?.message || '').toLowerCase();
+            if (type === 'chat' || title.includes('message') || msg.includes('message from')) return '/pedia/pedia-chat.html';
+            if (type === 'appointment' || title.includes('appointment') || msg.includes('appointment')) return '/pedia/pediatrician-appointments.html';
+            if (type === 'assessment' || title.includes('custom question') || title.includes('assessment question') || title.includes('question answered')) return '/pedia/pedia-questions.html';
+            if (title.includes('diagnosis') || msg.includes('diagnosis') || title.includes('recommendation') || msg.includes('recommendation')) return '/pedia/pediatrician-patients.html';
+            return '/pedia/pediatrician-dashboard.html';
+        }
+
+        async function loadNotificationCount() {
+            try {
+                const data = await apiFetch('/notifications/count');
+                const badge = document.getElementById('notifCount');
+                const unread = data.unread || 0;
+                badge.textContent = unread;
+                badge.style.display = unread > 0 ? 'flex' : 'none';
+            } catch {}
+        }
+
+        async function markNotificationRead(id) {
+            try {
+                await apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
+                await loadNotificationCount();
+            } catch {}
+        }
+
+        async function deleteNotification(id) {
+            if (!confirm('Remove this notification?')) return;
+            try {
+                await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+                await openNotifications();
+                await loadNotificationCount();
+            } catch (err) {
+                alert('Could not remove notification: ' + err.message);
+            }
+        }
+
+        async function clearAllNotifications() {
+            if (!confirm('Clear all notifications?')) return;
+            try {
+                await apiFetch('/notifications/clear-all', { method: 'DELETE' });
+                await openNotifications();
+                await loadNotificationCount();
+            } catch (err) {
+                alert('Could not clear notifications: ' + err.message);
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await apiFetch('/notifications/read-all', { method: 'PUT' });
+                await openNotifications();
+                await loadNotificationCount();
+            } catch (err) {
+                alert('Could not mark notifications as read: ' + err.message);
+            }
+        }
+
+        async function goToNotificationTarget(id, target) {
+            await markNotificationRead(id);
+            window.location.href = target;
+        }
+
+        async function openNotifications() {
+            const modal = document.getElementById('notificationsModal');
+            const listEl = document.getElementById('notificationsList');
+            modal.style.display = 'flex';
+            listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading...</p>';
+            try {
+                const data = await apiFetch('/notifications');
+                const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+                if (!notifications.length) {
+                    listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1.5rem;">No notifications yet.</p>';
+                    return;
+                }
+                const hasUnread = notifications.some(n => !n.isRead);
+                const tools = `
+                    <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);background:white;position:sticky;top:0;z-index:1;">
+                        ${hasUnread ? '<button onclick="markAllNotificationsRead()" style="border:1px solid var(--border);background:white;color:var(--primary);padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Mark all read</button>' : ''}
+                        <button onclick="clearAllNotifications()" style="border:1px solid #e6b0b0;background:white;color:#c0392b;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;">Clear all</button>
+                    </div>`;
+                const items = notifications.map((n) => {
+                    const dest = notificationDestination(n);
+                    const unreadStyle = n.isRead ? '' : 'background:#f0f7f0;border-left:3px solid var(--primary);';
+                    const click = dest ? `goToNotificationTarget(${n.id}, '${dest}')` : `markNotificationRead(${n.id})`;
+                    return `
+                        <div class="notification-item" style="display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border);${unreadStyle}">
+                            <div onclick="${click}" style="flex:1;cursor:pointer;min-width:0;">
+                                <p style="font-weight:${n.isRead ? '400' : '700'};font-size:.9rem;margin:0 0 .2rem;color:var(--text-dark);">${escapeHtml(n.title || '')}</p>
+                                <p style="font-size:.82rem;color:#555;margin:0 0 .25rem;line-height:1.45;">${escapeHtml(n.message || '')}</p>
+                                <p style="font-size:.75rem;color:#aaa;margin:0;">${formatDateTime(n.createdAt)}</p>
+                                ${dest ? '<p style="font-size:.72rem;color:var(--primary);margin:.35rem 0 0;">Open related page →</p>' : ''}
+                            </div>
+                            <button onclick="event.stopPropagation();deleteNotification(${n.id})" title="Remove notification" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:.15rem .25rem;">✕</button>
+                        </div>`;
+                }).join('');
+                listEl.innerHTML = tools + items;
+            } catch {
+                listEl.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Could not load notifications.</p>';
+            }
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-btn')) {
+                document.getElementById('profileMenu').style.display = 'none';
+            }
+        });
+
+        loadSettings();
+        loadNotificationCount();
+    </script>
+</body>
+</html>

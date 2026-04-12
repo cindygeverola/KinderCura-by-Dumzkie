@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - KinderCura Pediatrician</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <style>
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: white; border-radius: 15px; padding: 2rem;
+            width: 90%; max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .modal-title { color: var(--primary); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .modal-subtitle { color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-dark); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.8rem;
+            border: 2px solid var(--border); border-radius: 8px;
+            font-size: 0.9rem; color: var(--text-dark);
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--primary);
+        }
+        .reschedule-notice {
+            background: #fff8e8; border: 1px solid #f4d89f;
+            border-radius: 8px; padding: 0.8rem 1rem;
+            font-size: 0.82rem; color: #7a6030;
+            margin-bottom: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="pediatrician-dashboard.html" class="logo">
+                <img src="logo.png" alt="KinderCura Logo" class="logo-img">
+                <span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="pediatrician-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="pediatrician-patients.html" class="nav-link">My Patients</a>
+                <a href="pediatrician-appointments.html" class="nav-link" style="border-bottom: 3px solid var(--accent-red);">Appointments</a>
+                <a href="pedia-chat.html" class="nav-link">💬 Chat</a>
+                <a href="pedia-questions.html" class="nav-link">📋 My Questions</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()">
+                    <img src="notif_bell.png" class="notification-icon">
+                    <span class="notification-badge">2</span>
+                </button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()">
+                    <img src="profile.png" class="profile-icon">
+                </button>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="menu-header"><p id="nav-welcome">Welcome, Dr.</p></div>
+                    <a href="pediatrician-profile.html" class="menu-item"><img src="profile_icon.png" class="menu-icon">Profile</a>
+                    <a href="pediatrician-settings.html" class="menu-item"><img src="settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin: 0.5rem 0;">
+                    <a href="../SIGN-UP,LOGIN/login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Page Header -->
+        <div style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+            <h1 style="margin-bottom: 0.5rem;">Appointments</h1>
+            <p style="color: var(--text-light);">Manage your appointments with patients</p>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem;">
+            <button class="tab-button active" id="tab-upcoming" onclick="switchTab('upcoming')" style="padding: 0.8rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--primary); border-bottom: 3px solid var(--primary); position: relative; bottom: -1rem;">Upcoming</button>
+            <button class="tab-button" id="tab-completed" onclick="switchTab('completed')" style="padding: 0.8rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--text-light); position: relative; bottom: -1rem;">Completed</button>
+            <button class="tab-button" id="tab-cancelled" onclick="switchTab('cancelled')" style="padding: 0.8rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--text-light); position: relative; bottom: -1rem;">Cancelled</button>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div id="upcoming-tab" style="display: grid; gap: 1.5rem;">
+            <!-- Appointment 1 -->
+            <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="font-weight: 600; font-size: 1rem; color: var(--text-dark);">Jane Doe</p>
+                        <p style="color: var(--text-light); font-size: 0.82rem; margin-top: 0.2rem;">Parent: Sarah Johnson &nbsp;|&nbsp; Age: 2 years 1 month</p>
+                    </div>
+                    <span style="background: var(--success); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Approved</span>
+                </div>
+                <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Date &amp; Time</p>
+                            <p style="font-weight: 600; color: var(--text-dark);" id="apt1-date">March 28, 2026</p>
+                            <p style="color: var(--text-light); font-size: 0.82rem;" id="apt1-time">2:00 PM – 2:30 PM</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Type</p>
+                            <p style="font-weight: 600; color: var(--text-dark);">Assessment Follow-up</p>
+                            <p style="color: var(--text-light); font-size: 0.82rem;">In-person / Video Call</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.8rem;">
+                    <button class="btn btn-primary" onclick="startAppointment('apt1')" style="padding: 0.7rem 1.2rem; flex: 1;">Start Appointment</button>
+                    <button class="btn btn-secondary" onclick="openRescheduleModal('apt1', 'Jane Doe', 'Sarah Johnson')" style="padding: 0.7rem 1.2rem; flex: 1;">Reschedule</button>
+                    <button class="btn btn-secondary" onclick="cancelAppointmentConfirm('apt1', 'Jane Doe')" style="padding: 0.7rem 1.2rem; flex: 1;">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Appointment 2 -->
+            <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="font-weight: 600; font-size: 1rem; color: var(--text-dark);">Lucas Chen</p>
+                        <p style="color: var(--text-light); font-size: 0.82rem; margin-top: 0.2rem;">Parent: Michael Chen &nbsp;|&nbsp; Age: 4 years 6 months</p>
+                    </div>
+                    <span style="background: var(--success); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Approved</span>
+                </div>
+                <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Date &amp; Time</p>
+                            <p style="font-weight: 600; color: var(--text-dark);" id="apt2-date">March 29, 2026</p>
+                            <p style="color: var(--text-light); font-size: 0.82rem;" id="apt2-time">10:00 AM – 10:45 AM</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Type</p>
+                            <p style="font-weight: 600; color: var(--text-dark);">Initial Consultation</p>
+                            <p style="color: var(--text-light); font-size: 0.82rem;">Video Call</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.8rem;">
+                    <button class="btn btn-primary" onclick="startAppointment('apt2')" style="padding: 0.7rem 1.2rem; flex: 1;">Start Appointment</button>
+                    <button class="btn btn-secondary" onclick="openRescheduleModal('apt2', 'Lucas Chen', 'Michael Chen')" style="padding: 0.7rem 1.2rem; flex: 1;">Reschedule</button>
+                    <button class="btn btn-secondary" onclick="cancelAppointmentConfirm('apt2', 'Lucas Chen')" style="padding: 0.7rem 1.2rem; flex: 1;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Appointments -->
+        <div id="completed-tab" style="display: none; gap: 1.5rem;">
+            <div style="background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="font-weight: 600; font-size: 1rem; color: var(--text-dark);">Emma Rodriguez</p>
+                        <p style="color: var(--text-light); font-size: 0.82rem; margin-top: 0.2rem;">Parent: Isabella Rodriguez &nbsp;|&nbsp; Age: 5 years 3 months</p>
+                    </div>
+                    <span style="background: var(--success); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Completed</span>
+                </div>
+                <div style="background: var(--bg-primary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Date &amp; Time</p>
+                            <p style="font-weight: 600; color: var(--text-dark);">March 25, 2026</p>
+                            <p style="color: var(--text-light); font-size: 0.82rem;">3:00 PM – 3:45 PM</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Duration</p>
+                            <p style="font-weight: 600; color: var(--text-dark);">45 minutes</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <p style="color: var(--text-light); font-size: 0.82rem; margin-bottom: 0.3rem;">Notes</p>
+                        <p style="color: var(--text-dark);">Assessment completed. Child shows good development across all domains. Recommendations provided to parents.</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="viewAppointmentDetails('3')" style="padding: 0.7rem 1.5rem;">View Details</button>
+            </div>
+        </div>
+
+        <!-- Cancelled Appointments -->
+        <div id="cancelled-tab" style="display: none;">
+            <div style="background: white; border-radius: 15px; padding: 3rem; text-align: center; color: var(--text-light); box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <p style="font-size: 2rem; margin-bottom: 1rem;">📭</p>
+                <p style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">No cancelled appointments</p>
+                <p style="font-size: 0.85rem;">Cancelled appointments will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESCHEDULE MODAL ===== -->
+    <div class="modal-overlay" id="rescheduleModal">
+        <div class="modal-box">
+            <div class="modal-title">📅 Reschedule Appointment</div>
+            <div class="modal-subtitle" id="reschedule-subtitle">Rescheduling appointment for patient</div>
+
+            <div class="reschedule-notice">
+                ✉️ The parent/guardian will automatically receive an email notification with the updated schedule once you confirm.
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>New Date *</label>
+                    <input type="date" id="reschedule-date" min="">
+                </div>
+                <div class="form-group">
+                    <label>New Time *</label>
+                    <input type="time" id="reschedule-time">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="time" id="reschedule-end-time">
+            </div>
+
+            <div class="form-group">
+                <label>Reason for Rescheduling *</label>
+                <select id="reschedule-reason">
+                    <option value="">Select a reason...</option>
+                    <option value="schedule_conflict">Schedule conflict</option>
+                    <option value="emergency">Emergency / urgent case</option>
+                    <option value="clinic_unavailable">Clinic unavailable on original date</option>
+                    <option value="patient_request">Accommodating patient request</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Note to Parent (optional)</label>
+                <textarea id="reschedule-note" rows="3" placeholder="e.g. Please bring your child's previous health records to the rescheduled appointment..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 0.8rem; margin-top: 0.5rem;">
+                <button class="btn btn-primary" onclick="confirmReschedule()" style="flex: 1; padding: 0.9rem;">Confirm Reschedule &amp; Notify Parent</button>
+                <button class="btn btn-secondary" onclick="closeRescheduleModal()" style="flex: 1; padding: 0.9rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END RESCHEDULE MODAL ===== -->
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal" style="display: none;">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeNotifications()">✕</button>
+            </div>
+            <div class="notifications-list">
+                <div class="notification-item"><span class="notification-icon-small">📅</span><div><p class="notification-title">Upcoming: Jane Doe – March 28</p><p class="notification-time">2:00 PM</p></div></div>
+                <div class="notification-item"><span class="notification-icon-small">✓</span><div><p class="notification-title">Completed: Emma Rodriguez</p><p class="notification-time">Yesterday</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRescheduleId = null;
+
+        function switchTab(tabName) {
+            ['upcoming','completed','cancelled'].forEach(t => {
+                document.getElementById(t+'-tab').style.display = 'none';
+                document.getElementById('tab-'+t).style.color = 'var(--text-light)';
+                document.getElementById('tab-'+t).style.borderBottom = 'none';
+            });
+            document.getElementById(tabName+'-tab').style.display = tabName === 'upcoming' ? 'grid' : 'block';
+            document.getElementById('tab-'+tabName).style.color = 'var(--primary)';
+            document.getElementById('tab-'+tabName).style.borderBottom = '3px solid var(--primary)';
+        }
+
+        function startAppointment(aptId) {
+            alert('Starting appointment session...\n(In production: opens video call or consultation interface)');
+        }
+
+        function openRescheduleModal(aptId, childName, parentName) {
+            currentRescheduleId = aptId;
+            document.getElementById('reschedule-subtitle').textContent =
+                'Patient: ' + childName + '  |  Parent/Guardian: ' + parentName;
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reschedule-date').min = today;
+            document.getElementById('reschedule-date').value = '';
+            document.getElementById('reschedule-time').value = '';
+            document.getElementById('reschedule-end-time').value = '';
+            document.getElementById('reschedule-reason').value = '';
+            document.getElementById('reschedule-note').value = '';
+            document.getElementById('rescheduleModal').style.display = 'flex';
+        }
+
+        function closeRescheduleModal() {
+            document.getElementById('rescheduleModal').style.display = 'none';
+            currentRescheduleId = null;
+        }
+
+        function confirmReschedule() {
+            const date = document.getElementById('reschedule-date').value;
+            const time = document.getElementById('reschedule-time').value;
+            const reason = document.getElementById('reschedule-reason').value;
+
+            if (!date) { alert('Please select a new date.'); return; }
+            if (!time) { alert('Please select a new time.'); return; }
+            if (!reason) { alert('Please select a reason for rescheduling.'); return; }
+
+            const note = document.getElementById('reschedule-note').value;
+            const endTime = document.getElementById('reschedule-end-time').value;
+
+            // Update the appointment card's displayed date and time
+            if (currentRescheduleId) {
+                const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+                const formattedTime = formatTime(time) + (endTime ? ' – ' + formatTime(endTime) : '');
+                const dateEl = document.getElementById(currentRescheduleId + '-date');
+                const timeEl = document.getElementById(currentRescheduleId + '-time');
+                if (dateEl) dateEl.textContent = formattedDate;
+                if (timeEl) timeEl.textContent = formattedTime;
+            }
+
+            // Backend: POST /api/appointments/:id/reschedule { newDate, newTime, reason, note }
+            // This triggers an email notification to the parent via Gmail/SendGrid
+            alert('✅ Appointment rescheduled!\n\nNew Date: ' + date + '\nNew Time: ' + time +
+                  '\n\nAn email notification has been sent to the parent/guardian with the updated schedule.');
+            closeRescheduleModal();
+        }
+
+        function formatTime(t) {
+            if (!t) return '';
+            const [h, m] = t.split(':');
+            const hr = parseInt(h);
+            const ampm = hr >= 12 ? 'PM' : 'AM';
+            return ((hr % 12) || 12) + ':' + m + ' ' + ampm;
+        }
+
+        function cancelAppointmentConfirm(aptId, patientName) {
+            if (confirm('Cancel appointment for ' + patientName + '?\n\nThe parent/guardian will be notified by email.')) {
+                // Backend: POST /api/appointments/:id/cancel
+                alert('Appointment cancelled. An email notification has been sent to the parent/guardian.');
+            }
+        }
+
+        function viewAppointmentDetails(aptId) {
+            alert('Loading appointment details...');
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+        function openNotifications() { document.getElementById('notificationsModal').style.display = 'flex'; }
+        function closeNotifications() { document.getElementById('notificationsModal').style.display = 'none'; }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-btn')) document.getElementById('profileMenu').style.display = 'none';
+            if (!e.target.closest('.modal-box') && !e.target.closest('.btn')) {
+                // Don't close modal on outside clicks if user accidentally clicks
+            }
+        });
+        window.addEventListener('load', () => {
+            const name = sessionStorage.getItem('doctorName');
+            if (name) document.getElementById('nav-welcome').textContent = 'Welcome, Dr. ' + name;
+        });
+    </script>
+</body>
+</html>

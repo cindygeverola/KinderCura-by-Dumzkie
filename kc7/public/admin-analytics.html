@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - KinderCura Admin</title>
+    <link rel="stylesheet" href="dashboard-new-styles.css">
+    <link rel="stylesheet" href="analytics-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="admin-dashboard.html" class="logo"><img src="logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="admin-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="admin-users.html" class="nav-link">Users</a>
+                <a href="admin-analytics.html" class="nav-link active">Analytics</a>
+                <a href="admin-settings.html" class="nav-link">Settings</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, Admin</p></div>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="login.html" class="menu-item logout"><img src="logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-header"><h1>Analytics</h1><p>System-wide data insights</p></div>
+
+        <!-- Average Scores -->
+        <div class="card" style="margin-bottom:2rem;">
+            <h3>📊 Average Assessment Scores</h3>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem;" id="avgScores">
+                <p style="color:var(--text-light);grid-column:1/-1;text-align:center;">Loading…</p>
+            </div>
+        </div>
+
+        <!-- Monthly Signups -->
+        <div class="card" style="margin-bottom:2rem;">
+            <h3>📈 Monthly Signups (Last 6 Months)</h3>
+            <div id="monthlyChart" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Appointment Breakdown -->
+        <div class="overview-grid">
+            <div class="overview-card">
+                <h3>📅 Appointment Status</h3>
+                <div id="apptStats" style="margin-top:1rem;">
+                    <p style="color:var(--text-light);text-align:center;">Loading…</p>
+                </div>
+            </div>
+            <div class="overview-card">
+                <h3>👥 User Role Breakdown</h3>
+                <div id="roleBreakdown" style="margin-top:1rem;">
+                    <p style="color:var(--text-light);text-align:center;">Loading…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+        const _u = KC.user();
+        if (_u && _u.role !== 'admin') window.location.href = 'dashboard.html';
+
+        function bar(label, value, max, color) {
+            const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+            return `<div style="margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:0.4rem;">
+                    <span>${label}</span><span style="font-weight:600;">${value}</span>
+                </div>
+                <div style="height:10px;background:var(--border);border-radius:10px;overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;background:${color};border-radius:10px;transition:width 0.5s;"></div>
+                </div>
+            </div>`;
+        }
+
+        async function loadAnalytics() {
+            try {
+                const data = await apiFetch('/admin/analytics');
+
+                // Average scores
+                const avg = data.averageScores || {};
+                document.getElementById('avgScores').innerHTML = [
+                    { label:'🗣️ Communication', val: avg.avgCommunication },
+                    { label:'🤝 Social',         val: avg.avgSocial },
+                    { label:'🧠 Cognitive',      val: avg.avgCognitive },
+                    { label:'🤸 Motor',          val: avg.avgMotor }
+                ].map(s => `
+                    <div style="background:var(--bg-primary);padding:1.2rem;border-radius:8px;text-align:center;">
+                        <p style="font-size:0.9rem;color:var(--text-light);margin-bottom:0.5rem;">${s.label}</p>
+                        <p style="font-size:2rem;font-weight:700;color:var(--primary);">${s.val !== null && s.val !== undefined ? Math.round(s.val)+'%' : '—'}</p>
+                    </div>`).join('');
+
+                // Monthly signups bar chart
+                const monthly = data.monthlySignups || [];
+                const maxCount = Math.max(...monthly.map(m => m.count), 1);
+                document.getElementById('monthlyChart').innerHTML = monthly.length
+                    ? monthly.map(m => bar(m.month, m.count, maxCount, 'var(--primary)')).join('')
+                    : '<p style="color:var(--text-light);text-align:center;">No signup data yet</p>';
+
+                // Appointment stats
+                const appt = data.appointmentStats || [];
+                const maxAppt = Math.max(...appt.map(a => a.count), 1);
+                const apptColors = { pending:'#f39c12', confirmed:'var(--primary)', completed:'var(--success)', cancelled:'var(--accent-red)' };
+                document.getElementById('apptStats').innerHTML = appt.length
+                    ? appt.map(a => bar(a.status.charAt(0).toUpperCase()+a.status.slice(1), a.count, maxAppt, apptColors[a.status]||'var(--primary)')).join('')
+                    : '<p style="color:var(--text-light);text-align:center;">No appointment data yet</p>';
+
+                // Role breakdown
+                const roles = data.roleBreakdown || [];
+                const maxRole = Math.max(...roles.map(r => r.count), 1);
+                const roleColors = { parent:'var(--primary)', pediatrician:'var(--success)', admin:'var(--accent-red)' };
+                document.getElementById('roleBreakdown').innerHTML = roles.length
+                    ? roles.map(r => bar(r.role.charAt(0).toUpperCase()+r.role.slice(1), r.count, maxRole, roleColors[r.role]||'var(--primary)')).join('')
+                    : '<p style="color:var(--text-light);text-align:center;">No role data yet</p>';
+
+            } catch (e) {
+                console.error(e);
+                document.querySelectorAll('#avgScores,#monthlyChart,#apptStats,#roleBreakdown').forEach(el => {
+                    el.innerHTML = `<p style="color:red;">Error loading: ${e.message}</p>`;
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAnalytics);
+    </script>
+</body>
+</html>

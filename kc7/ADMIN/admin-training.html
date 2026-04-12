@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Datasets - KinderCura Admin</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/admin/admin-dashboard.html" class="logo"><img src="/icons/logo.png" class="logo-img"><span class="logo-text"><span class="logo-kinder">Kinder</span><span class="logo-cura">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="/admin/admin-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/admin/admin-users.html" class="nav-link">Users</a>
+                <a href="/admin/admin-analytics.html" class="nav-link">Analytics</a>
+                <a href="/admin/admin-training.html" class="nav-link active">Training</a>
+                <a href="/admin/admin-settings.html" class="nav-link">Settings</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="/icons/notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, Admin</p></div>
+                    <a href="/admin/admin-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1>Dataset Upload & Training</h1>
+            <p>Upload CSV or JSON files, review their structure, and mark them as trained for KinderCura model support.</p>
+        </div>
+
+        <div class="overview-grid" style="margin-bottom:2rem;">
+            <div class="overview-card"><h3>Total Datasets</h3><p id="sumTotal" style="font-size:2rem;font-weight:700;color:var(--primary);margin-top:0.6rem;">0</p></div>
+            <div class="overview-card"><h3>Ready for Training</h3><p id="sumUploaded" style="font-size:2rem;font-weight:700;color:#e67e22;margin-top:0.6rem;">0</p></div>
+            <div class="overview-card"><h3>Marked as Trained</h3><p id="sumTrained" style="font-size:2rem;font-weight:700;color:#27ae60;margin-top:0.6rem;">0</p></div>
+            <div class="overview-card"><h3>Total Rows</h3><p id="sumRows" style="font-size:2rem;font-weight:700;color:var(--primary);margin-top:0.6rem;">0</p></div>
+        </div>
+
+        <div class="card" style="margin-bottom:2rem;">
+            <h3>📤 Upload New Dataset</h3>
+            <p style="color:var(--text-light);margin:0.4rem 0 1.2rem;">Accepted formats: CSV and JSON only. Max file size: 10MB.</p>
+            <div id="uploadError" style="display:none;background:#fde8e8;color:#c0392b;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+            <div id="uploadSuccess" style="display:none;background:#dff5e3;color:#1e6f3f;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label>Dataset Name</label>
+                    <input type="text" id="datasetName" placeholder="Example: preschool_screening_batch_april">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label>Target Module</label>
+                    <select id="targetModule">
+                        <option value="assessment">Assessment</option>
+                        <option value="recommendation">Recommendation</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;grid-column:1/-1;">
+                    <label>Notes <span style="color:#888;font-weight:400;">(optional)</span></label>
+                    <textarea id="datasetNotes" rows="3" placeholder="Short note about what this dataset will be used for"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;grid-column:1/-1;">
+                    <label>Dataset File</label>
+                    <input type="file" id="datasetFile" accept=".csv,.json">
+                </div>
+            </div>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="uploadBtn" onclick="uploadDataset()">Upload Dataset</button>
+                <button class="btn btn-secondary" onclick="downloadTrainingTemplate('csv')">Download CSV Template</button>
+                <button class="btn btn-secondary" onclick="downloadTrainingTemplate('json')">Download JSON Template</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+                <h3>🧠 Uploaded Datasets</h3>
+                <button class="btn btn-secondary" onclick="loadDatasets()">Refresh</button>
+            </div>
+            <div id="datasetListWrap" style="margin-top:1rem;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:var(--bg-primary);border-bottom:2px solid var(--border);">
+                            <th style="padding:1rem;text-align:left;">Dataset</th>
+                            <th style="padding:1rem;text-align:left;">Target</th>
+                            <th style="padding:1rem;text-align:left;">Format</th>
+                            <th style="padding:1rem;text-align:left;">Rows</th>
+                            <th style="padding:1rem;text-align:left;">Columns</th>
+                            <th style="padding:1rem;text-align:left;">Status</th>
+                            <th style="padding:1rem;text-align:left;">Uploaded</th>
+                            <th style="padding:1rem;text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="datasetRows">
+                        <tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-light);">Loading datasets…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Admin Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+    <script>
+        requireAuth();
+        const _u = KC.user();
+        if (_u && _u.role !== 'admin') window.location.href = '/parent/dashboard.html';
+
+        function fmtDateTime(value) {
+            if (!value) return '—';
+            return new Date(value).toLocaleString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+        }
+
+        function fileSizeText(bytes) {
+            if (!bytes) return '0 KB';
+            if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+            return `${(bytes / 1024).toFixed(1)} KB`;
+        }
+
+        function statusChip(status) {
+            const map = {
+                uploaded: { bg: '#fff3cd', color: '#856404', text: 'Uploaded' },
+                trained:  { bg: '#dff5e3', color: '#1e6f3f', text: 'Trained' },
+                failed:   { bg: '#fde8e8', color: '#c0392b', text: 'Failed' },
+            };
+            const s = map[status] || map.uploaded;
+            return `<span style="background:${s.bg};color:${s.color};padding:0.3rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;">${s.text}</span>`;
+        }
+
+        // Load the whole dataset table and summary cards from the admin API.
+        async function loadDatasets() {
+            try {
+                const data = await apiFetch('/admin/training/datasets');
+                const summary = data.summary || {};
+                const datasets = data.datasets || [];
+
+                document.getElementById('sumTotal').textContent = summary.total || 0;
+                document.getElementById('sumUploaded').textContent = summary.uploaded || 0;
+                document.getElementById('sumTrained').textContent = summary.trained || 0;
+                document.getElementById('sumRows').textContent = summary.totalRows || 0;
+
+                const rowsEl = document.getElementById('datasetRows');
+                if (!datasets.length) {
+                    rowsEl.innerHTML = '<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-light);">No datasets uploaded yet.</td></tr>';
+                    return;
+                }
+
+                rowsEl.innerHTML = datasets.map((d) => {
+                    const columns = d.sampleColumns && d.sampleColumns.length
+                        ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">${d.sampleColumns.join(', ')}</div>`
+                        : '';
+                    const trainingDetails = d.trainingSummary
+                        ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">${d.trainingSummary}</div>`
+                        : '';
+                    return `
+                        <tr style="border-bottom:1px solid var(--border);vertical-align:top;">
+                            <td style="padding:1rem;min-width:220px;">
+                                <div style="font-weight:700;">${d.name}</div>
+                                <div style="font-size:0.82rem;color:var(--text-light);margin-top:0.2rem;">${d.originalName} · ${fileSizeText(d.fileSize)}</div>
+                                ${columns}
+                                ${trainingDetails}
+                            </td>
+                            <td style="padding:1rem;text-transform:capitalize;">${d.targetModule || 'general'}</td>
+                            <td style="padding:1rem;">${d.fileType}</td>
+                            <td style="padding:1rem;">${d.rowCount || 0}</td>
+                            <td style="padding:1rem;">${d.columnCount || 0}</td>
+                            <td style="padding:1rem;">${statusChip(d.status)}</td>
+                            <td style="padding:1rem;">
+                                <div>${fmtDateTime(d.uploadedAt)}</div>
+                                <div style="font-size:0.75rem;color:var(--text-light);margin-top:0.2rem;">by ${d.uploadedByName || 'Admin'}</div>
+                                ${d.trainedAt ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">Trained: ${fmtDateTime(d.trainedAt)}</div>` : ''}
+                            </td>
+                            <td style="padding:1rem;text-align:center;white-space:nowrap;">
+                                <button class="btn btn-primary" style="padding:0.55rem 0.95rem;margin-bottom:0.5rem;${d.status === 'trained' ? 'opacity:.65;cursor:not-allowed;' : ''}" ${d.status === 'trained' ? 'disabled' : ''} onclick="markAsTrained('${d.id}')">Mark Trained</button><br>
+                                <button class="btn btn-secondary" style="padding:0.55rem 0.95rem;border-color:#e1b6b6;color:#c0392b;" onclick="deleteDataset('${d.id}')">Delete</button>
+                            </td>
+                        </tr>`;
+                }).join('');
+            } catch (err) {
+                document.getElementById('datasetRows').innerHTML = `<tr><td colspan="8" style="padding:2rem;text-align:center;color:#c0392b;">${err.message}</td></tr>`;
+            }
+        }
+
+        // File upload uses FormData because the dataset is a real CSV/JSON file.
+        async function uploadDataset() {
+            const errEl = document.getElementById('uploadError');
+            const okEl = document.getElementById('uploadSuccess');
+            errEl.style.display = 'none';
+            okEl.style.display = 'none';
+
+            const file = document.getElementById('datasetFile').files[0];
+            if (!file) {
+                errEl.textContent = 'Please choose a CSV or JSON file first.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.textContent = 'Uploading…';
+
+            try {
+                const fd = new FormData();
+                fd.append('dataset', file);
+                fd.append('name', document.getElementById('datasetName').value.trim());
+                fd.append('targetModule', document.getElementById('targetModule').value);
+                fd.append('notes', document.getElementById('datasetNotes').value.trim());
+
+                const res = await fetch(`${API}/admin/training/upload`, {
+                    method: 'POST',
+                    headers: KC.token() ? { Authorization: `Bearer ${KC.token()}` } : {},
+                    body: fd,
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Upload failed.');
+
+                okEl.textContent = 'Dataset uploaded successfully.';
+                okEl.style.display = 'block';
+                document.getElementById('datasetName').value = '';
+                document.getElementById('datasetNotes').value = '';
+                document.getElementById('datasetFile').value = '';
+                await loadDatasets();
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Upload Dataset';
+            }
+        }
+
+        async function markAsTrained(datasetId) {
+            if (!confirm('Mark this dataset as trained?')) return;
+            try {
+                await apiFetch(`/admin/training/${datasetId}/train`, { method: 'POST' });
+                await loadDatasets();
+            } catch (err) {
+                alert('Could not update training status: ' + err.message);
+            }
+        }
+
+        async function deleteDataset(datasetId) {
+            if (!confirm('Delete this dataset?')) return;
+            try {
+                await apiFetch(`/admin/training/${datasetId}`, { method: 'DELETE' });
+                await loadDatasets();
+            } catch (err) {
+                alert('Could not delete dataset: ' + err.message);
+            }
+        }
+
+        function downloadTrainingTemplate(format) {
+            if (format === 'json') {
+                const sample = JSON.stringify([
+                    { childId: 'sample-001', communicationScore: 80, socialScore: 70, cognitiveScore: 60, motorScore: 75 },
+                    { childId: 'sample-002', communicationScore: 60, socialScore: 55, cognitiveScore: 40, motorScore: 50 }
+                ], null, 2);
+                const blob = new Blob([sample], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'kindercura-training-template.json';
+                a.click();
+                return;
+            }
+
+            const sample = 'childId,communicationScore,socialScore,cognitiveScore,motorScore\nsample-001,80,70,60,75\nsample-002,60,55,40,50\n';
+            const blob = new Blob([sample], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'kindercura-training-template.csv';
+            a.click();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDatasets);
+    </script>
+</body>
+</html>

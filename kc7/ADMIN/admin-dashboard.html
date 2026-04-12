@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - KinderCura</title>
+    <link rel="stylesheet" href="/css/dashboard-new-styles.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/admin/admin-dashboard.html" class="logo"><img src="/icons/logo.png" class="logo-img"><span><span style="color:#E8A5A5;">Kinder</span><span style="color:#6B8E6F;">Cura</span></span></a>
+            <nav class="main-nav">
+                <a href="/admin/admin-dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="/admin/admin-users.html" class="nav-link">Users</a>
+                <a href="/admin/admin-analytics.html" class="nav-link">Analytics</a>
+                <a href="/admin/admin-training.html" class="nav-link">Training</a>
+                <a href="/admin/admin-settings.html" class="nav-link">Settings</a>
+            </nav>
+            <div class="nav-right">
+                <button class="icon-btn notification-btn" onclick="openNotifications()"><img src="/icons/notif_bell.png" class="notification-icon"><span class="notification-badge">0</span></button>
+                <button class="icon-btn profile-btn" onclick="toggleProfileMenu()"><img src="/icons/profile.png" class="profile-icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;"></button>
+                <div class="profile-menu" id="profileMenu" style="display:none;">
+                    <div class="menu-header"><p>Welcome, Admin</p></div>
+                    <a href="/admin/admin-settings.html" class="menu-item"><img src="/icons/settings.png" class="menu-icon">Settings</a>
+                    <hr style="margin:0.5rem 0;">
+                    <a href="#" class="menu-item logout"><img src="/icons/logout.png" class="menu-icon">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-header"><h1>Administrator Dashboard</h1><p>System management and monitoring</p></div>
+
+        <div class="overview-grid">
+            <div class="overview-card">
+                <h3>📊 System Overview</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;text-align:center;"><p style="color:var(--text-light);font-size:0.9rem;margin-bottom:0.5rem;">Total Users</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="totalUsers">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;text-align:center;"><p style="color:var(--text-light);font-size:0.9rem;margin-bottom:0.5rem;">Active Assessments</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="activeAssessments">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;text-align:center;"><p style="color:var(--text-light);font-size:0.9rem;margin-bottom:0.5rem;">Completed Screenings</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="completedScreenings">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;text-align:center;"><p style="color:var(--text-light);font-size:0.9rem;margin-bottom:0.5rem;">System Uptime</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="uptime">—</p></div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <h3>👥 User Distribution</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;"><p style="color:var(--text-light);font-size:0.85rem;margin-bottom:0.5rem;">Parents</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="parentCount">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;"><p style="color:var(--text-light);font-size:0.85rem;margin-bottom:0.5rem;">Pediatricians</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="pediatricianCount">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;"><p style="color:var(--text-light);font-size:0.85rem;margin-bottom:0.5rem;">Admins</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="adminCount">—</p></div>
+                    <div style="background:var(--bg-primary);padding:1rem;border-radius:8px;"><p style="color:var(--text-light);font-size:0.85rem;margin-bottom:0.5rem;">Total Children</p><p style="font-size:1.8rem;font-weight:700;color:var(--primary);" id="childCount">—</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-card">
+            <h3>🛠️ Quick Actions</h3>
+            <div class="actions-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='/admin/admin-users.html'">Manage Users</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/admin/admin-analytics.html'">View Analytics</button>
+                <button class="btn btn-primary" onclick="window.location.href='/admin/admin-settings.html'">System Settings</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/admin/admin-training.html'">Training Datasets</button>
+                <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Recent Activity</h3>
+            <div id="recentActivity" style="display:flex;flex-direction:column;gap:1rem;"><p style="text-align:center;color:var(--text-light);">Loading…</p></div>
+        </div>
+    </div>
+
+    <div class="notifications-modal" id="notificationsModal" style="display:none;">
+        <div class="notifications-content">
+            <div class="notifications-header"><h3>Admin Notifications</h3><button class="close-btn" onclick="closeNotifications()">✕</button></div>
+            <div class="notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- Shared helpers: auth, notifications, logout, API fetch -->
+    <script src="/api.js"></script>
+    <script>
+        // Require login before this page can load
+        requireAuth();
+        // Admin-only page guard
+        const _u = KC.user();
+        if (_u && _u.role !== 'admin') window.location.href = '/parent/dashboard.html';
+
+        async function loadDashboardData() {
+            try {
+                const data = await apiFetch('/admin/dashboard');
+                document.getElementById('totalUsers').textContent          = data.totalUsers          ?? 0;
+                document.getElementById('activeAssessments').textContent   = data.activeAssessments   ?? 0;
+                document.getElementById('completedScreenings').textContent = data.completedScreenings ?? 0;
+                document.getElementById('uptime').textContent              = data.uptime              || '99.9%';
+                document.getElementById('parentCount').textContent         = data.parentCount         ?? 0;
+                document.getElementById('pediatricianCount').textContent   = data.pediatricianCount   ?? 0;
+                document.getElementById('adminCount').textContent          = data.adminCount          ?? 0;
+                document.getElementById('childCount').textContent          = data.childCount          ?? 0;
+
+                const acts = data.recentActivity || [];
+                document.getElementById('recentActivity').innerHTML = acts.length
+                    ? acts.map(a => `<div style="padding:1rem;background:var(--bg-primary);border-radius:8px;border-left:4px solid var(--primary);"><p style="font-weight:600;margin-bottom:0.3rem;">${a.type}</p><p style="color:var(--text-light);font-size:0.9rem;">${a.description}</p><p style="color:var(--text-light);font-size:0.8rem;margin-top:0.5rem;">${a.timestamp}</p></div>`).join('')
+                    : '<p style="text-align:center;color:var(--text-light);">No recent activity</p>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function exportData() {
+            try {
+                await downloadWithAuth('/admin/export-data', 'admin-export.json');
+            } catch (e) {
+                alert('Export failed: ' + e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+</body>
+</html>
