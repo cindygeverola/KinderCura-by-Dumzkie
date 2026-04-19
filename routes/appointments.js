@@ -1519,7 +1519,10 @@ router.post('/:appointmentId/reschedule', authMiddleware, secretaryOrPediatricia
       excludeAppointmentMongoId: appt._id,
     });
     if (!availability.available) {
-      return res.status(400).json({ error: availability.message    appt.appointmentDate = normalizeUtcDate(newDate);
+      return res.status(400).json({ error: availability.message });
+    }
+
+    appt.appointmentDate = normalizeUtcDate(newDate);
     appt.appointmentTime = availability.requestedTime || normalizeTimeString(newTime) || newTime;
     appt.status = 'approved';
     if (note && String(note).trim()) appt.notes = String(note).trim();
@@ -1572,8 +1575,7 @@ router.post('/:appointmentId/reschedule', authMiddleware, secretaryOrPediatricia
     console.error('appointments reschedule error:', err);
     res.status(500).json({ error: err.message });
   }
-});ge });
-  }
+
 });
 
 // GET /api/appointments/:userId

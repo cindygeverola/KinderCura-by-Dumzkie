@@ -80,6 +80,10 @@ const userSchema = new mongoose.Schema(
     notificationSettings: { type: notificationSettingsSchema, default: () => ({}) },
     privacySettings: { type: privacySettingsSchema, default: () => ({}) },
 
+    // Pediatrician ID verification fields
+    idDocumentPath: { type: String, default: null },
+    idDocumentUploadedAt: { type: Date, default: null },
+
     // Admin fields
     organization: { type: String, trim: true, default: null },
     department: { type: String, trim: true, default: null },
@@ -97,10 +101,10 @@ const userSchema = new mongoose.Schema(
     // Only scheduling-related actions are listed here.
     // Medical decisions (diagnosis, results, recommendations) are NEVER included.
     secretaryPermissions: {
-      viewAppointments:   { type: Boolean, default: true },
-      manageBookings:     { type: Boolean, default: true },
+      viewAppointments: { type: Boolean, default: true },
+      manageBookings: { type: Boolean, default: true },
       rescheduleRequests: { type: Boolean, default: true },
-      approveSchedules:   { type: Boolean, default: true },
+      approveSchedules: { type: Boolean, default: true },
     },
   },
   { timestamps: true }
