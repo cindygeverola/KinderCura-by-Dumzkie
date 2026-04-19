@@ -1130,11 +1130,14 @@
             document.getElementById('answeredTotal').textContent = answered;
         }
 
-        // Render question cards on the right side
+        // Render question cards on the right side (shows Question Sets as grouped cards + standalone questions)
         function renderQuestions() {
             const container = document.getElementById('questionsList');
 
-            if (!allQuestions.length) {
+            const hasSets = allQuestionSets.length > 0;
+            const hasStandalone = allQuestions.length > 0;
+
+            if (!hasSets && !hasStandalone) {
                 container.innerHTML = `
         <div style="text-align:center;padding:2rem;color:var(--text-light);">
         <img src="/icons/clipboard.png" alt="Clipboard Icon" style="width:52px;height:52px;object-fit:contain;display:block;margin:0 auto 1rem;">
@@ -1145,10 +1148,72 @@
                 return;
             }
 
-            container.innerHTML = allQuestions.map(q => {
-                const stats = getQuestionStats(q.id);
+            let html = '';
 
-                return `
+            // Render Question Sets as grouped cards
+            if (hasSets) {
+                allQuestionSets.forEach(set => {
+                    const setQuestions = set.questions || [];
+                    const totalAssigned = setQuestions.reduce((sum, q) => sum + getQuestionStats(q.id).assigned, 0);
+                    const totalPending = setQuestions.reduce((sum, q) => sum + getQuestionStats(q.id).pending, 0);
+                    const totalAnswered = setQuestions.reduce((sum, q) => sum + getQuestionStats(q.id).answered, 0);
+
+                    html += `
+                <div class="q-card" id="qset_${set.setId}" style="border-left:4px solid var(--primary);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.8rem;">
+                        <div style="flex:1;">
+                            <h4 style="margin:0;font-size:1rem;color:var(--primary);">📋 ${esc(set.title)}</h4>
+                            <p style="margin:.2rem 0 0;font-size:.78rem;color:var(--text-light);">${esc(set.description || 'No description')}</p>
+                        </div>
+                        <span style="font-size:.7rem;color:#fff;background:var(--primary);border-radius:8px;padding:.2rem .5rem;">${set.questionCount} question${set.questionCount !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    <div class="question-stats" style="margin-bottom:.8rem;">
+                        <span class="mini-chip assigned">Assigned: ${totalAssigned}</span>
+                        <span class="mini-chip pending">Pending: ${totalPending}</span>
+                        <span class="mini-chip answered">Answered: ${totalAnswered}</span>
+                    </div>
+
+                    <div style="border-top:1px dashed var(--border);padding-top:.8rem;">
+                        <p style="font-size:.8rem;font-weight:600;color:var(--text-light);margin:0 0 .5rem;">Questions in this set:</p>
+                        ${setQuestions.map(q => `
+                        <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin-bottom:.4rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.4rem;">
+                                <div style="flex:1;">
+                                    <span class="q-type-badge ${getTypeClass(q.questionType)}">${normalizeQuestionTypeLabel(q.questionType)}</span>
+                                    <span class="domain-badge ${getDomainClass(q.domain)}">${q.domain || 'Other'}</span>
+                                    ${(q.ageMin > 0 || q.ageMax < 18) ? `<span style="font-size:.68rem;color:var(--text-light);margin-left:.3rem;">Age ${q.ageMin}–${q.ageMax}</span>` : ''}
+                                    <p style="font-size:.85rem;font-weight:600;color:var(--text-dark);margin:.3rem 0;">${esc(q.questionText)}</p>
+                                    ${q.questionType === 'multiple_choice' && Array.isArray(q.options) && q.options.length ? `
+                                        <div class="options-list">
+                                            ${q.options.map(o => `<span class="option-chip">${esc(o)}</span>`).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${!q.isActive ? `<span style="font-size:.7rem;color:#888;background:#eee;border-radius:8px;padding:.2rem .5rem;">Inactive</span>` : ''}
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="q-actions" style="margin-top:.8rem;">
+                        <button class="btn-outline" onclick="openAssignSetModal('${set.setId}')" style="font-size:.78rem;padding:.3rem .7rem;"><img src="/icons/profile_icon.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> Assign Set</button>
+                        <button class="btn-outline" onclick="viewSetDetails('${set.setId}')" style="font-size:.78rem;padding:.3rem .7rem;">View Details</button>
+                    </div>
+                </div>
+                    `;
+                });
+            }
+
+            // Render standalone questions (legacy support)
+            if (hasStandalone) {
+                if (hasSets) {
+                    html += `<h4 style="margin:1.5rem 0 .8rem;color:var(--text-light);font-size:.9rem;">Standalone Questions</h4>`;
+                }
+                html += allQuestions.map(q => {
+                    const stats = getQuestionStats(q.id);
+
+                    return `
                 <div class="q-card" id="qcard_${q.id}" style="${!q.isActive ? 'opacity:.55;' : ''}">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
                         <div style="flex:1;">
@@ -1156,11 +1221,11 @@
                             <span class="domain-badge ${getDomainClass(q.domain)}">${q.domain || 'Other'}</span>
                             ${(q.ageMin > 0 || q.ageMax < 18) ? `<span style="font-size:.68rem;color:var(--text-light);margin-left:.3rem;">Age ${q.ageMin}–${q.ageMax}</span>` : ''}
 
-                            <p style="font-size:.9rem;font-weight:600;color:var(--text-dark);margin:.4rem 0;">${q.questionText}</p>
+                            <p style="font-size:.9rem;font-weight:600;color:var(--text-dark);margin:.4rem 0;">${esc(q.questionText)}</p>
 
                             ${q.questionType === 'multiple_choice' && Array.isArray(q.options) && q.options.length ? `
                                 <div class="options-list">
-                                    ${q.options.map(o => `<span class="option-chip">${o}</span>`).join('')}
+                                    ${q.options.map(o => `<span class="option-chip">${esc(o)}</span>`).join('')}
                                 </div>
                             ` : ''}
 
@@ -1183,7 +1248,10 @@
                     </div>
                 </div>
             `;
-            }).join('');
+                }).join('');
+            }
+
+            container.innerHTML = html;
         }
 
         // Render pending / answered tracker lists
@@ -1442,6 +1510,73 @@
             renderAssignList();
         }
 
+        // Open assign modal for an entire Question Set
+        let assigningSetId = null;
+        async function openAssignSetModal(setId) {
+            assigningSetId = setId;
+
+            const set = allQuestionSets.find(s => String(s.setId) === String(setId));
+            const qCount = set ? set.questions.length : 0;
+            document.getElementById('assignModalSub').textContent = `Set: "${set ? set.title : 'Question Set'}" (${qCount} question${qCount !== 1 ? 's' : ''})`;
+
+            document.getElementById('assignModal').style.display = 'flex';
+            document.getElementById('assignPatientList').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-light);">Loading patients…</div>';
+
+            if (!patientList.length) {
+                await loadPatientsOnly();
+            }
+
+            renderAssignSetList();
+        }
+
+        // Render patient list inside assign modal for Question Set assignment
+        function renderAssignSetList() {
+            const list = document.getElementById('assignPatientList');
+
+            if (!patientList.length) {
+                list.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No patients yet. Approve some appointments first.</p>';
+                return;
+            }
+
+            list.innerHTML = patientList.map(p => `
+            <div class="patient-row">
+                <div>
+                    <p style="font-weight:600;font-size:.88rem;margin:0;"><img src="/icons/profile_icon.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${p.childName}</p>
+                    <p style="font-size:.78rem;color:var(--text-light);margin:.1rem 0 0;"><img src="/icons/account.png" alt="" aria-hidden="true" style="width:1.1em;height:1.1em;object-fit:contain;vertical-align:-0.18em;"> ${p.parentName}</p>
+                </div>
+                <button class="btn-outline" style="font-size:.78rem;padding:.3rem .7rem;" onclick="assignSetToPatient('${p.childId}', ${p.appointmentId || 'null'})">Assign Set</button>
+            </div>
+        `).join('');
+        }
+
+        // Assign selected Question Set to one child (all questions in the set)
+        async function assignSetToPatient(childId, appointmentId) {
+            try {
+                await apiFetch(`/questions/set/${assigningSetId}/assign`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        childId,
+                        appointmentId: appointmentId || undefined
+                    })
+                });
+
+                flash('Question set assigned! Parent has been notified.');
+                closeAssignModal();
+                await loadAssignmentTracker();
+            } catch (e) {
+                flash(e.message, 'error');
+            }
+        }
+
+        // View details of a Question Set (simple alert for now, can be enhanced with modal)
+        function viewSetDetails(setId) {
+            const set = allQuestionSets.find(s => String(s.setId) === String(setId));
+            if (!set) return;
+
+            const qList = (set.questions || []).map((q, i) => `${i + 1}. ${q.questionText}`).join('\n');
+            alert(`Question Set: ${set.title}\nDescription: ${set.description || 'N/A'}\nTotal Questions: ${set.questionCount}\n\nQuestions:\n${qList}`);
+        }
+
         // Render patient list inside assign modal
         function renderAssignList() {
             const list = document.getElementById('assignPatientList');
@@ -1484,6 +1619,7 @@
         function closeAssignModal() {
             document.getElementById('assignModal').style.display = 'none';
             assigningQId = null;
+            assigningSetId = null;
         }
 
         // Refresh everything on the page
@@ -1524,6 +1660,9 @@
                 "'": '&#39;'
             }[ch]));
         }
+
+        // Alias for esc to match existing usage in templates
+        const esc = escapeHtml;
 
         // Decide where a notification should open based on the current user role
         function notificationDestination(n) {
