@@ -101,4 +101,35 @@ router.post('/child/:childId', authMiddleware, (req, res) => {
     });
 });
 
+// Upload pediatrician's ID document for verification
+router.post('/pediatric-id', authMiddleware, upload.single('photo'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user || user.role !== 'pediatrician') {
+            return res.status(403).json({ error: 'Only pediatricians can upload ID documents.' });
+        }
+
+        // Delete old ID if exists
+        if (user.idDocumentPath) {
+            deleteOldUpload(user.idDocumentPath);
+        }
+
+        const idPath = `/uploads/profiles/pediatric_id_${req.user.userId}_${Date.now()}${path.extname(req.file.originalname).toLowerCase()}`;
+        const fullPath = path.join(__dirname, '..', 'public', 'uploads', 'profiles', path.basename(idPath));
+
+        // Move/rename the file to include userId
+        fs.renameSync(req.file.path, fullPath);
+
+        user.idDocumentPath = idPath;
+        user.idDocumentUploadedAt = new Date();
+        await user.save();
+
+        res.json({ success: true, path: idPath });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

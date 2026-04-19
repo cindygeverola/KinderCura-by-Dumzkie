@@ -46,8 +46,8 @@ function isValidEmail(email) {
 function signToken(user) {
   const payload = {
     userId: String(user._id),
-    role:   user.role,
-    email:  user.email,
+    role: user.role,
+    email: user.email,
   };
 
   // Only attach linkedPediatricianId for secretary accounts.
@@ -321,6 +321,13 @@ router.post('/register', async (req, res) => {
     // Important: pediatrician accounts are pending until admin approval.
     const initialStatus = cleanRole === 'pediatrician' ? 'pending' : 'active';
 
+    // For pediatricians, validate that professional info is provided
+    if (cleanRole === 'pediatrician') {
+      if (!licenseNumber || !licenseNumber.trim()) {
+        return res.status(400).json({ error: 'Professional license number is required for pediatricians.' });
+      }
+    }
+
     const user = await User.create({
       firstName: cleanFirstName,
       middleName: cleanMiddleName,
@@ -351,6 +358,7 @@ router.post('/register', async (req, res) => {
     });
 
     let child = null;
+    // Child information is optional for parent registration
     if (cleanRole === 'parent' && childFirstName && childLastName && dateOfBirth) {
       child = await Child.create({
         parentId: user._id,
@@ -366,7 +374,7 @@ router.post('/register', async (req, res) => {
 
     const token = signToken(user);
 
-    // Parent sign-up should continue directly to the required pre-assessment.
+    // Parent sign-up should continue directly to the required pre-assessment only if child was created
     const needsPreAssessment = cleanRole === 'parent' && Boolean(child);
     const preAssessmentChildId = child ? String(child._id) : null;
 
@@ -382,7 +390,7 @@ router.post('/register', async (req, res) => {
       preAssessmentChildId,
       message: user.role === 'pediatrician'
         ? 'Pediatrician account created. Please wait for admin approval before logging in.'
-        : 'Account created successfully. Please continue to the child pre-assessment.',
+        : (child ? 'Account created successfully. Please continue to the child pre-assessment.' : 'Account created successfully.'),
     });
   } catch (err) {
     console.error('Register error:', err);
