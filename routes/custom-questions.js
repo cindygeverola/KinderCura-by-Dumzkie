@@ -149,8 +149,90 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+
+// POST /api/questions/bulk
+// Create multiple custom questions in one session
+router.post('/bulk', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'pediatrician') {
+      return res.status(403).json({ error: 'Pediatricians only.' });
+    }
+
+    const { questions } = req.body;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: 'Questions array is required and must not be empty.' });
+    }
+
+    if (questions.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 questions per batch.' });
+    }
+
+    const VALID_TYPES = ['yes_no', 'multiple_choice', 'short_answer'];
+    const createdQuestions = [];
+    const errors = [];
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const index = i + 1;
+
+      if (!q.questionText || !q.questionType) {
+        errors.push({ index, error: `Question ${index}: Text and type are required.` });
+        continue;
+      }
+
+      if (!VALID_TYPES.includes(q.questionType)) {
+        errors.push({ index, error: `Question ${index}: Invalid type. Must be: ${VALID_TYPES.join(', ')}` });
+        continue;
+      }
+
+      const cleanOptions = Array.isArray(q.options)
+        ? q.options.map((o) => String(o).trim()).filter(Boolean)
+        : [];
+
+      if (q.questionType === 'multiple_choice' && cleanOptions.length < 2) {
+        errors.push({ index, error: `Question ${index}: Multiple choice requires at least 2 options.` });
+        continue;
+      }
+
+      try {
+        const doc = await CustomQuestion.create({
+          pediatricianId: req.user.userId,
+          questionText: String(q.questionText).trim(),
+          questionType: q.questionType,
+          options: q.questionType === 'multiple_choice' ? cleanOptions : [],
+          domain: q.domain || 'Other',
+          ageMin: q.ageMin != null ? Number(q.ageMin) : 0,
+          ageMax: q.ageMax != null ? Number(q.ageMax) : 18,
+          isActive: true,
+        });
+        createdQuestions.push(normalizeQuestion(doc.toObject()));
+      } catch (err) {
+        errors.push({ index, error: `Question ${index}: ${err.message}` });
+      }
+    }
+
+    if (createdQuestions.length === 0 && errors.length > 0) {
+      return res.status(400).json({
+        error: 'No questions were created.',
+        details: errors
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      questions: createdQuestions,
+      createdCount: createdQuestions.length,
+      errorCount: errors.length,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // POST /api/questions
-// Create one new custom question
+// Create one new custom question (legacy single-question endpoint)
 router.post('/', authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== 'pediatrician') {

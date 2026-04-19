@@ -58,6 +58,10 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Local configuration
+.env*
+!.env.example
+
 # Build outputs
 dist/
 build/
@@ -68,6 +72,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
 
 # Compressed files
 *.zip
