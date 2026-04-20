@@ -767,6 +767,20 @@
         </div>
     </div>
 
+    <!-- Modal for viewing Question Set details -->
+    <div class="modal-overlay" id="viewSetModal" style="display:none;z-index:1001;">
+        <div class="modal-box" style="max-width:800px;max-height:85vh;overflow-y:auto;">
+            <p class="modal-title">Question Set Details</p>
+            <div id="viewSetContent"></div>
+            <div style="margin-top:1.2rem;text-align:right;display:flex;gap:.5rem;justify-content:flex-end;">
+                <button class="btn-outline" onclick="closeViewSetModal()">Close</button>
+                <button class="btn-primary" id="editSetBtn" onclick="editQuestionSet()" style="display:none;">Edit
+                    Set</button>
+                <button class="btn-primary" id="assignSetFromViewBtn" onclick="assignSetFromView()">Assign Set</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notifications modal -->
     <div class="notifications-modal" id="notificationsModal" style="display:none;">
         <div class="notifications-content">
